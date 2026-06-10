@@ -78,7 +78,23 @@ cd frontend
 npm run build
 ```
 
-将 `dist/` 目录内的文件部署到 Cloudflare Pages。
+构建产物输出在 `frontend/dist/` 目录。
+
+### 部署到 Cloudflare Pages
+
+项目使用 [wrangler](https://developers.cloudflare.com/workers/wrangler/) CLI 部署：
+
+```bash
+# 首次使用需登录
+npx wrangler login
+
+# 部署（项目名：dev-web-tools）
+npx wrangler pages deploy dist --project-name=dev-web-tools --branch=main
+```
+
+**SPA 刷新支持**：`public/_redirects` 已配置 `/* /index.html 200`，确保直接访问子路由（如 `/tools/jwt-decoder`）时由前端路由接管。
+
+**自定义域名**：生产域名 `vvzzv.com` 在 Cloudflare Pages 控制台绑定。
 
 ## 技术栈
 

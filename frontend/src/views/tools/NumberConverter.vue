@@ -102,8 +102,14 @@ onMounted(() => {
   const params = getUrlParams()
   if (params.get('num')) {
     input.value = params.get('num')
-    if (params.get('from')) fromBase.value = parseInt(params.get('from'))
-    if (params.get('to')) toBases.value = params.get('to').split(',').map(Number)
+    if (params.get('from')) {
+      const fb = parseInt(params.get('from'), 10)
+      fromBase.value = isNaN(fb) ? 10 : fb
+    }
+    if (params.get('to')) {
+      const tb = params.get('to').split(',').map(Number).filter(n => !isNaN(n) && n >= 2 && n <= 36)
+      toBases.value = tb.length ? tb : [2, 8, 16]
+    }
     convert()
   } else if (!input.value) {
     loadExample()

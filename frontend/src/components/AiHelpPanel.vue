@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 
 const props = defineProps({
@@ -11,6 +11,11 @@ const props = defineProps({
 const route = useRoute()
 const show = ref(false)
 const copied = ref(false)
+let copyTimer = null
+
+onUnmounted(() => {
+  if (copyTimer) clearTimeout(copyTimer)
+})
 
 const exampleUrl = computed(() => {
   const base = window.location.origin + window.location.pathname
@@ -19,14 +24,15 @@ const exampleUrl = computed(() => {
     .filter(p => p.example)
     .map(p => `${p.name}=${encodeURIComponent(p.example)}`)
     .join('&')
-  return `${base}#${hash}?${query}&auto=1`
+  return query ? `${base}#${hash}?${query}&auto=1` : `${base}#${hash}?auto=1`
 })
 
 async function copyUrl() {
   try {
     await navigator.clipboard.writeText(exampleUrl.value)
     copied.value = true
-    setTimeout(() => copied.value = false, 2000)
+    if (copyTimer) clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => copied.value = false, 2000)
   } catch {}
 }
 
@@ -35,7 +41,8 @@ async function copyDesc() {
   try {
     await navigator.clipboard.writeText(text)
     copied.value = true
-    setTimeout(() => copied.value = false, 2000)
+    if (copyTimer) clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => copied.value = false, 2000)
   } catch {}
 }
 </script>

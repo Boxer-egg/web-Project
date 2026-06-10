@@ -65,51 +65,56 @@ function csvToJson() {
   preview.value = []
   if (!input.value.trim()) { output.value = '[]'; return }
 
-  const lines = input.value.trim().split('\n')
-  if (lines.length === 0) { output.value = '[]'; return }
+  try {
+    const lines = input.value.trim().split(/\r?\n/)
+    if (lines.length === 0) { output.value = '[]'; return }
 
-  const sep = delimiter.value
-  const parseLine = (line) => {
-    const result = []
-    let inQuotes = false
-    let current = ''
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i]
-      if (char === '"') {
-        if (inQuotes && line[i + 1] === '"') {
-          current += '"'
-          i++
+    const sep = delimiter.value
+    const parseLine = (line) => {
+      const result = []
+      let inQuotes = false
+      let current = ''
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i]
+        if (char === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"'
+            i++
+          } else {
+            inQuotes = !inQuotes
+          }
+        } else if (char === sep && !inQuotes) {
+          result.push(current.trim())
+          current = ''
         } else {
-          inQuotes = !inQuotes
+          current += char
         }
-      } else if (char === sep && !inQuotes) {
-        result.push(current.trim())
-        current = ''
-      } else {
-        current += char
       }
+      result.push(current.trim())
+      return result
     }
-    result.push(current.trim())
-    return result
+
+    const headers = parseLine(lines[0])
+    const data = []
+    const start = includeHeader.value ? 1 : 0
+    const defaultHeaders = headers.map((_, i) => `col${i}`)
+
+    for (let i = start; i < lines.length; i++) {
+      if (!lines[i].trim()) continue
+      const vals = parseLine(lines[i])
+      const obj = {}
+      const h = includeHeader.value ? headers : defaultHeaders
+      h.forEach((key, idx) => {
+        obj[key] = vals[idx] || ''
+      })
+      data.push(obj)
+    }
+
+    output.value = JSON.stringify(data, null, 2)
+  } catch (e) {
+    error.value = 'CSV 解析失败: ' + e.message
+    output.value = '[]'
   }
-
-  const headers = parseLine(lines[0])
-  const data = []
-  const start = includeHeader.value ? 1 : 0
-  const defaultHeaders = headers.map((_, i) => `col${i}`)
-
-  for (let i = start; i < lines.length; i++) {
-    if (!lines[i].trim()) continue
-    const vals = parseLine(lines[i])
-    const obj = {}
-    const h = includeHeader.value ? headers : defaultHeaders
-    h.forEach((key, idx) => {
-      obj[key] = vals[idx] || ''
-    })
-    data.push(obj)
-  }
-
-  output.value = JSON.stringify(data, null, 2)
 }
 
 function convert() {

@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 const input = useStorage('markdown-input', `# 欢迎使用 Markdown 预览
 
@@ -101,7 +102,7 @@ const layout = useStorage('markdown-layout', 'split')
 
 const html = computed(() => {
   try {
-    return marked(input.value, { breaks: true })
+    return DOMPurify.sanitize(marked(input.value, { breaks: true }))
   } catch {
     return '<p>渲染错误</p>'
   }

@@ -63,10 +63,12 @@ function generate() {
     while (pwd.length < length.value) {
       pwd += randomChar(pool)
     }
-    // Shuffle
+    // Shuffle (Fisher-Yates with CSPRNG)
     const arr = pwd.split('')
     for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
+      const r = new Uint32Array(1)
+      crypto.getRandomValues(r)
+      const j = r[0] % (i + 1)
       ;[arr[i], arr[j]] = [arr[j], arr[i]]
     }
     res.push(arr.join(''))

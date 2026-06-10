@@ -3,6 +3,9 @@ import Home from '../views/Home.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
+  scrollBehavior() {
+    return { top: 0 }
+  },
   routes: [
     {
       path: '/',
@@ -129,6 +132,12 @@ const router = createRouter({
       name: 'lorem-ipsum',
       component: () => import('../views/tools/LoremIpsum.vue'),
       meta: { title: 'Lorem Ipsum 生成器' }
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: Home,
+      meta: { title: '页面未找到' }
     },
   ],
 })

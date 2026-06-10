@@ -90,7 +90,10 @@ function clearAll() {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('auto') === '1') {
-    if (params.get('count')) count.value = parseInt(params.get('count')) || 10
+    if (params.get('count')) {
+      const c = parseInt(params.get('count'), 10)
+      count.value = isNaN(c) ? 10 : Math.max(1, Math.min(100, c))
+    }
     if (params.get('format')) format.value = params.get('format')
     if (params.get('prefix')) prefix.value = params.get('prefix')
     if (params.get('suffix')) suffix.value = params.get('suffix')

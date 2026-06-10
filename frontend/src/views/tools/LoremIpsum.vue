@@ -113,8 +113,14 @@ function clearAll() {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('auto') === '1') {
-    if (params.get('paragraphs')) paragraphs.value = parseInt(params.get('paragraphs'))
-    if (params.get('sentences')) sentences.value = parseInt(params.get('sentences'))
+    if (params.get('paragraphs')) {
+      const p = parseInt(params.get('paragraphs'), 10)
+      paragraphs.value = isNaN(p) ? 3 : Math.max(1, Math.min(50, p))
+    }
+    if (params.get('sentences')) {
+      const s = parseInt(params.get('sentences'), 10)
+      sentences.value = isNaN(s) ? 5 : Math.max(1, Math.min(20, s))
+    }
     if (params.get('format')) format.value = params.get('format')
     if (params.get('lang')) language.value = params.get('lang')
     generate()

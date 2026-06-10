@@ -72,9 +72,15 @@ function decode() {
   if (!input.value) return
   let text = input.value
   // Hex entities
-  text = text.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+  text = text.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+    const code = parseInt(hex, 16)
+    return code <= 0x10FFFF ? String.fromCodePoint(code) : `&#x${hex};`
+  })
   // Decimal entities
-  text = text.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)))
+  text = text.replace(/&#(\d+);/g, (_, dec) => {
+    const code = parseInt(dec, 10)
+    return code <= 0x10FFFF ? String.fromCodePoint(code) : `&#${dec};`
+  })
   // Named entities
   for (const [entity, char] of Object.entries(reverseEntities)) {
     text = text.split(entity).join(char)

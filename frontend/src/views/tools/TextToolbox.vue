@@ -25,16 +25,16 @@ function getUrlParams() {
   return new URLSearchParams(query)
 }
 
-function toUpper() { output.value = input.value.toUpperCase() }
-function toLower() { output.value = input.value.toLowerCase() }
+function toUpper() { output.value = (input.value || '').toUpperCase() }
+function toLower() { output.value = (input.value || '').toLowerCase() }
 function toCapitalize() {
-  output.value = input.value.replace(/\b\w/g, c => c.toUpperCase())
+  output.value = (input.value || '').replace(/\b\w/g, c => c.toUpperCase())
 }
 function swapCase() {
-  output.value = input.value.replace(/[a-zA-Z]/g, c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase())
+  output.value = (input.value || '').replace(/[a-zA-Z]/g, c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase())
 }
 function removeDuplicateLines() {
-  const lines = input.value.split('\n')
+  const lines = (input.value || '').split('\n')
   const seen = new Set()
   output.value = lines.filter(line => {
     if (seen.has(line)) return false
@@ -43,10 +43,10 @@ function removeDuplicateLines() {
   }).join('\n')
 }
 function removeEmptyLines() {
-  output.value = input.value.split('\n').filter(line => line.trim() !== '').join('\n')
+  output.value = (input.value || '').split('\n').filter(line => line.trim() !== '').join('\n')
 }
 function trimLines() {
-  output.value = input.value.split('\n').map(line => line.trim()).join('\n')
+  output.value = (input.value || '').split('\n').map(line => line.trim()).join('\n')
 }
 function mergeEmptyLines() {
   output.value = input.value.replace(/\n{2,}/g, '\n')

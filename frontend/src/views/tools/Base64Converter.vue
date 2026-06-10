@@ -22,10 +22,22 @@ onMounted(() => {
   }
 })
 
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str)
+  const bin = String.fromCharCode(...bytes)
+  return btoa(bin)
+}
+
+function base64ToUtf8(str) {
+  const bin = atob(str)
+  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
 function textToBase64() {
   if (!textInput.value) return
   try {
-    output.value = btoa(unescape(encodeURIComponent(textInput.value)))
+    output.value = utf8ToBase64(textInput.value)
     isImage.value = false
     imagePreview.value = ''
     fileInfo.value = ''
@@ -37,7 +49,7 @@ function textToBase64() {
 function base64ToText() {
   if (!textInput.value) return
   try {
-    output.value = decodeURIComponent(escape(atob(textInput.value)))
+    output.value = base64ToUtf8(textInput.value)
     isImage.value = false
     imagePreview.value = ''
     fileInfo.value = ''

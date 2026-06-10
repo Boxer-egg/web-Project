@@ -24,13 +24,19 @@ function getUrlParams() {
   return new URLSearchParams(query)
 }
 
+const algoMap = { sha1: 'SHA-1', sha256: 'SHA-256', sha512: 'SHA-512' }
+
 async function computeHash(algo, text) {
   const encoder = new TextEncoder()
   const data = encoder.encode(text)
   if (algo === 'md5') {
     return md5(text)
   }
-  const hash = await crypto.subtle.digest(algo.toUpperCase().replace('SHA', 'SHA-'), data)
+  const webAlgo = algoMap[algo]
+  if (!webAlgo) {
+    throw new Error(`不支持的算法: ${algo}`)
+  }
+  const hash = await crypto.subtle.digest(webAlgo, data)
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 

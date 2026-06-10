@@ -44,9 +44,9 @@ function parse() {
 
   try {
     header.value = JSON.stringify(JSON.parse(base64UrlDecode(parts[0])), null, 2)
-  } catch {
-    header.value = base64UrlDecode(parts[0])
-    error.value = 'Header 部分不是标准 JSON'
+  } catch (e) {
+    header.value = parts[0]
+    error.value = 'Header 部分不是标准 JSON: ' + e.message
   }
 
   try {
@@ -57,20 +57,20 @@ function parse() {
       const expDate = new Date(p.exp * 1000)
       const now = Date.now()
       if (expDate.getTime() < now) {
-        expired.value = '❌ 已过期（过期时间：' + expDate.toLocaleString() + '）'
+        expired.value = '已过期（过期时间：' + expDate.toLocaleString() + '）'
       } else if (expDate.getTime() - now < 24 * 3600 * 1000) {
-        expired.value = '⚠️ 即将过期（24小时内，过期时间：' + expDate.toLocaleString() + '）'
+        expired.value = '即将过期（24小时内，过期时间：' + expDate.toLocaleString() + '）'
       } else {
-        expired.value = '✅ 未过期（过期时间：' + expDate.toLocaleString() + '）'
+        expired.value = '未过期（过期时间：' + expDate.toLocaleString() + '）'
       }
     }
     if (p.iat) {
       const iatDate = new Date(p.iat * 1000)
       payload.value += '\n\n// iat 签发时间：' + iatDate.toLocaleString()
     }
-  } catch {
-    payload.value = base64UrlDecode(parts[1])
-    error.value = error.value || 'Payload 部分不是标准 JSON'
+  } catch (e) {
+    payload.value = parts[1]
+    error.value = error.value || 'Payload 部分不是标准 JSON: ' + e.message
   }
 
   signature.value = parts[2]

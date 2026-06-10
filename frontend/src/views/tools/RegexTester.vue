@@ -29,6 +29,7 @@ const highlightedText = computed(() => {
     while ((m = re.exec(testText.value)) !== null) {
       matches.push({ start: m.index, end: m.index + m[0].length, text: m[0], groups: m.slice(1) })
       if (!re.global) break
+      if (m[0].length === 0) re.lastIndex++
     }
     matchCount.value = matches.length
     if (!matches.length) return testText.value

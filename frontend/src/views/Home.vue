@@ -92,10 +92,12 @@ function goToTool(path) {
           <summary>可以在手机或平板上使用吗？</summary>
           <p>可以。网站采用了响应式设计，在手机、平板和桌面电脑上都能正常使用。在移动设备上，侧边栏会自动适配为底部导航栏。</p>
         </details>
+        <!-- TODO: 恢复此 FAQ 当有 GitHub 仓库后
         <details class="faq-item">
           <summary>如何报告 Bug 或建议新功能？</summary>
           <p>如果您发现了问题或有功能建议，可以通过项目的 GitHub 仓库提交 Issue。我们会定期查看并处理用户反馈。</p>
         </details>
+        -->
       </div>
     </section>
   </main>

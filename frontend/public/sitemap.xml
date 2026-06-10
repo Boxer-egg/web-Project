@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://dev-web-tools.pages.dev</loc>
+    <loc>https://vvzzv.com</loc>
     <priority>1.0</priority>
     <changefreq>weekly</changefreq>
   </url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/json-formatter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/base64</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/url-encoder</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/regex</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/timestamp</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/color</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/markdown</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/text-diff</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/code-formatter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/password</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/jwt-decoder</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/uuid-generator</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/hash-calculator</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/html-entity</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/text-toolbox</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/number-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/json-csv</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/qrcode</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/css-unit</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/lorem-ipsum</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/word-counter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/unit-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/bmi</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/chinese-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/date-calculator</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://dev-web-tools.pages.dev/#/tools/pomodoro</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/json-formatter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/base64</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/url-encoder</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/regex</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/timestamp</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/color</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/markdown</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/text-diff</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/code-formatter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/password</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/jwt-decoder</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/uuid-generator</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/hash-calculator</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/html-entity</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/text-toolbox</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/number-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/json-csv</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/qrcode</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/css-unit</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/lorem-ipsum</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/word-counter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/unit-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/bmi</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/chinese-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/date-calculator</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://vvzzv.com/tools/pomodoro</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 </urlset>

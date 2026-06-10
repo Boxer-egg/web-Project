@@ -19,9 +19,8 @@ const formats = [
 ]
 
 function getUrlParams() {
-  const hash = window.location.hash
-  const query = hash.split('?')[1] || ''
-  return new URLSearchParams(query)
+  // History mode: read from search
+  return new URLSearchParams(window.location.search)
 }
 
 function generateUUID() {

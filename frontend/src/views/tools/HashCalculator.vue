@@ -19,9 +19,8 @@ const algos = [
 ]
 
 function getUrlParams() {
-  const hash = window.location.hash
-  const query = hash.split('?')[1] || ''
-  return new URLSearchParams(query)
+  // History mode: read from search
+  return new URLSearchParams(window.location.search)
 }
 
 const algoMap = { sha1: 'SHA-1', sha256: 'SHA-256', sha512: 'SHA-512' }

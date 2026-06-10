@@ -7,9 +7,8 @@ const output = ref('')
 const copyText = ref('复制结果')
 
 function getUrlParams() {
-  const hash = window.location.hash
-  const query = hash.split('?')[1] || ''
-  return new URLSearchParams(query)
+  // History mode: read from search
+  return new URLSearchParams(window.location.search)
 }
 
 const params = computed(() => {

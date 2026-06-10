@@ -197,6 +197,60 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/word-counter',
+      name: 'word-counter',
+      component: () => import('../views/tools/WordCounter.vue'),
+      meta: {
+        title: '字数统计 - 在线中文字数与阅读时间工具',
+        description: '在线字数统计工具，实时统计中文字数、英文单词数、字符数、段落数，并预估阅读时间。'
+      }
+    },
+    {
+      path: '/tools/unit-converter',
+      name: 'unit-converter',
+      component: () => import('../views/tools/UnitConverter.vue'),
+      meta: {
+        title: '单位换算 - 在线长度重量温度体积换算工具',
+        description: '在线单位换算工具，支持长度、重量、面积、体积、温度、数据存储等多种单位的互转。'
+      }
+    },
+    {
+      path: '/tools/bmi',
+      name: 'bmi',
+      component: () => import('../views/tools/BmiCalculator.vue'),
+      meta: {
+        title: 'BMI 计算器 - 在线身体质量指数计算工具',
+        description: '在线 BMI 计算器，根据身高体重计算身体质量指数，按照中国成人标准给出分类和健康建议。'
+      }
+    },
+    {
+      path: '/tools/chinese-converter',
+      name: 'chinese-converter',
+      component: () => import('../views/tools/ChineseConverter.vue'),
+      meta: {
+        title: '简繁体转换 - 在线简体中文与繁体中文互转工具',
+        description: '在线简繁体转换工具，支持约 2000 个常用汉字的简体与繁体中文互相转换。'
+      }
+    },
+    {
+      path: '/tools/date-calculator',
+      name: 'date-calculator',
+      component: () => import('../views/tools/DateCalculator.vue'),
+      meta: {
+        title: '日期计算器 - 在线日期间隔与日期加减工具',
+        description: '在线日期计算器，支持计算两个日期之间的间隔天数，以及对指定日期进行加减天数计算。'
+      }
+    },
+    {
+      path: '/tools/pomodoro',
+      name: 'pomodoro',
+      component: () => import('../views/tools/Pomodoro.vue'),
+      meta: {
+        title: '番茄钟 - 在线专注计时器',
+        description: '在线番茄钟计时器，支持自定义专注和休息时长，圆形进度可视化，帮助提升工作学习效率。'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

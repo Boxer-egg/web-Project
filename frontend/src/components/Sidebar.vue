@@ -27,6 +27,12 @@ const tools = [
   { path: '/tools/qrcode', name: '二维码', icon: '▣' },
   { path: '/tools/css-unit', name: 'CSS单位', icon: '📐' },
   { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝' },
+  { path: '/tools/word-counter', name: '字数统计', icon: '📝' },
+  { path: '/tools/unit-converter', name: '单位换算', icon: '📐' },
+  { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️' },
+  { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️' },
+  { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
+  { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
 ]
 </script>
 

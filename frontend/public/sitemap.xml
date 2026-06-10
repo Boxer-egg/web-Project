@@ -25,4 +25,10 @@
   <url><loc>https://dev-web-tools.pages.dev/#/tools/qrcode</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://dev-web-tools.pages.dev/#/tools/css-unit</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://dev-web-tools.pages.dev/#/tools/lorem-ipsum</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://dev-web-tools.pages.dev/#/tools/word-counter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://dev-web-tools.pages.dev/#/tools/unit-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://dev-web-tools.pages.dev/#/tools/bmi</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://dev-web-tools.pages.dev/#/tools/chinese-converter</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://dev-web-tools.pages.dev/#/tools/date-calculator</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://dev-web-tools.pages.dev/#/tools/pomodoro</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
 </urlset>

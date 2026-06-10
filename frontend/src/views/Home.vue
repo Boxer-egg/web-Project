@@ -24,6 +24,12 @@ const tools = [
   { path: '/tools/qrcode', name: '二维码生成器', icon: '▣', desc: '文本/URL 转可扫描的二维码图片', category: '图像' },
   { path: '/tools/css-unit', name: 'CSS 单位转换', icon: '📐', desc: 'PX/REM/EM/VH/VW/百分比互转', category: '转换' },
   { path: '/tools/lorem-ipsum', name: 'Lorem Ipsum', icon: '📝', desc: '假文生成，拉丁语/中文占位文本', category: '文本' },
+  { path: '/tools/word-counter', name: '字数统计', icon: '📝', desc: '实时统计中文字数、单词数、阅读时间', category: '文本' },
+  { path: '/tools/unit-converter', name: '单位换算', icon: '📐', desc: '长度、重量、温度、面积、体积互转', category: '转换' },
+  { path: '/tools/bmi', name: 'BMI 计算器', icon: '⚖️', desc: '身体质量指数计算与健康分类', category: '健康' },
+  { path: '/tools/chinese-converter', name: '简繁体转换', icon: '🈷️', desc: '简体中文与繁体中文互相转换', category: '文本' },
+  { path: '/tools/date-calculator', name: '日期计算器', icon: '📅', desc: '日期间隔计算与日期加减', category: '效率' },
+  { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', desc: '专注计时器，自定义专注与休息时长', category: '效率' },
 ]
 
 function goToTool(path) {

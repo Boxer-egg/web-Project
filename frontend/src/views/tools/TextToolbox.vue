@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -19,10 +20,6 @@ const stats = computed(() => {
   return { chars, bytes, lines, words }
 })
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
 
 function toUpper() { output.value = (input.value || '').toUpperCase() }
 function toLower() { output.value = (input.value || '').toLowerCase() }

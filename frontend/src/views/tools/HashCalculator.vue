@@ -1,16 +1,16 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
-import md5 from 'js-md5'
+import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
+import * as hashLogic from '../../logic/hash'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const input = useStorage('hash-input', '')
 const selected = useStorage('hash-selected', ['md5', 'sha256'])
 const results = ref({})
 const fileMode = ref(false)
 const fileName = ref('')
-const copyText = ref('')
-const autoMode = useStorage('hash-auto', true)
+const toast = useToast()
 
 const algos = [
   { key: 'md5', label: 'MD5' },
@@ -19,51 +19,30 @@ const algos = [
   { key: 'sha512', label: 'SHA512' },
 ]
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
-
-const algoMap = { sha1: 'SHA-1', sha256: 'SHA-256', sha512: 'SHA-512' }
-
-watch([input, selected], () => {
-  if (autoMode.value && !fileMode.value) calculate()
-}, { deep: true })
-
-watch(autoMode, (v) => {
-  if (v && input.value) calculate()
+const {
+  input,
+  autoMode,
+  clearAll: baseClear,
+  loadExample,
+  process: calculate
+} = useTool({
+  storageKey: 'hash',
+  processor: async (val) => {
+    if (fileMode.value) return results.value // Don't auto-calculate for files via this processor
+    const res = await hashLogic.calculateAll(val, selected.value)
+    results.value = res
+    return '' // output isn't used as we use results ref
+  },
+  paramMapping: { 
+    text: { ref: ref('') },
+    algorithms: { ref: selected, transform: v => v.split(',') }
+  },
+  example: 'Hello 世界! 123'
 })
 
-async function computeHash(algo, text) {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(text)
-  if (algo === 'md5') {
-    return md5(text)
-  }
-  const webAlgo = algoMap[algo]
-  if (!webAlgo) {
-    throw new Error(`不支持的算法: ${algo}`)
-  }
-  const hash = await crypto.subtle.digest(webAlgo, data)
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
-async function calculate() {
-  results.value = {}
-  if (!input.value.trim() && !fileMode.value) {
-    return
-  }
-  if (!selected.value.length) {
-    return
-  }
-  for (const algo of selected.value) {
-    try {
-      results.value[algo] = await computeHash(algo, input.value)
-    } catch (e) {
-      results.value[algo] = '计算失败: ' + e.message
-    }
-  }
-}
+watch(selected, () => {
+  if (autoMode.value && !fileMode.value) calculate()
+}, { deep: true })
 
 async function handleFile(e) {
   const file = e.target.files?.[0]
@@ -71,49 +50,25 @@ async function handleFile(e) {
   fileName.value = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`
   fileMode.value = true
   const buffer = await file.arrayBuffer()
-  results.value = {}
-  for (const algo of selected.value) {
-    try {
-      if (algo === 'md5') {
-        results.value[algo] = md5(buffer)
-      } else {
-        const hash = await crypto.subtle.digest(algo.toUpperCase().replace('SHA', 'SHA-'), buffer)
-        results.value[algo] = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
-      }
-    } catch (e) {
-      results.value[algo] = '计算失败'
-    }
-  }
+  results.value = await hashLogic.calculateAll(buffer, selected.value)
 }
 
-async function copy(text) {
-  try {
-    await navigator.clipboard.writeText(text)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '', 2000)
-  } catch {}
+function copy(text) {
+  navigator.clipboard.writeText(text)
+  toast.success('已复制')
 }
 
-async function copyAll() {
+function copyAll() {
   const lines = Object.entries(results.value).map(([k, v]) => `${k.toUpperCase()}: ${v}`)
-  try {
-    await navigator.clipboard.writeText(lines.join('\n'))
-    copyText.value = '全部已复制'
-    setTimeout(() => copyText.value = '', 2000)
-  } catch {}
+  navigator.clipboard.writeText(lines.join('\n'))
+  toast.success('全部已复制')
 }
 
 function clearAll() {
-  input.value = ''
+  baseClear()
   results.value = {}
   fileName.value = ''
   fileMode.value = false
-}
-
-function loadExample() {
-  input.value = 'Hello 世界! 123'
-  fileMode.value = false
-  calculate()
 }
 
 function toggleAlgo(key) {
@@ -124,28 +79,11 @@ function toggleAlgo(key) {
     selected.value.push(key)
   }
 }
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('text')) {
-    if (params.get('auto') === '1') autoMode.value = true
-    else if (params.get('auto') === '0') autoMode.value = false
-    input.value = params.get('text')
-    if (params.get('algorithms')) {
-      selected.value = params.get('algorithms').split(',')
-    }
-    nextTick(() => calculate())
-  } else if (!input.value) {
-    loadExample()
-  } else {
-    calculate()
-  }
-})
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>#️⃣ Hash 计算器</h1>
       <AiHelpPanel
         title="Hash 计算器"
@@ -200,8 +138,16 @@ onMounted(() => {
         <div v-if="Object.keys(results).length" style="display:flex;gap:8px;margin-top:8px">
           <button class="btn btn-sm btn-secondary" @click="copyAll">复制全部</button>
         </div>
-        <p v-if="copyText" style="color:var(--success);font-size:13px;margin-top:6px">{{ copyText }}</p>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+</style>

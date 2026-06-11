@@ -1,11 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-function getUrlParams() {
-  return new URLSearchParams(window.location.search)
-}
 
 const left = useStorage('diff-left', '')
 const right = useStorage('diff-right', '')

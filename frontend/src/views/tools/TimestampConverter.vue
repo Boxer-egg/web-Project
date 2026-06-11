@@ -1,131 +1,82 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
-import { useStorage } from '@vueuse/core'
+import { ref } from 'vue'
+import { useTool } from '../../composables/useTool'
+import * as tsLogic from '../../logic/timestamp'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const tsInput = useStorage('ts-input', '')
-const dateInput = useStorage('ts-date', '')
-const output = ref('')
-const copyText = ref('复制')
-const autoMode = useStorage('ts-auto', true)
-
-watch(tsInput, () => {
-  if (autoMode.value && tsInput.value) tsToDate()
-})
-
-watch(dateInput, () => {
-  if (autoMode.value && dateInput.value) dateToTs()
-})
-
-watch(autoMode, (v) => {
-  if (v) {
-    if (tsInput.value) tsToDate()
-    if (dateInput.value) dateToTs()
-  }
-})
-
-function now() {
-  const now = Date.now()
-  tsInput.value = String(Math.floor(now / 1000))
-  dateInput.value = formatLocal(new Date())
-}
+const tsInput = ref('')
+const dateInput = ref('')
 
 function formatLocal(d) {
   const pad = n => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+const {
+  output,
+  autoMode,
+  copyText,
+  clearAll: baseClear,
+  loadExample,
+  process: convert,
+  copy
+} = useTool({
+  storageKey: 'ts',
+  processor: (val) => {
+    // Determine which input triggered the change
+    if (tsInput.value && val === tsInput.value) {
+      const res = tsLogic.toDate(val)
+      return `ISO: ${res.iso}\n本地: ${res.local}\n秒级: ${res.unixSeconds}\n毫秒: ${res.unixMs}\n\n距离现在: ${res.relative}`
+    } else if (dateInput.value && val === dateInput.value) {
+      const res = tsLogic.fromDate(val)
+      return `秒级: ${res.unixSeconds}\n毫秒级: ${res.unixMs}\n\nISO: ${res.iso}\n本地: ${res.local}`
+    }
+    return ''
+  },
+  paramMapping: { 
+    ts: { ref: tsInput },
+    date: { ref: dateInput }
+  },
+  example: '1700000000'
+})
+
 function tsToDate() {
   if (!tsInput.value) return
-  const num = parseInt(tsInput.value)
-  if (isNaN(num)) { output.value = '请输入有效的数字'; return }
-  const ms = String(tsInput.value).length === 10 ? num * 1000 : num
-  const d = new Date(ms)
-  if (isNaN(d.getTime())) { output.value = '无效的时间戳'; return }
-  output.value = `ISO: ${d.toISOString()}\n本地: ${formatDisplay(d)}\n友好: ${formatFriendly(d)}\n\n距离现在: ${relativeTime(d)}`
+  try {
+    const res = tsLogic.toDate(tsInput.value)
+    output.value = `ISO: ${res.iso}\n本地: ${res.local}\n秒级: ${res.unixSeconds}\n毫秒: ${res.unixMs}\n\n距离现在: ${res.relative}`
+  } catch (e) {
+    output.value = e.message
+  }
 }
 
 function dateToTs() {
   if (!dateInput.value) return
-  const d = new Date(dateInput.value)
-  if (isNaN(d.getTime())) { output.value = '无效的日期'; return }
-  output.value = `秒级: ${Math.floor(d.getTime() / 1000)}\n毫秒级: ${d.getTime()}\n\nISO: ${d.toISOString()}`
-}
-
-function formatDisplay(d) {
-  const pad = n => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
-}
-
-function formatFriendly(d) {
-  const days = ['日', '一', '二', '三', '四', '五', '六']
-  const pad = n => String(n).padStart(2, '0')
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} 星期${days[d.getDay()]}`
-}
-
-function relativeTime(d) {
-  const diff = d.getTime() - Date.now()
-  const abs = Math.abs(diff)
-  const s = Math.floor(abs / 1000)
-  if (s < 60) return diff > 0 ? `${s} 秒后` : `${s} 秒前`
-  const m = Math.floor(s / 60)
-  if (m < 60) return diff > 0 ? `${m} 分钟后` : `${m} 分钟前`
-  const h = Math.floor(m / 60)
-  if (h < 24) return diff > 0 ? `${h} 小时后` : `${h} 小时前`
-  const days = Math.floor(h / 24)
-  return diff > 0 ? `${days} 天后` : `${days} 天前`
-}
-
-async function copy() {
-  if (!output.value) return
   try {
-    await navigator.clipboard.writeText(output.value)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '复制', 2000)
-  } catch {
-    copyText.value = '复制失败'
+    const res = tsLogic.fromDate(dateInput.value)
+    output.value = `秒级: ${res.unixSeconds}\n毫秒级: ${res.unixMs}\n\nISO: ${res.iso}\n本地: ${res.local}`
+  } catch (e) {
+    output.value = e.message
   }
+}
+
+function now() {
+  const n = new Date()
+  tsInput.value = String(Math.floor(n.getTime() / 1000))
+  dateInput.value = formatLocal(n)
+  if (autoMode.value) tsToDate()
 }
 
 function clearAll() {
+  baseClear()
   tsInput.value = ''
   dateInput.value = ''
-  output.value = ''
 }
-
-function loadExample() {
-  tsInput.value = '1700000000'
-  tsToDate()
-}
-
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('auto') === '1') autoMode.value = true
-  else if (params.get('auto') === '0') autoMode.value = false
-  if (params.get('ts')) {
-    tsInput.value = params.get('ts')
-    nextTick(() => tsToDate())
-  } else if (params.get('date')) {
-    dateInput.value = params.get('date')
-    nextTick(() => dateToTs())
-  } else if (!tsInput.value && !dateInput.value) {
-    loadExample()
-  } else if (tsInput.value) {
-    tsToDate()
-  } else if (dateInput.value) {
-    dateToTs()
-  }
-})
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>⏰ 时间戳转换</h1>
       <AiHelpPanel
         title="时间戳转换"
@@ -137,17 +88,16 @@ onMounted(() => {
         ]"
       />
     </div>
-    <div class="help-text card" style="margin-bottom:16px;font-size:13px;color:var(--text-secondary);line-height:1.8">
+    <div class="help-text card">
       <strong style="color:var(--text-primary)">使用说明：</strong><br>
-      • <strong>时间戳 → 日期</strong>：在左侧输入框填入 Unix 时间戳（10位=秒，13位=毫秒），点击「转换」按钮<br>
-      • <strong>日期 → 时间戳</strong>：在右侧点击日期选择器选择时间，点击「转换」按钮<br>
-      • 点击「现在」按钮可快速填入当前时间<br>
-      • 结果包含 ISO 格式、本地格式、友好格式，以及距离当前时间的相对时间
+      • <strong>时间戳 → 日期</strong>：输入 10 位（秒）或 13 位（毫秒）时间戳<br>
+      • <strong>日期 → 时间戳</strong>：使用日期选择器选择本地时间<br>
+      • 点击「现在」按钮可快速填入当前时间
     </div>
     <div class="tool-section">
       <div class="tool-panel card">
         <h3>时间戳 → 日期</h3>
-        <input v-model="tsInput" class="input" placeholder="输入 10/13 位时间戳">
+        <input v-model="tsInput" class="input" placeholder="输入 10/13 位时间戳" @keyup.enter="tsToDate">
         <div class="tool-actions">
           <button class="btn" @click="tsToDate">转换</button>
           <button class="btn btn-secondary" @click="now">现在</button>
@@ -155,7 +105,7 @@ onMounted(() => {
       </div>
       <div class="tool-panel card">
         <h3>日期 → 时间戳</h3>
-        <input v-model="dateInput" class="input" type="datetime-local">
+        <input v-model="dateInput" class="input" type="datetime-local" @change="autoMode && dateToTs()">
         <div class="tool-actions">
           <button class="btn" @click="dateToTs">转换</button>
         </div>
@@ -167,7 +117,7 @@ onMounted(() => {
       </button>
     </div>
     <div class="card" style="margin-top:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="panel-label">
         <h3 style="font-size:14px">结果</h3>
         <button class="btn btn-sm btn-secondary" @click="copy">{{ copyText }}</button>
       </div>
@@ -179,3 +129,25 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.help-text {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  padding: 12px 16px;
+}
+.panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+</style>

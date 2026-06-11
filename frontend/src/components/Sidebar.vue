@@ -1,9 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+
+const props = defineProps({
+  isOpen: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['close'])
 
 const route = useRoute()
 const collapsed = ref(false)
+
+// Close sidebar on route change on mobile
+watch(() => route.path, () => {
+  emit('close')
+})
 
 const tools = [
   { path: '/', name: '首页', icon: '🏠' },
@@ -38,7 +49,8 @@ const tools = [
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ collapsed }">
+  <div v-if="isOpen" class="sidebar-overlay" @click="emit('close')"></div>
+  <aside class="sidebar" :class="{ collapsed, 'mobile-open': isOpen }">
     <div class="sidebar-header">
       <RouterLink to="/" class="logo">
         <span class="logo-icon">🧰</span>
@@ -155,42 +167,53 @@ const tools = [
 
 @media (max-width: 768px) {
   .sidebar {
-    width: 100%;
-    height: auto;
+    width: 260px;
+    height: 100vh;
     position: fixed;
-    bottom: 0;
-    top: auto;
-    border-right: none;
-    border-top: 1px solid var(--border);
-    flex-direction: row;
-    overflow-x: auto;
+    left: -260px;
+    top: 0;
+    bottom: auto;
+    border-right: 1px solid var(--border);
+    border-top: none;
+    flex-direction: column;
+    overflow-x: hidden;
+    transition: left 0.3s ease;
+    background: var(--bg-primary);
+  }
+  .sidebar.mobile-open {
+    left: 0;
   }
   .sidebar.collapsed {
-    width: 100%;
+    width: 260px;
   }
   .sidebar-header {
-    display: none;
+    display: flex;
   }
   .nav {
-    flex-direction: row;
-    padding: 4px;
-    gap: 2px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav::-webkit-scrollbar {
-    display: none;
+    flex-direction: column;
+    padding: 8px;
+    gap: 4px;
+    overflow-y: auto;
   }
   .nav-item {
-    flex-direction: column;
-    padding: 6px 8px;
-    gap: 2px;
-    font-size: 11px;
-    min-width: 60px;
-    justify-content: center;
+    flex-direction: row;
+    padding: 10px 12px;
+    gap: 10px;
+    font-size: 14px;
+    min-width: 0;
+    justify-content: flex-start;
   }
   .nav-icon {
-    font-size: 18px;
+    font-size: 16px;
+  }
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 15;
   }
 }
 </style>

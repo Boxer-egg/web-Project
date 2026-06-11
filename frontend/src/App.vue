@@ -2,9 +2,15 @@
 import { ref, onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import Sidebar from './components/Sidebar.vue'
+import Toast from './components/Toast.vue'
 
 const route = useRoute()
 const isDark = ref(false)
+const isSidebarOpen = ref(false)
+
+function toggleSidebar() {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
 
 function toggleTheme() {
   isDark.value = !isDark.value
@@ -23,10 +29,14 @@ onMounted(() => {
 
 <template>
   <div class="app">
-    <Sidebar />
+    <Toast />
+    <Sidebar :isOpen="isSidebarOpen" @close="isSidebarOpen = false" />
     <main class="main">
       <header class="topbar">
-        <h2 class="page-title">{{ route.meta?.title || '开发者工具箱' }}</h2>
+        <div class="topbar-left">
+          <button class="menu-btn" @click="toggleSidebar">☰</button>
+          <h2 class="page-title">{{ route.meta?.title || '开发者工具箱' }}</h2>
+        </div>
         <button class="theme-btn" @click="toggleTheme" :title="isDark ? '切换浅色' : '切换深色'">
           <span v-if="isDark">☀️</span>
           <span v-else>🌙</span>
@@ -62,6 +72,20 @@ onMounted(() => {
   top: 0;
   z-index: 10;
 }
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 4px;
+}
 .page-title {
   font-size: 18px;
   font-weight: 600;
@@ -90,6 +114,9 @@ onMounted(() => {
   }
   .topbar {
     padding: 0 12px;
+  }
+  .menu-btn {
+    display: block;
   }
 }
 </style>

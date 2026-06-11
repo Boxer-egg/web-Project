@@ -1,11 +1,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-function getUrlParams() {
-  return new URLSearchParams(window.location.search)
-}
 
 const pattern = useStorage('regex-pattern', '\\d{3}-\\d{4}')
 const flags = useStorage('regex-flags', { g: false, i: false, m: false })
@@ -31,12 +29,17 @@ const highlightedText = computed(() => {
     const matches = []
     let m
     const re = new RegExp(regex.value.source, regex.value.flags.includes('g') ? regex.value.flags : regex.value.flags + 'g')
+    let count = 0
     while ((m = re.exec(testText.value)) !== null) {
+      if (count++ > 1000) {
+        error.value = '匹配项过多（超过 1000），仅显示部分结果'
+        break
+      }
       matches.push({ start: m.index, end: m.index + m[0].length, text: m[0], groups: m.slice(1) })
       if (!re.global) break
       if (m[0].length === 0) re.lastIndex++
     }
-    matchCount.value = matches.length
+    matchCount.value = count > 1000 ? 1000 : matches.length
     if (!matches.length) return testText.value
     let result = ''
     let last = 0

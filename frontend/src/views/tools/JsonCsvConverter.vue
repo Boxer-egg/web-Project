@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -17,10 +18,6 @@ const aiParams = [
   { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
 ]
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
 
 function jsonToCsv() {
   error.value = ''

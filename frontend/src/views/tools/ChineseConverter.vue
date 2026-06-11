@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -24,10 +25,6 @@ function doConvert() {
   output.value = convert(textInput.value, direction.value)
 }
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
 
 async function copy() {
   if (!output.value) return

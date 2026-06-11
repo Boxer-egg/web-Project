@@ -1,135 +1,60 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
-import { useStorage } from '@vueuse/core'
+import { ref } from 'vue'
+import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
+import * as jwtLogic from '../../logic/jwt'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const input = useStorage('jwt-input', '')
 const header = ref('')
 const payload = ref('')
 const signature = ref('')
-const error = ref('')
 const expired = ref('')
-const autoMode = useStorage('jwt-auto', true)
+const toast = useToast()
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
-
-function base64UrlDecode(str) {
-  str = str.replace(/-/g, '+').replace(/_/g, '/')
-  const pad = (4 - str.length % 4) % 4
-  str += '='.repeat(pad)
-  const binary = atob(str)
-  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0))
-  return new TextDecoder().decode(bytes)
-}
-
-function parse() {
-  error.value = ''
-  header.value = ''
-  payload.value = ''
-  signature.value = ''
-  expired.value = ''
-
-  if (!input.value.trim()) return
-
-  let token = input.value.trim()
-  if (token.toLowerCase().startsWith('bearer ')) {
-    token = token.slice(7)
-  }
-
-  const parts = token.split('.')
-  if (parts.length !== 3) {
-    error.value = 'JWT 格式错误：应包含 header.payload.signature 三部分'
-    return
-  }
-
-  try {
-    header.value = JSON.stringify(JSON.parse(base64UrlDecode(parts[0])), null, 2)
-  } catch (e) {
-    header.value = parts[0]
-    error.value = 'Header 解码失败，Token 可能已损坏或格式非标准'
-  }
-
-  try {
-    const p = JSON.parse(base64UrlDecode(parts[1]))
-    payload.value = JSON.stringify(p, null, 2)
-
-    if (p.exp) {
-      const expDate = new Date(p.exp * 1000)
-      const now = Date.now()
-      if (expDate.getTime() < now) {
-        expired.value = '已过期（过期时间：' + expDate.toLocaleString() + '）'
-      } else if (expDate.getTime() - now < 24 * 3600 * 1000) {
-        expired.value = '即将过期（24小时内，过期时间：' + expDate.toLocaleString() + '）'
-      } else {
-        expired.value = '未过期（过期时间：' + expDate.toLocaleString() + '）'
-      }
-    }
-    if (p.iat) {
-      const iatDate = new Date(p.iat * 1000)
-      payload.value += '\n\n// iat 签发时间：' + iatDate.toLocaleString()
-    }
-  } catch (e) {
-    payload.value = parts[1]
-    error.value = error.value || 'Payload 解码失败，Token 可能已损坏或格式非标准'
-  }
-
-  signature.value = parts[2]
-}
-
-watch(input, () => {
-  if (input.value && input.value.includes('.') && autoMode.value) {
-    parse()
-  } else if (!input.value) {
-    header.value = ''
-    payload.value = ''
-    signature.value = ''
-    error.value = ''
-  }
-}, { immediate: false })
-
-watch(autoMode, (v) => {
-  if (v && input.value && input.value.includes('.')) parse()
+const {
+  input,
+  autoMode,
+  error,
+  clearAll: baseClear,
+  loadExample,
+  process: parse
+} = useTool({
+  storageKey: 'jwt',
+  processor: (val) => {
+    const res = jwtLogic.decode(val)
+    if (!res) return ''
+    
+    header.value = typeof res.header === 'object' ? JSON.stringify(res.header, null, 2) : res.header
+    payload.value = typeof res.payload === 'object' ? JSON.stringify(res.payload, null, 2) : res.payload
+    signature.value = res.signature
+    expired.value = res.expired ? `${res.expired}（过期时间：${new Date(res.expDate).toLocaleString()}）` : ''
+    
+    if (res.headerError) throw new Error(res.headerError)
+    if (res.payloadError) throw new Error(res.payloadError)
+    
+    return '' // output isn't used
+  },
+  paramMapping: { token: { ref: ref('') } },
+  example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IuacseW8oOWFgCIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNzI3MTc1NjAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
 })
 
 function clearAll() {
-  input.value = ''
+  baseClear()
   header.value = ''
   payload.value = ''
   signature.value = ''
-  error.value = ''
   expired.value = ''
 }
 
-function loadExample() {
-  input.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IuacseW8oOWFgCIsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNzI3MTc1NjAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
-  parse()
+function copyText(text) {
+  navigator.clipboard.writeText(text)
+  toast.success('已复制')
 }
-
-async function copy(text) {
-  try {
-    await navigator.clipboard.writeText(text)
-  } catch {}
-}
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('token')) {
-    if (params.get('auto') === '1') autoMode.value = true
-    else if (params.get('auto') === '0') autoMode.value = false
-    input.value = params.get('token')
-    nextTick(() => parse())
-  } else if (!input.value) {
-    loadExample()
-  }
-})
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>📜 JWT 解码器</h1>
       <AiHelpPanel
         title="JWT 解码器"
@@ -157,24 +82,26 @@ onMounted(() => {
       </div>
       <div class="tool-panel">
         <h3>解析结果</h3>
-        <div v-if="expired" style="margin-bottom:10px;font-size:13px">{{ expired }}</div>
+        <div v-if="expired" class="status-msg" :class="{ 'error-text': expired.includes('已过期') }">
+          {{ expired }}
+        </div>
         <div v-if="header" style="margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:13px;color:var(--text-secondary)">Header</span>
-            <button class="btn btn-sm btn-secondary" @click="copy(header)">复制</button>
+          <div class="panel-label">
+            <span>Header</span>
+            <button class="btn btn-sm btn-secondary" @click="copyText(header)">复制</button>
           </div>
           <textarea v-model="header" class="textarea" rows="6" readonly></textarea>
         </div>
         <div v-if="payload">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-            <span style="font-size:13px;color:var(--text-secondary)">Payload</span>
-            <button class="btn btn-sm btn-secondary" @click="copy(payload)">复制</button>
+          <div class="panel-label">
+            <span>Payload</span>
+            <button class="btn btn-sm btn-secondary" @click="copyText(payload)">复制</button>
           </div>
           <textarea v-model="payload" class="textarea" rows="10" readonly></textarea>
         </div>
         <div v-if="signature" style="margin-top:12px">
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">Signature</div>
-          <code style="font-size:12px;word-break:break-all">{{ signature }}</code>
+          <div class="panel-label">Signature</div>
+          <code class="signature-box">{{ signature }}</code>
         </div>
       </div>
     </div>
@@ -183,6 +110,39 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.status-msg {
+  margin-bottom: 10px;
+  font-size: 13px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+}
+.error-text {
+  color: var(--error);
+}
+.signature-box {
+  display: block;
+  font-size: 12px;
+  word-break: break-all;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
 .error-msg {
   color: var(--error);
   background: rgba(239, 68, 68, 0.1);

@@ -1,21 +1,12 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { useTool } from '../../composables/useTool'
+import * as jsonLogic from '../../logic/json'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const input = useStorage('json-input', '')
-const output = ref('')
-const error = ref('')
 const indent = useStorage('json-indent', 2)
-const copyText = ref('复制结果')
 const looksEscaped = ref(false)
-const autoMode = useStorage('json-auto', true)
-
-function detectEscaped(str) {
-  if (!str || !str.trim()) return false
-  const s = str.trim()
-  return (s.startsWith('"') && s.endsWith('"')) && (s.includes('\\"') || s.includes('\\n') || s.includes('\\t'))
-}
 
 const example = JSON.stringify({
   name: '张三',
@@ -25,34 +16,29 @@ const example = JSON.stringify({
   active: true
 }, null, 2)
 
-function validate() {
-  error.value = ''
-  if (!input.value.trim()) return false
-  try {
-    JSON.parse(input.value)
-    return true
-  } catch (e) {
-    error.value = e.message
-    return false
-  }
-}
+const {
+  input,
+  output,
+  error,
+  autoMode,
+  copyText,
+  clearAll,
+  loadExample,
+  process: format,
+  copy
+} = useTool({
+  storageKey: 'json',
+  processor: (val) => jsonLogic.format(val, indent.value),
+  example
+})
 
-function format() {
-  if (!input.value.trim()) { output.value = ''; return }
-  try {
-    const obj = JSON.parse(input.value)
-    output.value = JSON.stringify(obj, null, indent.value)
-    error.value = ''
-  } catch (e) {
-    error.value = e.message
-  }
-}
+// Overwrite the default param mapping since useTool handles 'input' specially if we want
+// Actually, let's adjust useTool to be more flexible or just use it as is.
+// In this case, useTool's 'input' is the ref we want.
 
 function compress() {
-  if (!input.value.trim()) { output.value = ''; return }
   try {
-    const obj = JSON.parse(input.value)
-    output.value = JSON.stringify(obj)
+    output.value = jsonLogic.compress(input.value)
     error.value = ''
   } catch (e) {
     error.value = e.message
@@ -60,80 +46,36 @@ function compress() {
 }
 
 function escape() {
-  if (!input.value.trim()) { output.value = ''; return }
-  output.value = JSON.stringify(input.value).slice(1, -1)
-  error.value = ''
+  try {
+    output.value = jsonLogic.escape(input.value)
+    error.value = ''
+  } catch (e) {
+    error.value = e.message
+  }
 }
 
 function unescape() {
-  if (!input.value.trim()) { output.value = ''; return }
   try {
-    output.value = JSON.parse('"' + input.value + '"')
+    output.value = jsonLogic.unescape(input.value)
     error.value = ''
   } catch (e) {
     error.value = '去转义失败：' + e.message
   }
 }
 
-async function copy() {
-  if (!output.value) return
-  try {
-    await navigator.clipboard.writeText(output.value)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '复制结果', 2000)
-  } catch {
-    copyText.value = '复制失败'
-  }
-}
+watch(input, (newVal) => {
+  looksEscaped.value = jsonLogic.detectEscaped(newVal)
+}, { immediate: true })
 
-function clearAll() {
-  input.value = ''
-  output.value = ''
-  error.value = ''
-}
-
-function loadExample() {
-  input.value = example
-  format()
-}
-
-watch(input, () => {
-  error.value = ''
-  looksEscaped.value = detectEscaped(input.value)
-  if (input.value && autoMode.value) {
-    format()
-  } else if (!input.value) {
-    output.value = ''
-  }
-}, { immediate: false })
-
-watch(autoMode, (v) => {
-  if (v && input.value) format()
+watch(indent, () => {
+  if (autoMode.value) format()
 })
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('input')) {
-    if (params.get('auto') === '1') autoMode.value = true
-    else if (params.get('auto') === '0') autoMode.value = false
-    input.value = params.get('input')
-    nextTick(() => format())
-  } else if (!input.value) {
-    loadExample()
-  } else {
-    format()
-  }
-})
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>📋 JSON 格式化</h1>
       <AiHelpPanel
         title="JSON 格式化"
@@ -178,6 +120,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 .error-msg {
   color: var(--error);
   background: rgba(239, 68, 68, 0.1);

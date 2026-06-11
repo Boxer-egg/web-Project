@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -37,10 +38,6 @@ const chineseWords = [
   '公', '无', '系', '军', '很', '情', '最', '者', '现', '代', '做', '样', '文'
 ]
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min

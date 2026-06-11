@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -25,10 +26,6 @@ const allUnits = [
   { key: 'mm', label: 'MM', toPx: 3.7795 },
 ]
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
 
 function toPx(val, unit) {
   const n = parseFloat(val)

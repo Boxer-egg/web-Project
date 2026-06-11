@@ -1,102 +1,50 @@
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
-import * as beautify from 'js-beautify'
+import { useTool } from '../../composables/useTool'
+import * as codeLogic from '../../logic/code-format'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
-
-function getUrlParams() {
-  return new URLSearchParams(window.location.search)
-}
 
 const language = useStorage('code-lang', 'javascript')
 const indent = useStorage('code-indent', 2)
-const input = useStorage('code-input-js', '')
-const output = ref('')
-const copyText = ref('复制结果')
 const stats = ref({ before: 0, after: 0 })
 
 const examples = {
-  javascript: `function hello(name) {
-  if (!name) {
-    console.log('Hello World');
-  } else {
-    console.log('Hello ' + name);
-  }
+  javascript: `function hello(name) {\n  if (!name) {\n    console.log('Hello World');\n  } else {\n    console.log('Hello ' + name);\n  }\n}\n\nhello('Developer');`,
+  css: `.container {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 20px;\n  background: #ffffff;\n  border-radius: 8px;\n}`,
+  html: `<!DOCTYPE html>\n<html>\n<head>\n  <title>示例页面</title>\n</head>\n<body>\n  <div class="container">\n    <h1>Hello World</h1>\n    <p>欢迎使用代码格式化工具</p>\n  </div>\n</body>\n</html>`,
+  json: `{\n  "name": "示例项目",\n  "version": "1.0.0",\n  "dependencies": {\n    "vue": "^3.0.0",\n    "vite": "^5.0.0"\n  },\n  "dev": true\n}`
 }
 
-hello('Developer');`,
-  css: `.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 8px;
-}`,
-  html: `<!DOCTYPE html>
-<html>
-<head>
-  <title>示例页面</title>
-</head>
-<body>
-  <div class="container">
-    <h1>Hello World</h1>
-    <p>欢迎使用代码格式化工具</p>
-  </div>
-</body>
-</html>`,
-  json: `{
-  "name": "示例项目",
-  "version": "1.0.0",
-  "dependencies": {
-    "vue": "^3.0.0",
-    "vite": "^5.0.0"
+const {
+  input,
+  output,
+  error,
+  autoMode,
+  copyText,
+  clearAll,
+  loadExample,
+  process: format,
+  copy
+} = useTool({
+  storageKey: 'code',
+  processor: (val) => {
+    stats.value.before = val.length
+    const res = codeLogic.format(val, language.value, indent.value)
+    stats.value.after = res.length
+    return res
   },
-  "dev": true
-}`
-}
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('code')) {
-    if (params.get('auto') === '1') autoMode.value = true
-    else if (params.get('auto') === '0') autoMode.value = false
-    input.value = params.get('code')
-    if (params.get('lang') && examples[params.get('lang')]) {
-      language.value = params.get('lang')
-    }
-    if (params.get('indent')) {
-      indent.value = parseInt(params.get('indent')) || 2
-    }
-    nextTick(() => format())
-  } else if (!input.value) {
-    input.value = examples[language.value] || examples.javascript
-    format()
-  } else {
-    format()
-  }
+  paramMapping: { 
+    code: { ref: ref('') },
+    lang: { ref: language },
+    indent: { ref: indent, transform: v => parseInt(v) }
+  },
+  example: examples.javascript
 })
 
-function format() {
-  if (!input.value) return
-  stats.value.before = input.value.length
-  try {
-    const opt = { indent_size: indent.value }
-    if (language.value === 'javascript') {
-      output.value = beautify.js_beautify(input.value, opt)
-    } else if (language.value === 'css') {
-      output.value = beautify.css_beautify(input.value, opt)
-    } else if (language.value === 'html') {
-      output.value = beautify.html_beautify(input.value, opt)
-    } else if (language.value === 'json') {
-      output.value = JSON.stringify(JSON.parse(input.value), null, indent.value)
-    }
-    stats.value.after = output.value.length
-  } catch (e) {
-    output.value = '格式化失败: ' + e.message
-    stats.value.after = 0
-  }
-}
+watch([language, indent], () => {
+  if (autoMode.value) format()
+})
 
 function minify() {
   if (!input.value) return
@@ -112,51 +60,26 @@ function minify() {
         .trim()
     }
     stats.value.after = output.value.length
+    error.value = ''
   } catch (e) {
-    output.value = '压缩失败: ' + e.message
-    stats.value.after = 0
+    error.value = '压缩失败: ' + e.message
   }
 }
-
-async function copy() {
-  if (!output.value) return
-  try {
-    await navigator.clipboard.writeText(output.value)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '复制结果', 2000)
-  } catch {
-    copyText.value = '复制失败'
-  }
-}
-
-function clearAll() {
-  input.value = ''
-  output.value = ''
-}
-
-function loadExample() {
-  input.value = examples[language.value] || examples.javascript
-}
-
-const autoMode = useStorage('code-auto', true)
-
-watch([input, language, indent], () => {
-  if (autoMode.value) format()
-}, { deep: true })
-
-watch(autoMode, (v) => {
-  if (v && input.value) format()
-})
 
 const compression = computed(() => {
   if (!stats.value.before || !stats.value.after) return 0
   return Math.round((1 - stats.value.after / stats.value.before) * 100)
 })
+
+function handleLoadExample() {
+  input.value = examples[language.value] || examples.javascript
+  format()
+}
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>💻 代码格式化</h1>
       <AiHelpPanel
         title="代码格式化"
@@ -183,7 +106,7 @@ const compression = computed(() => {
       <button class="btn" @click="format">格式化</button>
       <button class="btn btn-secondary" @click="minify">压缩</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
-      <button class="btn btn-secondary" @click="loadExample">示例</button>
+      <button class="btn btn-secondary" @click="handleLoadExample">示例</button>
     </div>
     <div class="tool-actions">
       <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
@@ -206,5 +129,23 @@ const compression = computed(() => {
         <button class="btn btn-sm" @click="copy" style="align-self:flex-start">{{ copyText }}</button>
       </div>
     </div>
+    <div v-if="error" class="error-msg">❌ {{ error }}</div>
   </div>
 </template>
+
+<style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.error-msg {
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  margin-top: 10px;
+  font-size: 14px;
+}
+</style>

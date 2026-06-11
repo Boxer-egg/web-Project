@@ -1,0 +1,54 @@
+/**
+ * Timestamp logic for conversion.
+ */
+
+export function toDate(str) {
+  if (!str) return null
+  const num = parseInt(str.trim())
+  if (isNaN(num)) throw new Error('请输入有效的数字')
+  
+  // Auto-detect seconds vs milliseconds
+  const ms = str.trim().length === 10 ? num * 1000 : num
+  const d = new Date(ms)
+  
+  if (isNaN(d.getTime())) throw new Error('无效的时间戳')
+  
+  return {
+    iso: d.toISOString(),
+    local: formatLocalDate(d),
+    unixSeconds: Math.floor(d.getTime() / 1000),
+    unixMs: d.getTime(),
+    relative: relativeTime(d),
+  }
+}
+
+export function fromDate(str) {
+  if (!str) return null
+  const d = new Date(str.trim())
+  if (isNaN(d.getTime())) throw new Error('无效的日期格式')
+  
+  return {
+    unixSeconds: Math.floor(d.getTime() / 1000),
+    unixMs: d.getTime(),
+    iso: d.toISOString(),
+    local: formatLocalDate(d),
+  }
+}
+
+function formatLocalDate(d) {
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
+function relativeTime(d) {
+  const diff = d.getTime() - Date.now()
+  const abs = Math.abs(diff)
+  const s = Math.floor(abs / 1000)
+  if (s < 60) return diff > 0 ? `${s} 秒后` : `${s} 秒前`
+  const m = Math.floor(s / 60)
+  if (m < 60) return diff > 0 ? `${m} 分钟后` : `${m} 分钟前`
+  const h = Math.floor(m / 60)
+  if (h < 24) return diff > 0 ? `${h} 小时后` : `${h} 小时前`
+  const days = Math.floor(h / 24)
+  return diff > 0 ? `${days} 天后` : `${days} 天前`
+}

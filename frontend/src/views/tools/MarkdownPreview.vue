@@ -1,13 +1,11 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-function getUrlParams() {
-  return new URLSearchParams(window.location.search)
-}
 
 const input = useStorage('markdown-input', `# 欢迎使用 Markdown 预览
 

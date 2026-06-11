@@ -1,92 +1,50 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useStorage } from '@vueuse/core'
+import { computed, ref } from 'vue'
+import { useTool } from '../../composables/useTool'
+import * as urlLogic from '../../logic/url'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const input = useStorage('url-input', '')
-const output = ref('')
-const copyText = ref('复制结果')
-
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
-
-const params = computed(() => {
-  if (!output.value) return []
-  try {
-    const url = new URL(output.value.startsWith('http') ? output.value : 'http://example.com' + output.value)
-    return Array.from(url.searchParams.entries())
-  } catch {
-    return []
-  }
+const {
+  input,
+  output,
+  autoMode,
+  copyText,
+  clearAll,
+  loadExample,
+  process: encode,
+  copy
+} = useTool({
+  storageKey: 'url',
+  processor: (val) => {
+    // If input looks like encoded URL, try to decode
+    if (val.includes('%')) {
+      try {
+        const decoded = urlLogic.decode(val)
+        if (decoded !== val) return decoded
+      } catch { /* ignore */ }
+    }
+    return urlLogic.encode(val)
+  },
+  paramMapping: { text: { ref: ref('') } },
+  example: 'https://example.com/search?q=你好世界&page=1'
 })
 
-function encode() {
-  if (!input.value) return
-  output.value = input.value.split('\n').map(line => encodeURIComponent(line)).join('\n')
-}
-
 function decode() {
-  if (!input.value) return
   try {
-    output.value = input.value.split('\n').map(line => decodeURIComponent(line)).join('\n')
+    output.value = urlLogic.decode(input.value)
   } catch (e) {
     output.value = '解码失败: ' + e.message
   }
 }
 
-function auto() {
-  if (!input.value) return
-  if (input.value.includes('%')) {
-    try {
-      decodeURIComponent(input.value)
-      decode()
-    } catch {
-      encode()
-    }
-  } else {
-    encode()
-  }
-}
-
-async function copy() {
-  if (!output.value) return
-  try {
-    await navigator.clipboard.writeText(output.value)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '复制结果', 2000)
-  } catch {
-    copyText.value = '复制失败'
-  }
-}
-
-function clearAll() {
-  input.value = ''
-  output.value = ''
-}
-
-function loadExample() {
-  input.value = 'https://example.com/search?q=你好世界&page=1'
-  encode()
-}
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('text')) {
-    input.value = params.get('text')
-    encode()
-  } else if (!input.value) {
-    loadExample()
-  } else {
-    encode()
-  }
+const parsedParams = computed(() => {
+  return urlLogic.parseParams(input.value) || urlLogic.parseParams(output.value)
 })
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>🔗 URL 编解码</h1>
       <AiHelpPanel
         title="URL 编解码"
@@ -100,9 +58,13 @@ onMounted(() => {
     <div class="tool-actions">
       <button class="btn" @click="encode">编码</button>
       <button class="btn btn-secondary" @click="decode">解码</button>
-      <button class="btn btn-secondary" @click="auto">自动识别</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">加载示例</button>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
     </div>
     <div class="tool-section">
       <div class="tool-panel">
@@ -115,22 +77,53 @@ onMounted(() => {
         <button class="btn btn-sm" @click="copy" style="align-self:flex-start">{{ copyText }}</button>
       </div>
     </div>
-    <div v-if="params.length" class="params-table card">
+    <div v-if="parsedParams.length" class="params-table card">
       <h3 style="margin-bottom:10px;font-size:14px">参数解析</h3>
-      <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <table class="table">
         <thead>
-          <tr style="border-bottom:1px solid var(--border)">
-            <th style="text-align:left;padding:6px">Key</th>
-            <th style="text-align:left;padding:6px">Value</th>
+          <tr>
+            <th>Key</th>
+            <th>Value</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="[k, v] in params" :key="k" style="border-bottom:1px solid var(--border)">
-            <td style="padding:6px;color:var(--accent)">{{ k }}</td>
-            <td style="padding:6px">{{ v }}</td>
+          <tr v-for="p in parsedParams" :key="p.key">
+            <td class="key-col">{{ p.key }}</td>
+            <td class="val-col">{{ p.value }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </template>
+
+<style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.params-table {
+  margin-top: 16px;
+  overflow: hidden;
+}
+.table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.key-col {
+  color: var(--accent);
+  font-weight: 500;
+  width: 30%;
+}
+.val-col {
+  word-break: break-all;
+}
+</style>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, onMounted, nextTick } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -26,10 +27,6 @@ const baseOptions = [
   { value: 36, label: '三十六进制 (36)' },
 ]
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
 
 function convert() {
   results.value = []

@@ -1,123 +1,43 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { watch, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { useTool } from '../../composables/useTool'
+import * as htmlLogic from '../../logic/html-entity'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const input = useStorage('html-entity-input', '')
-const output = ref('')
 const mode = useStorage('html-entity-mode', 'encode_named')
 const encodeAll = useStorage('html-entity-all', false)
-const copyText = ref('复制结果')
-const autoMode = useStorage('html-auto', true)
 
-const namedEntities = {
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;',
-  '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
-}
-
-const reverseEntities = {}
-for (const [k, v] of Object.entries(namedEntities)) {
-  reverseEntities[v] = k
-}
-
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
-
-function encodeNamed() {
-  if (!input.value) return
-  let text = input.value
-  // 先避免双重编码
-  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-  for (const [char, entity] of Object.entries(namedEntities)) {
-    text = text.split(char).join(entity)
-  }
-  output.value = text
-}
-
-function encodeNumeric() {
-  if (!input.value) return
-  let text = input.value
-  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-  let result = ''
-  for (const char of text) {
-    const code = char.charCodeAt(0)
-    if (encodeAll.value || code > 127 || namedEntities[char]) {
-      result += `&#${code};`
-    } else {
-      result += char
+const {
+  input,
+  output,
+  autoMode,
+  copyText,
+  clearAll,
+  loadExample,
+  process,
+  copy
+} = useTool({
+  storageKey: 'html-entity',
+  processor: (val) => {
+    switch (mode.value) {
+      case 'encode_named': return htmlLogic.encodeNamed(val)
+      case 'encode_numeric': return htmlLogic.encodeNumeric(val)
+      case 'encode_hex': return htmlLogic.encodeHex(val)
+      case 'decode': return htmlLogic.decode(val)
+      default: return val
     }
-  }
-  output.value = result
-}
+  },
+  paramMapping: {
+    text: { ref: ref('') },
+    action: { ref: mode }
+  },
+  example: '<div class="container">Hello "世界" & 你好 \'test\'</div>'
+})
 
-function encodeHex() {
-  if (!input.value) return
-  let text = input.value
-  text = text.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
-  let result = ''
-  for (const char of text) {
-    const code = char.charCodeAt(0)
-    if (encodeAll.value || code > 127 || namedEntities[char]) {
-      result += `&#x${code.toString(16).toUpperCase()};`
-    } else {
-      result += char
-    }
-  }
-  output.value = result
-}
-
-function decode() {
-  if (!input.value) return
-  let text = input.value
-  // Hex entities
-  text = text.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
-    const code = parseInt(hex, 16)
-    return code <= 0x10FFFF ? String.fromCodePoint(code) : `&#x${hex};`
-  })
-  // Decimal entities
-  text = text.replace(/&#(\d+);/g, (_, dec) => {
-    const code = parseInt(dec, 10)
-    return code <= 0x10FFFF ? String.fromCodePoint(code) : `&#${dec};`
-  })
-  // Named entities
-  for (const [entity, char] of Object.entries(reverseEntities)) {
-    text = text.split(entity).join(char)
-  }
-  output.value = text
-}
-
-function process() {
-  switch (mode.value) {
-    case 'encode_named': encodeNamed(); break
-    case 'encode_numeric': encodeNumeric(); break
-    case 'encode_hex': encodeHex(); break
-    case 'decode': decode(); break
-  }
-}
-
-async function copy() {
-  if (!output.value) return
-  try {
-    await navigator.clipboard.writeText(output.value)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '复制结果', 2000)
-  } catch {
-    copyText.value = '复制失败'
-  }
-}
-
-function clearAll() {
-  input.value = ''
-  output.value = ''
-}
-
-function loadExample() {
-  input.value = '<div class="container">Hello "世界" & 你好 \'test\'</div>'
-  mode.value = 'encode_named'
-  process()
-}
+watch([mode, encodeAll], () => {
+  if (autoMode.value) process()
+})
 
 const quickRef = [
   { char: '<', named: '&lt;', numeric: '&#60;', hex: '&#x3C;' },
@@ -127,35 +47,11 @@ const quickRef = [
   { char: "'", named: '&#x27;', numeric: '&#39;', hex: '&#x27;' },
   { char: ' ', named: '&nbsp;', numeric: '&#160;', hex: '&#xA0;' },
 ]
-
-watch([input, mode, encodeAll], () => {
-  if (input.value && autoMode.value) process()
-  else if (!input.value) output.value = ''
-}, { deep: true })
-
-watch(autoMode, (v) => {
-  if (v && input.value) process()
-})
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('text')) {
-    // 先设置 autoMode，避免 watch 在 mode 更新前就触发 process()
-    if (params.get('auto') === '1') autoMode.value = true
-    else if (params.get('auto') === '0') autoMode.value = false
-    input.value = params.get('text')
-    if (params.get('action')) mode.value = params.get('action')
-    // 使用 nextTick 确保所有响应式值已同步后再执行
-    nextTick(() => process())
-  } else if (!input.value) {
-    loadExample()
-  }
-})
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>🔤 HTML 实体编解码</h1>
       <AiHelpPanel
         title="HTML 实体编解码"
@@ -169,12 +65,9 @@ onMounted(() => {
     </div>
     <div class="tool-actions">
       <button class="btn" :class="{ 'btn-secondary': mode !== 'encode_named' }" @click="mode = 'encode_named'; process()">编码 → Named</button>
-      <button class="btn btn-secondary" :class="{ 'btn-secondary': mode !== 'encode_numeric' }" @click="mode = 'encode_numeric'; process()">编码 → Numeric</button>
-      <button class="btn btn-secondary" :class="{ 'btn-secondary': mode !== 'encode_hex' }" @click="mode = 'encode_hex'; process()">编码 → Hex</button>
-      <button class="btn btn-secondary" :class="{ 'btn-secondary': mode !== 'decode' }" @click="mode = 'decode'; process()">解码</button>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-secondary);cursor:pointer">
-        <input type="checkbox" v-model="encodeAll" @change="process()"> 编码所有非 ASCII
-      </label>
+      <button class="btn" :class="{ 'btn-secondary': mode !== 'encode_numeric' }" @click="mode = 'encode_numeric'; process()">编码 → Numeric</button>
+      <button class="btn" :class="{ 'btn-secondary': mode !== 'encode_hex' }" @click="mode = 'encode_hex'; process()">编码 → Hex</button>
+      <button class="btn" :class="{ 'btn-secondary': mode !== 'decode' }" @click="mode = 'decode'; process()">解码</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">示例</button>
     </div>
@@ -196,24 +89,50 @@ onMounted(() => {
     </div>
     <div class="card" style="margin-top:16px;overflow:auto">
       <h3 style="font-size:14px;margin-bottom:10px">常用实体速查表</h3>
-      <table style="width:100%;font-size:13px;border-collapse:collapse;min-width:500px">
+      <table class="table">
         <thead>
-          <tr style="border-bottom:1px solid var(--border)">
-            <th style="text-align:left;padding:6px">字符</th>
-            <th style="text-align:left;padding:6px">Named</th>
-            <th style="text-align:left;padding:6px">Numeric</th>
-            <th style="text-align:left;padding:6px">Hex</th>
+          <tr>
+            <th>字符</th>
+            <th>Named</th>
+            <th>Numeric</th>
+            <th>Hex</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in quickRef" :key="row.char" style="border-bottom:1px solid var(--border)">
-            <td style="padding:6px;font-family:monospace">{{ row.char }}</td>
-            <td style="padding:6px;font-family:monospace;color:var(--accent)">{{ row.named }}</td>
-            <td style="padding:6px;font-family:monospace">{{ row.numeric }}</td>
-            <td style="padding:6px;font-family:monospace">{{ row.hex }}</td>
+          <tr v-for="row in quickRef" :key="row.char">
+            <td class="mono">{{ row.char }}</td>
+            <td class="mono accent">{{ row.named }}</td>
+            <td class="mono">{{ row.numeric }}</td>
+            <td class="mono">{{ row.hex }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </template>
+
+<style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+  min-width: 500px;
+}
+.table th, .table td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.mono {
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+.accent {
+  color: var(--accent);
+}
+</style>

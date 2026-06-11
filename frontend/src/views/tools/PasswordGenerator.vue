@@ -1,11 +1,10 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
+import * as pwdLogic from '../../logic/password'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
-
-function getUrlParams() {
-  return new URLSearchParams(window.location.search)
-}
 
 const length = useStorage('pwd-length', 16)
 const count = useStorage('pwd-count', 5)
@@ -17,110 +16,71 @@ const excludeSimilar = useStorage('pwd-similar', false)
 const ensureEach = useStorage('pwd-ensure', false)
 
 const results = ref([])
-const copyText = ref('')
+const toast = useToast()
 
-const charsets = computed(() => {
-  let sets = []
-  if (useLower.value) sets.push('abcdefghijklmnopqrstuvwxyz')
-  if (useUpper.value) sets.push('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-  if (useNumber.value) sets.push('0123456789')
-  if (useSpecial.value) sets.push('!@#$%^&*()_+-=[]{}|;:,.<>?')
-  if (excludeSimilar.value) {
-    sets = sets.map(s => s.replace(/[0O1lI]/g, ''))
+const {
+  process: generate
+} = useTool({
+  storageKey: 'pwd',
+  processor: () => {
+    const res = []
+    for (let i = 0; i < count.value; i++) {
+      res.push(pwdLogic.generate({
+        length: length.value,
+        upper: useUpper.value,
+        lower: useLower.value,
+        numbers: useNumber.value,
+        symbols: useSpecial.value,
+        excludeSimilar: excludeSimilar.value
+      }))
+    }
+    results.value = res
+    return ''
+  },
+  paramMapping: {
+    length: { ref: length, transform: v => parseInt(v) },
+    count: { ref: count, transform: v => parseInt(v) },
+    lower: { ref: useLower, transform: v => v !== '0' },
+    upper: { ref: useUpper, transform: v => v !== '0' },
+    number: { ref: useNumber, transform: v => v !== '0' },
+    special: { ref: useSpecial, transform: v => v === '1' },
+    similar: { ref: excludeSimilar, transform: v => v === '1' }
   }
-  return sets
 })
 
 const strength = computed(() => {
   let score = 0
   if (length.value >= 12) score += 2
   else if (length.value >= 8) score += 1
-  score += charsets.value.length
+  if (useLower.value) score++
+  if (useUpper.value) score++
+  if (useNumber.value) score++
+  if (useSpecial.value) score++
+  
   if (score >= 5) return { label: '强', color: 'var(--success)', width: '100%' }
   if (score >= 3) return { label: '中', color: 'var(--warning)', width: '60%' }
   return { label: '弱', color: 'var(--error)', width: '30%' }
 })
 
-function randomChar(pool) {
-  const arr = new Uint32Array(1)
-  crypto.getRandomValues(arr)
-  return pool[arr[0] % pool.length]
+function copy(text) {
+  navigator.clipboard.writeText(text)
+  toast.success('已复制')
 }
 
-function generate() {
-  const sets = charsets.value
-  if (!sets.length) {
-    results.value = []
-    return
-  }
-  const pool = sets.join('')
-  if (!pool.length) {
-    results.value = []
-    return
-  }
-
-  const res = []
-  for (let c = 0; c < count.value; c++) {
-    let pwd = ''
-    if (ensureEach.value && length.value >= sets.length) {
-      sets.forEach(s => { pwd += randomChar(s) })
-    }
-    while (pwd.length < length.value) {
-      pwd += randomChar(pool)
-    }
-    // Shuffle (Fisher-Yates with CSPRNG)
-    const arr = pwd.split('')
-    for (let i = arr.length - 1; i > 0; i--) {
-      const r = new Uint32Array(1)
-      crypto.getRandomValues(r)
-      const j = r[0] % (i + 1)
-      ;[arr[i], arr[j]] = [arr[j], arr[i]]
-    }
-    res.push(arr.join(''))
-  }
-  results.value = res
-}
-
-async function copy(text) {
-  try {
-    await navigator.clipboard.writeText(text)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '', 2000)
-  } catch {}
-}
-
-async function copyAll() {
+function copyAll() {
   if (!results.value.length) return
-  try {
-    await navigator.clipboard.writeText(results.value.join('\n'))
-    copyText.value = '全部已复制'
-    setTimeout(() => copyText.value = '', 2000)
-  } catch {}
+  navigator.clipboard.writeText(results.value.join('\n'))
+  toast.success('全部已复制')
 }
 
 function clearAll() {
   results.value = []
 }
-
-onMounted(() => {
-  const params = getUrlParams()
-  let changed = false
-  if (params.get('length')) { length.value = parseInt(params.get('length')) || 16; changed = true }
-  if (params.get('count')) { count.value = parseInt(params.get('count')) || 5; changed = true }
-  if (params.get('lower')) { useLower.value = params.get('lower') !== '0'; changed = true }
-  if (params.get('upper')) { useUpper.value = params.get('upper') !== '0'; changed = true }
-  if (params.get('number')) { useNumber.value = params.get('number') !== '0'; changed = true }
-  if (params.get('special')) { useSpecial.value = params.get('special') === '1'; changed = true }
-  if (params.get('similar')) { excludeSimilar.value = params.get('similar') === '1'; changed = true }
-  if (params.get('ensure')) { ensureEach.value = params.get('ensure') === '1'; changed = true }
-  if (params.get('auto') === '1' || changed) generate()
-})
-
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>🔑 密码生成器</h1>
       <AiHelpPanel
         title="密码生成器"
@@ -133,7 +93,6 @@ onMounted(() => {
           { name: 'number', desc: '包含数字（1或0）', required: false, example: '1' },
           { name: 'special', desc: '包含特殊符号（1或0）', required: false, example: '0' },
           { name: 'similar', desc: '排除易混淆字符（1或0）', required: false, example: '0' },
-          { name: 'ensure', desc: '确保每类至少一个（1或0）', required: false, example: '0' },
           { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
         ]"
       />
@@ -143,7 +102,7 @@ onMounted(() => {
         <h3>配置</h3>
         <div class="config-row">
           <label>长度: {{ length }}</label>
-          <input type="range" v-model.number="length" min="4" max="64" style="width:100%">
+          <input type="range" v-model.number="length" min="4" max="64" class="range-input">
         </div>
         <div class="config-row">
           <label><input type="checkbox" v-model="useLower"> 小写字母 (a-z)</label>
@@ -161,11 +120,8 @@ onMounted(() => {
           <label><input type="checkbox" v-model="excludeSimilar"> 排除易混淆字符 (0, O, 1, l, I)</label>
         </div>
         <div class="config-row">
-          <label><input type="checkbox" v-model="ensureEach"> 确保每类至少一个</label>
-        </div>
-        <div class="config-row">
           <label>数量: {{ count }}</label>
-          <input type="range" v-model.number="count" min="1" max="20" style="width:100%">
+          <input type="range" v-model.number="count" min="1" max="20" class="range-input">
         </div>
         <div class="tool-actions" style="margin-top:16px">
           <button class="btn" @click="generate">生成</button>
@@ -173,13 +129,13 @@ onMounted(() => {
         </div>
       </div>
       <div class="tool-panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="panel-label">
           <h3>结果</h3>
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:100px;height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden">
-              <div :style="{ width: strength.width, height: '100%', background: strength.color, transition: 'all 0.3s' }"></div>
+          <div class="strength-meter">
+            <div class="meter-bar">
+              <div class="meter-fill" :style="{ width: strength.width, background: strength.color }"></div>
             </div>
-            <span :style="{ color: strength.color, fontSize: '13px' }">{{ strength.label }}</span>
+            <span :style="{ color: strength.color }">{{ strength.label }}</span>
           </div>
         </div>
         <div class="result-list">
@@ -187,30 +143,62 @@ onMounted(() => {
             <code class="pwd-text">{{ pwd }}</code>
             <button class="btn btn-sm btn-secondary" @click="copy(pwd)">复制</button>
           </div>
-          <div v-if="!results.length" style="color:var(--text-muted);padding:40px;text-align:center">
+          <div v-if="!results.length" class="empty-state">
             点击"生成"按钮创建密码
           </div>
         </div>
         <button v-if="results.length" class="btn btn-sm btn-secondary" @click="copyAll" style="margin-top:8px">
           复制全部
         </button>
-        <p v-if="copyText" style="color:var(--success);font-size:13px;margin-top:6px">{{ copyText }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 .config-row {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .config-row label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 14px;
   color: var(--text-secondary);
   cursor: pointer;
+}
+.range-input {
+  width: 100%;
+  margin-top: 4px;
+}
+.panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.strength-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.meter-bar {
+  width: 80px;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  transition: all 0.3s;
 }
 .result-list {
   display: flex;
@@ -231,7 +219,14 @@ onMounted(() => {
   font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
   font-size: 14px;
   word-break: break-all;
-  background: none;
   color: var(--text-primary);
+}
+.empty-state {
+  color: var(--text-muted);
+  padding: 40px;
+  text-align: center;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
 }
 </style>

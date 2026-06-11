@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 
 const focusMinutes = useStorage('pomodoro-focus', 25)
@@ -73,10 +74,6 @@ function updateTime() {
   }
 }
 
-function getUrlParams() {
-  // History mode: read from search
-  return new URLSearchParams(window.location.search)
-}
 
 onMounted(() => {
   const params = getUrlParams()

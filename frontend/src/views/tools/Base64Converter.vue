@@ -1,87 +1,70 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
-import { useStorage } from '@vueuse/core'
+import { ref, watch } from 'vue'
+import { useTool } from '../../composables/useTool'
+import * as base64Logic from '../../logic/base64'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const textInput = useStorage('base64-input', '')
-const output = ref('')
 const isImage = ref(false)
 const imagePreview = ref('')
-const copyText = ref('复制结果')
 const fileInfo = ref('')
 const isBase64 = ref(false)
-const autoMode = useStorage('base64-auto', true)
 
-function getUrlParams() {
-  return new URLSearchParams(window.location.search)
-}
-
-function detectBase64(str) {
-  if (!str || !str.trim()) return false
-  const s = str.trim()
-  return /^[A-Za-z0-9+/]*={0,2}$/.test(s) && s.length % 4 === 0 && s.length > 4
-}
-
-function autoProcess() {
-  if (!textInput.value || !autoMode.value) return
-  if (detectBase64(textInput.value)) {
+function autoProcess(val) {
+  if (!val) return ''
+  if (base64Logic.detectBase64(val)) {
     isBase64.value = true
-    base64ToText()
+    try {
+      return base64Logic.base64ToUtf8(val)
+    } catch {
+      isBase64.value = false
+      return base64Logic.utf8ToBase64(val)
+    }
   } else {
     isBase64.value = false
-    textToBase64()
+    return base64Logic.utf8ToBase64(val)
   }
 }
 
-watch(textInput, () => {
-  if (autoMode.value) autoProcess()
-}, { immediate: false })
-
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('text')) {
-    if (params.get('auto') === '1') autoMode.value = true
-    else if (params.get('auto') === '0') autoMode.value = false
-    textInput.value = params.get('text')
-  } else if (!textInput.value) {
-    textInput.value = 'Hello 世界! 这是一段示例文本。'
-  }
-  if (autoMode.value) nextTick(() => autoProcess())
+const {
+  input: textInput,
+  output,
+  error,
+  autoMode,
+  copyText,
+  clearAll: baseClear,
+  loadExample,
+  process: runAuto,
+  copy
+} = useTool({
+  storageKey: 'base64',
+  processor: autoProcess,
+  paramMapping: { text: { ref: ref('') } },
+  example: 'Hello 世界! 这是一段示例文本。'
 })
-
-function utf8ToBase64(str) {
-  const bytes = new TextEncoder().encode(str)
-  const bin = String.fromCharCode(...bytes)
-  return btoa(bin)
-}
-
-function base64ToUtf8(str) {
-  const bin = atob(str)
-  const bytes = Uint8Array.from(bin, c => c.charCodeAt(0))
-  return new TextDecoder().decode(bytes)
-}
 
 function textToBase64() {
   if (!textInput.value) return
   try {
-    output.value = utf8ToBase64(textInput.value)
+    output.value = base64Logic.utf8ToBase64(textInput.value)
     isImage.value = false
     imagePreview.value = ''
     fileInfo.value = ''
+    error.value = ''
   } catch (e) {
-    output.value = '编码失败: ' + e.message
+    error.value = '编码失败: ' + e.message
   }
 }
 
 function base64ToText() {
   if (!textInput.value) return
   try {
-    output.value = base64ToUtf8(textInput.value)
+    output.value = base64Logic.base64ToUtf8(textInput.value)
     isImage.value = false
     imagePreview.value = ''
     fileInfo.value = ''
+    error.value = ''
   } catch (e) {
-    output.value = '解码失败: 无效的 Base64 字符串'
+    error.value = '解码失败: 无效的 Base64 字符串'
   }
 }
 
@@ -89,7 +72,7 @@ function handleFile(e) {
   const file = e.target.files?.[0]
   if (!file) return
   if (file.size > 10 * 1024 * 1024) {
-    output.value = '文件过大，请上传小于 10MB 的文件'
+    error.value = '文件过大，请上传小于 10MB 的文件'
     return
   }
   const reader = new FileReader()
@@ -107,34 +90,17 @@ function handleFile(e) {
   reader.readAsDataURL(file)
 }
 
-async function copy() {
-  if (!output.value) return
-  try {
-    await navigator.clipboard.writeText(output.value)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '复制结果', 2000)
-  } catch {
-    copyText.value = '复制失败'
-  }
-}
-
 function clearAll() {
-  textInput.value = ''
-  output.value = ''
+  baseClear()
   isImage.value = false
   imagePreview.value = ''
   fileInfo.value = ''
-}
-
-function loadExample() {
-  textInput.value = 'Hello 世界! 123'
-  textToBase64()
 }
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>🔐 Base64 编解码</h1>
       <AiHelpPanel
         title="Base64 编解码"
@@ -170,9 +136,27 @@ function loadExample() {
       <div class="tool-panel">
         <h3>输出 <span v-if="fileInfo" style="color:var(--text-muted);font-size:12px">{{ fileInfo }}</span></h3>
         <img v-if="isImage && imagePreview" :src="imagePreview" style="max-width:100%;max-height:200px;border-radius:var(--radius);margin-bottom:10px">
-        <textarea v-model="output" class="textarea" placeholder="处理结果..." rows="isImage ? 8 : 16" readonly></textarea>
+        <textarea v-model="output" class="textarea" :placeholder="isImage ? 'Base64 DataURL...' : '处理结果...'" :rows="isImage ? 8 : 16" readonly></textarea>
         <button class="btn btn-sm" @click="copy" style="align-self:flex-start">{{ copyText }}</button>
       </div>
     </div>
+    <div v-if="error" class="error-msg">❌ {{ error }}</div>
   </div>
 </template>
+
+<style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.error-msg {
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  margin-top: 10px;
+  font-size: 14px;
+}
+</style>

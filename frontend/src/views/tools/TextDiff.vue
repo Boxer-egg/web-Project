@@ -1,6 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+function getUrlParams() {
+  return new URLSearchParams(window.location.search)
+}
 
 const left = useStorage('diff-left', '')
 const right = useStorage('diff-right', '')
@@ -113,6 +118,13 @@ async function copy() {
   }
 }
 
+onMounted(() => {
+  const params = getUrlParams()
+  if (params.get('text1')) left.value = params.get('text1')
+  if (params.get('text2')) right.value = params.get('text2')
+  if (params.get('mode') === 'char' || params.get('mode') === 'line') mode.value = params.get('mode')
+})
+
 function clearAll() {
   left.value = ''
   right.value = ''
@@ -136,7 +148,19 @@ console.log(result);`
 
 <template>
   <div class="tool-page">
-    <h1>📊 文本差异对比</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>📊 文本差异对比</h1>
+      <AiHelpPanel
+        title="文本差异对比"
+        desc="对比两段文本的行级和字符级差异"
+        :params="[
+          { name: 'text1', desc: '原始文本', required: true, example: 'function add(a,b){return a+b}' },
+          { name: 'text2', desc: '对比文本', required: true, example: 'function add(a,b,c){return a+b+c}' },
+          { name: 'mode', desc: '对比模式：line（行级）或 char（字符级）', required: false, example: 'line' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-actions">
       <label><input type="radio" v-model="mode" value="line"> 行级</label>
       <label><input type="radio" v-model="mode" value="char"> 字符级</label>

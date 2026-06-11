@@ -1,8 +1,13 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+function getUrlParams() {
+  return new URLSearchParams(window.location.search)
+}
 
 const input = useStorage('markdown-input', `# 欢迎使用 Markdown 预览
 
@@ -112,6 +117,13 @@ function clearAll() {
   input.value = ''
 }
 
+onMounted(() => {
+  const params = getUrlParams()
+  if (params.get('text')) {
+    input.value = params.get('text')
+  }
+})
+
 function loadExample() {
   input.value = `# Markdown 示例
 
@@ -201,7 +213,17 @@ ${html.value}
 
 <template>
   <div class="tool-page">
-    <h1>📝 Markdown 预览</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>📝 Markdown 预览</h1>
+      <AiHelpPanel
+        title="Markdown 预览"
+        desc="实时渲染 Markdown 为 HTML，支持导出"
+        :params="[
+          { name: 'text', desc: 'Markdown 文本', required: true, example: '# Hello World' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-actions">
       <button class="btn btn-secondary" :class="{ active: layout === 'split' }" @click="layout = 'split'">分屏</button>
       <button class="btn btn-secondary" :class="{ active: layout === 'edit' }" @click="layout = 'edit'">编辑</button>

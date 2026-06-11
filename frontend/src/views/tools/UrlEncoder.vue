@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const input = useStorage('url-input', '')
 const output = ref('')
@@ -85,7 +86,17 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>🔗 URL 编解码</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>🔗 URL 编解码</h1>
+      <AiHelpPanel
+        title="URL 编解码"
+        desc="URL 编码与解码，自动识别方向，解析 URL 参数"
+        :params="[
+          { name: 'text', desc: '要编码/解码的 URL 或文本', required: true, example: 'https://example.com?q=你好' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-actions">
       <button class="btn" @click="encode">编码</button>
       <button class="btn btn-secondary" @click="decode">解码</button>

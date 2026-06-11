@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const input = useStorage('json-input', '')
 const output = ref('')
@@ -130,7 +131,17 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>📋 JSON 格式化</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>📋 JSON 格式化</h1>
+      <AiHelpPanel
+        title="JSON 格式化"
+        desc="JSON 格式化、压缩、转义和去转义"
+        :params="[
+          { name: 'input', desc: 'JSON 数据或转义后的 JSON 字符串', required: true, example: '{&quot;a&quot;:1}' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-actions">
       <button class="btn" @click="format">格式化</button>
       <button class="btn btn-secondary" @click="compress">压缩</button>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const category = useStorage('unit-category', 'length')
 const fromUnit = useStorage('unit-from', 'm')
@@ -173,7 +174,20 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>📐 单位换算</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>📐 单位换算</h1>
+      <AiHelpPanel
+        title="单位换算"
+        desc="长度、重量、面积、体积、温度、数据存储等多种单位互转"
+        :params="[
+          { name: 'value', desc: '数值', required: true, example: '1' },
+          { name: 'category', desc: '类别：length/weight/area/volume/temperature/data', required: false, example: 'length' },
+          { name: 'from', desc: '源单位代码', required: false, example: 'm' },
+          { name: 'to', desc: '目标单位代码', required: false, example: 'km' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="card" style="margin-bottom: 16px; padding: 12px 16px">
       <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center">
         <label v-for="(cat, key) in categories" :key="key" style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px">

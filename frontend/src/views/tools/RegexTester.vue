@@ -1,6 +1,11 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+function getUrlParams() {
+  return new URLSearchParams(window.location.search)
+}
 
 const pattern = useStorage('regex-pattern', '\\d{3}-\\d{4}')
 const flags = useStorage('regex-flags', { g: false, i: false, m: false })
@@ -98,11 +103,33 @@ const presets = [
 function loadPreset(p) {
   pattern.value = p.pattern
 }
+
+onMounted(() => {
+  const params = getUrlParams()
+  if (params.get('pattern')) {
+    pattern.value = params.get('pattern')
+    const f = params.get('flags') || ''
+    flags.value = { g: f.includes('g'), i: f.includes('i'), m: f.includes('m') }
+  }
+  if (params.get('text')) testText.value = params.get('text')
+})
 </script>
 
 <template>
   <div class="tool-page">
-    <h1>🔍 正则表达式测试</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>🔍 正则表达式测试</h1>
+      <AiHelpPanel
+        title="正则表达式测试"
+        desc="实时正则匹配、替换、分组提取"
+        :params="[
+          { name: 'pattern', desc: '正则表达式', required: true, example: '\\d{3}-\\d{4}' },
+          { name: 'text', desc: '测试文本', required: true, example: '电话：123-4567' },
+          { name: 'flags', desc: '标志：g/i/m 组合', required: false, example: 'gi' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center">
       <span>正则：</span>
       <input v-model="pattern" class="input" placeholder="输入正则表达式" style="flex:1;min-width:200px">

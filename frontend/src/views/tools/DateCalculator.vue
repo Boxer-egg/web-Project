@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const mode = useStorage('date-mode', 'diff')
 const date1 = useStorage('date-date1', '')
@@ -69,7 +70,20 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>📅 日期计算器</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>📅 日期计算器</h1>
+      <AiHelpPanel
+        title="日期计算器"
+        desc="计算两个日期间隔天数，或对指定日期进行加减天数"
+        :params="[
+          { name: 'date1', desc: '第一个日期（YYYY-MM-DD）', required: true, example: '2023-01-01' },
+          { name: 'date2', desc: '第二个日期（YYYY-MM-DD）', required: false, example: '2023-12-31' },
+          { name: 'mode', desc: '模式：diff（日期间隔）或 add（日期加减）', required: false, example: 'diff' },
+          { name: 'days', desc: '加减天数（mode=add时）', required: false, example: '7' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="card" style="margin-bottom: 16px; padding: 12px 16px">
       <div style="display: flex; gap: 12px; flex-wrap: wrap">
         <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px">

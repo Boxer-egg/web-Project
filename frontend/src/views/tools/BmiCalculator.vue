@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const height = useStorage('bmi-height', '')
 const weight = useStorage('bmi-weight', '')
@@ -42,7 +43,18 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>⚖️ BMI 计算器</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>⚖️ BMI 计算器</h1>
+      <AiHelpPanel
+        title="BMI 计算器"
+        desc="根据身高体重计算身体质量指数（中国成人标准）"
+        :params="[
+          { name: 'height', desc: '身高（厘米）', required: true, example: '175' },
+          { name: 'weight', desc: '体重（千克）', required: true, example: '70' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-section">
       <div class="tool-panel card">
         <h3>输入信息</h3>

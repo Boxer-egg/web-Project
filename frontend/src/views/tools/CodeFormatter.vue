@@ -2,6 +2,11 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import * as beautify from 'js-beautify'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+function getUrlParams() {
+  return new URLSearchParams(window.location.search)
+}
 
 const language = useStorage('code-lang', 'javascript')
 const indent = useStorage('code-indent', 2)
@@ -52,11 +57,22 @@ hello('Developer');`,
 }
 
 onMounted(() => {
-  // 首次访问时自动加载示例
-  if (!input.value) {
+  const params = getUrlParams()
+  if (params.get('code')) {
+    input.value = params.get('code')
+    if (params.get('lang') && examples[params.get('lang')]) {
+      language.value = params.get('lang')
+    }
+    if (params.get('indent')) {
+      indent.value = parseInt(params.get('indent')) || 2
+    }
+    format()
+  } else if (!input.value) {
     input.value = examples[language.value] || examples.javascript
+    format()
+  } else {
+    format()
   }
-  format()
 })
 
 function format() {
@@ -138,7 +154,19 @@ const compression = computed(() => {
 
 <template>
   <div class="tool-page">
-    <h1>💻 代码格式化</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>💻 代码格式化</h1>
+      <AiHelpPanel
+        title="代码格式化"
+        desc="JavaScript/CSS/HTML/JSON 代码美化与压缩"
+        :params="[
+          { name: 'code', desc: '要格式化的代码', required: true, example: 'function hello(){console.log(1)}' },
+          { name: 'lang', desc: '语言：javascript/css/html/json', required: false, example: 'javascript' },
+          { name: 'indent', desc: '缩进空格数：2或4', required: false, example: '2' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-actions">
       <select v-model="language" class="input" style="width:auto">
         <option value="javascript">JavaScript</option>

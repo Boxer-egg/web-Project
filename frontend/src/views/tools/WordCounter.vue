@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const input = useStorage('wordcount-input', '')
 const copyText = ref('复制结果')
@@ -47,7 +48,17 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>📝 字数统计</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>📝 字数统计</h1>
+      <AiHelpPanel
+        title="字数统计"
+        desc="实时统计中文字数、英文单词数、字符数、段落数及阅读时间"
+        :params="[
+          { name: 'text', desc: '要统计的文本', required: true, example: 'Hello 你好 World 世界' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-actions">
       <button class="btn btn-secondary" @click="copy">{{ copyText }}</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>

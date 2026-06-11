@@ -1,6 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+function getUrlParams() {
+  return new URLSearchParams(window.location.search)
+}
 
 const length = useStorage('pwd-length', 16)
 const count = useStorage('pwd-count', 5)
@@ -96,11 +101,43 @@ async function copyAll() {
 function clearAll() {
   results.value = []
 }
+
+onMounted(() => {
+  const params = getUrlParams()
+  let changed = false
+  if (params.get('length')) { length.value = parseInt(params.get('length')) || 16; changed = true }
+  if (params.get('count')) { count.value = parseInt(params.get('count')) || 5; changed = true }
+  if (params.get('lower')) { useLower.value = params.get('lower') !== '0'; changed = true }
+  if (params.get('upper')) { useUpper.value = params.get('upper') !== '0'; changed = true }
+  if (params.get('number')) { useNumber.value = params.get('number') !== '0'; changed = true }
+  if (params.get('special')) { useSpecial.value = params.get('special') === '1'; changed = true }
+  if (params.get('similar')) { excludeSimilar.value = params.get('similar') === '1'; changed = true }
+  if (params.get('ensure')) { ensureEach.value = params.get('ensure') === '1'; changed = true }
+  if (params.get('auto') === '1' || changed) generate()
+})
+
 </script>
 
 <template>
   <div class="tool-page">
-    <h1>🔑 密码生成器</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>🔑 密码生成器</h1>
+      <AiHelpPanel
+        title="密码生成器"
+        desc="使用加密安全随机数生成强密码，支持自定义长度和字符集"
+        :params="[
+          { name: 'length', desc: '密码长度（4-64）', required: false, example: '16' },
+          { name: 'count', desc: '生成数量（1-20）', required: false, example: '5' },
+          { name: 'lower', desc: '包含小写字母（1或0）', required: false, example: '1' },
+          { name: 'upper', desc: '包含大写字母（1或0）', required: false, example: '1' },
+          { name: 'number', desc: '包含数字（1或0）', required: false, example: '1' },
+          { name: 'special', desc: '包含特殊符号（1或0）', required: false, example: '0' },
+          { name: 'similar', desc: '排除易混淆字符（1或0）', required: false, example: '0' },
+          { name: 'ensure', desc: '确保每类至少一个（1或0）', required: false, example: '0' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-section">
       <div class="tool-panel card">
         <h3>配置</h3>

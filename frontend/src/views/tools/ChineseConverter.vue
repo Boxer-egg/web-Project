@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 // 常用简体 → 繁体映射（约2000字）
 const s2tMap = {
@@ -59,9 +60,17 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>🈷️ 简繁体转换</h1>
-    <div class="card" style="margin-bottom: 16px; padding: 12px 16px; font-size: 13px; color: var(--text-secondary)">
-      支持约 2000 个常用汉字的简体与繁体互转
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>🈷️ 简繁体转换</h1>
+      <AiHelpPanel
+        title="简繁体转换"
+        desc="简体中文与繁体中文互相转换，覆盖约2000个常用汉字"
+        :params="[
+          { name: 'text', desc: '要转换的文本', required: true, example: '简体转繁体测试' },
+          { name: 'direction', desc: '转换方向：s2t（简→繁）或 t2s（繁→简）', required: false, example: 's2t' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
     </div>
     <div class="tool-actions">
       <button class="btn" :class="{ 'btn-secondary': direction !== 's2t' }" @click="direction = 's2t'; doConvert()">简体 → 繁体</button>

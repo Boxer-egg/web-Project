@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const tsInput = useStorage('ts-input', '')
 const dateInput = useStorage('ts-date', '')
@@ -122,7 +123,18 @@ onMounted(() => {
 
 <template>
   <div class="tool-page">
-    <h1>⏰ 时间戳转换</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>⏰ 时间戳转换</h1>
+      <AiHelpPanel
+        title="时间戳转换"
+        desc="Unix 时间戳（秒/毫秒）与日期互转"
+        :params="[
+          { name: 'ts', desc: 'Unix 时间戳（10位秒或13位毫秒）', required: true, example: '1700000000' },
+          { name: 'date', desc: '日期字符串（ISO格式）', required: false, example: '2023-11-15T00:00' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="help-text card" style="margin-bottom:16px;font-size:13px;color:var(--text-secondary);line-height:1.8">
       <strong style="color:var(--text-primary)">使用说明：</strong><br>
       • <strong>时间戳 → 日期</strong>：在左侧输入框填入 Unix 时间戳（10位=秒，13位=毫秒），点击「转换」按钮<br>

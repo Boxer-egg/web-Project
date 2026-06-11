@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const textInput = useStorage('base64-input', '')
 const output = ref('')
@@ -131,7 +132,17 @@ function loadExample() {
 
 <template>
   <div class="tool-page">
-    <h1>🔐 Base64 编解码</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>🔐 Base64 编解码</h1>
+      <AiHelpPanel
+        title="Base64 编解码"
+        desc="文本与 Base64 互相转换，支持文件上传为 Base64 DataURL"
+        :params="[
+          { name: 'text', desc: '要编码/解码的文本或 Base64 字符串', required: true, example: 'Hello World' },
+          { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
+        ]"
+      />
+    </div>
     <div class="tool-actions">
       <button class="btn" @click="textToBase64">文本 → Base64</button>
       <button class="btn btn-secondary" @click="base64ToText">Base64 → 文本</button>

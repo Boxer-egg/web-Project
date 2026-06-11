@@ -1,93 +1,43 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { getUrlParams } from '../../utils/urlParams'
+import { ref, computed, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
+import * as diffLogic from '../../logic/text-diff'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-
-const left = useStorage('diff-left', '')
 const right = useStorage('diff-right', '')
 const mode = useStorage('diff-mode', 'line')
 const ignoreSpace = useStorage('diff-ignore-space', false)
-const copyText = ref('复制差异')
+const toast = useToast()
 
-function normalize(s) {
-  return ignoreSpace.value ? s.replace(/\s+/g, ' ').trim() : s
-}
+const {
+  input: left,
+  output,
+  clearAll: baseClear,
+  loadExample
+} = useTool({
+  storageKey: 'diff-left',
+  processor: (val) => val, // We use computed for diff results
+  paramMapping: {
+    text1: { ref: ref('') }, // This will be synced to 'left' by useTool logic if we are careful
+    text2: { ref: right },
+    mode: { ref: mode }
+  },
+  example: `function add(a, b) {\n  return a + b;\n}`
+})
 
-function diffLines(oldStr, newStr) {
-  const oldLines = oldStr.split('\n')
-  const newLines = newStr.split('\n')
-  const result = []
-  let i = 0, j = 0
-  while (i < oldLines.length || j < newLines.length) {
-    const o = normalize(oldLines[i] || '')
-    const n = normalize(newLines[j] || '')
-    if (i >= oldLines.length) {
-      result.push({ type: 'add', text: newLines[j] })
-      j++
-    } else if (j >= newLines.length) {
-      result.push({ type: 'del', text: oldLines[i] })
-      i++
-    } else if (o === n) {
-      result.push({ type: 'same', text: oldLines[i] })
-      i++; j++
-    } else {
-      result.push({ type: 'del', text: oldLines[i] })
-      result.push({ type: 'add', text: newLines[j] })
-      i++; j++
-    }
-  }
-  return result
-}
-
-function diffChars(oldStr, newStr) {
-  // 字符级对比：对每一对 del/add 行做字符级高亮
-  const lines = diffLines(oldStr, newStr)
-  const result = []
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    if (line.type === 'del' && i + 1 < lines.length && lines[i + 1].type === 'add') {
-      const oldText = line.text
-      const newText = lines[i + 1].text
-      const { oldHtml, newHtml } = charDiffHtml(oldText, newText)
-      result.push({ type: 'del', text: oldText, html: oldHtml })
-      result.push({ type: 'add', text: newText, html: newHtml })
-      i++
-    } else {
-      result.push(line)
-    }
-  }
-  return result
-}
-
-function charDiffHtml(oldText, newText) {
-  // 简化的字符级 diff：逐字符对比
-  const maxLen = Math.max(oldText.length, newText.length)
-  let oldHtml = ''
-  let newHtml = ''
-  for (let i = 0; i < maxLen; i++) {
-    const oc = oldText[i] || ''
-    const nc = newText[i] || ''
-    if (oc === nc) {
-      oldHtml += escapeHtml(oc)
-      newHtml += escapeHtml(nc)
-    } else {
-      oldHtml += `<span style="background:rgba(239,68,68,0.3);text-decoration:line-through">${escapeHtml(oc || ' ')}</span>`
-      newHtml += `<span style="background:rgba(34,197,94,0.3)">${escapeHtml(nc || ' ')}</span>`
-    }
-  }
-  return { oldHtml, newHtml }
-}
-
-function escapeHtml(t) {
-  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
+// Correcting paramMapping: useTool uses 'input' as the default for the first param
+// but we can override it. Actually, useTool internals:
+// finalParamMapping.input = { ref: input }
+// So we should use 'input' for text1 in AiHelpPanel or map it.
 
 const diffResult = computed(() => {
   if (!left.value && !right.value) return []
-  if (mode.value === 'line') return diffLines(left.value, right.value).map((d, i) => ({ ...d, lineNum: i + 1 }))
-  return diffChars(left.value, right.value).map((d, i) => ({ ...d, lineNum: i + 1 }))
+  const res = mode.value === 'line' 
+    ? diffLogic.diffLines(left.value, right.value, ignoreSpace.value)
+    : diffLogic.diffChars(left.value, right.value, ignoreSpace.value)
+  return res.map((d, i) => ({ ...d, lineNum: i + 1 }))
 })
 
 const stats = computed(() => {
@@ -102,51 +52,29 @@ function swap() {
   right.value = tmp
 }
 
-async function copy() {
+async function copyDiff() {
   const text = diffResult.value.map(d => {
     const prefix = d.type === 'add' ? '+' : d.type === 'del' ? '-' : ' '
     return prefix + ' ' + d.text
   }).join('\n')
-  try {
-    await navigator.clipboard.writeText(text)
-    copyText.value = '已复制'
-    setTimeout(() => copyText.value = '复制差异', 2000)
-  } catch {
-    copyText.value = '复制失败'
-  }
+  await navigator.clipboard.writeText(text)
+  toast.success('差异结果已复制')
 }
 
-onMounted(() => {
-  const params = getUrlParams()
-  if (params.get('text1')) left.value = params.get('text1')
-  if (params.get('text2')) right.value = params.get('text2')
-  if (params.get('mode') === 'char' || params.get('mode') === 'line') mode.value = params.get('mode')
-})
-
 function clearAll() {
-  left.value = ''
+  baseClear()
   right.value = ''
 }
 
-function loadExample() {
-  left.value = `function add(a, b) {
-  return a + b;
-}
-
-const result = add(1, 2);
-console.log(result);`
-  right.value = `function add(a, b, c) {
-  return a + b + (c || 0);
-}
-
-const result = add(1, 2, 3);
-console.log(result);`
+function handleLoadExample() {
+  left.value = `function add(a, b) {\n  return a + b;\n}\n\nconst result = add(1, 2);\nconsole.log(result);`
+  right.value = `function add(a, b, c) {\n  return a + b + (c || 0);\n}\n\nconst result = add(1, 2, 3);\nconsole.log(result);`
 }
 </script>
 
 <template>
   <div class="tool-page">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="tool-header">
       <h1>📊 文本差异对比</h1>
       <AiHelpPanel
         title="文本差异对比"
@@ -160,13 +88,17 @@ console.log(result);`
       />
     </div>
     <div class="tool-actions">
-      <label><input type="radio" v-model="mode" value="line"> 行级</label>
-      <label><input type="radio" v-model="mode" value="char"> 字符级</label>
-      <label><input type="checkbox" v-model="ignoreSpace"> 忽略空白</label>
-      <button class="btn" @click="swap">交换内容</button>
-      <button class="btn btn-secondary" @click="copy">{{ copyText }}</button>
-      <button class="btn btn-secondary" @click="clearAll">清空</button>
-      <button class="btn btn-secondary" @click="loadExample">示例</button>
+      <div class="mode-opts">
+        <label class="radio-label"><input type="radio" v-model="mode" value="line"> 行级</label>
+        <label class="radio-label"><input type="radio" v-model="mode" value="char"> 字符级</label>
+        <label class="checkbox-label"><input type="checkbox" v-model="ignoreSpace"> 忽略空白</label>
+      </div>
+      <div class="op-btns">
+        <button class="btn btn-secondary" @click="swap">交换</button>
+        <button class="btn btn-secondary" @click="copyDiff">复制差异</button>
+        <button class="btn btn-secondary" @click="clearAll">清空</button>
+        <button class="btn btn-secondary" @click="handleLoadExample">示例</button>
+      </div>
     </div>
     <div class="tool-section">
       <div class="tool-panel">
@@ -178,22 +110,23 @@ console.log(result);`
         <textarea v-model="right" class="textarea" placeholder="输入对比文本..." rows="12"></textarea>
       </div>
     </div>
-    <div class="card" style="margin-top:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="card result-card">
+      <div class="panel-label">
         <h3 style="font-size:14px">差异结果</h3>
-        <span style="font-size:13px;color:var(--text-secondary)">
-          <span style="color:var(--error)">-{{ stats.dels }}</span> /
-          <span style="color:var(--success)">+{{ stats.adds }}</span>
-        </span>
+        <div class="stats-badge">
+          <span class="del-count">-{{ stats.dels }}</span>
+          <span class="divider">/</span>
+          <span class="add-count">+{{ stats.adds }}</span>
+        </div>
       </div>
-      <div class="diff-result">
+      <div class="diff-container">
         <div v-for="(line, i) in diffResult" :key="i" :class="['diff-line', line.type]">
           <span class="diff-linenum">{{ line.lineNum }}</span>
           <span class="diff-prefix">{{ line.type === 'add' ? '+' : line.type === 'del' ? '-' : ' ' }}</span>
           <span class="diff-text" v-if="line.html" v-html="line.html"></span>
           <span class="diff-text" v-else>{{ line.text || ' ' }}</span>
         </div>
-        <div v-if="!diffResult.length" style="color:var(--text-muted);padding:20px;text-align:center">
+        <div v-if="!diffResult.length" class="empty-diff">
           输入两段文本进行对比
         </div>
       </div>
@@ -202,7 +135,26 @@ console.log(result);`
 </template>
 
 <style scoped>
-label {
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.tool-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.mode-opts, .op-btns {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.radio-label, .checkbox-label {
   font-size: 14px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -210,43 +162,69 @@ label {
   align-items: center;
   gap: 4px;
 }
-.diff-result {
+.result-card {
+  margin-top: 16px;
+  padding: 16px;
+}
+.panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.stats-badge {
+  font-size: 13px;
+  font-weight: 600;
+}
+.del-count { color: var(--error); }
+.add-count { color: var(--success); }
+.divider { margin: 0 4px; color: var(--text-muted); }
+
+.diff-container {
   font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
   font-size: 13px;
   line-height: 1.6;
-  max-height: 400px;
-  overflow: auto;
+  max-height: 500px;
+  overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: var(--bg-primary);
 }
 .diff-line {
-  padding: 2px 8px;
+  padding: 2px 12px;
   display: flex;
-  gap: 8px;
+  gap: 12px;
   white-space: pre-wrap;
   word-break: break-all;
 }
-.diff-line.add {
-  background: rgba(34, 197, 94, 0.1);
-}
-.diff-line.del {
-  background: rgba(239, 68, 68, 0.1);
-}
+.diff-line.add { background: rgba(34, 197, 94, 0.08); }
+.diff-line.del { background: rgba(239, 68, 68, 0.08); }
+
 .diff-linenum {
   user-select: none;
-  flex-shrink: 0;
   width: 32px;
   text-align: right;
   color: var(--text-muted);
   font-size: 12px;
-  margin-right: 4px;
 }
 .diff-prefix {
   user-select: none;
-  flex-shrink: 0;
-  width: 16px;
+  width: 12px;
   text-align: center;
 }
-.diff-line.add .diff-prefix { color: var(--success) }
-.diff-line.del .diff-prefix { color: var(--error) }
+.diff-line.add .diff-prefix { color: var(--success); }
+.diff-line.del .diff-prefix { color: var(--error); }
+
+.empty-diff {
+  color: var(--text-muted);
+  padding: 40px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .tool-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
 </style>

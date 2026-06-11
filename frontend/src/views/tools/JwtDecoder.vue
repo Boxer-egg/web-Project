@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -117,8 +117,10 @@ async function copy(text) {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('token')) {
+    if (params.get('auto') === '1') autoMode.value = true
+    else if (params.get('auto') === '0') autoMode.value = false
     input.value = params.get('token')
-    parse()
+    nextTick(() => parse())
   } else if (!input.value) {
     loadExample()
   }

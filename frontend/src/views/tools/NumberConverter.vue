@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -110,6 +110,8 @@ function swap() {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('num')) {
+    if (params.get('auto') === '1') autoMode.value = true
+    else if (params.get('auto') === '0') autoMode.value = false
     input.value = params.get('num')
     if (params.get('from')) {
       const fb = parseInt(params.get('from'), 10)
@@ -119,7 +121,7 @@ onMounted(() => {
       const tb = params.get('to').split(',').map(Number).filter(n => !isNaN(n) && n >= 2 && n <= 36)
       toBases.value = tb.length ? tb : [2, 8, 16]
     }
-    convert()
+    nextTick(() => convert())
   } else if (!input.value) {
     loadExample()
   }

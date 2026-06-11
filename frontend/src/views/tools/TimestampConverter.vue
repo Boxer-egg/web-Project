@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -105,12 +105,14 @@ function getUrlParams() {
 
 onMounted(() => {
   const params = getUrlParams()
+  if (params.get('auto') === '1') autoMode.value = true
+  else if (params.get('auto') === '0') autoMode.value = false
   if (params.get('ts')) {
     tsInput.value = params.get('ts')
-    tsToDate()
+    nextTick(() => tsToDate())
   } else if (params.get('date')) {
     dateInput.value = params.get('date')
-    dateToTs()
+    nextTick(() => dateToTs())
   } else if (!tsInput.value && !dateInput.value) {
     loadExample()
   } else if (tsInput.value) {

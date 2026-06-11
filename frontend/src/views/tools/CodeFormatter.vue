@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import * as beautify from 'js-beautify'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
@@ -59,6 +59,8 @@ hello('Developer');`,
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('code')) {
+    if (params.get('auto') === '1') autoMode.value = true
+    else if (params.get('auto') === '0') autoMode.value = false
     input.value = params.get('code')
     if (params.get('lang') && examples[params.get('lang')]) {
       language.value = params.get('lang')
@@ -66,7 +68,7 @@ onMounted(() => {
     if (params.get('indent')) {
       indent.value = parseInt(params.get('indent')) || 2
     }
-    format()
+    nextTick(() => format())
   } else if (!input.value) {
     input.value = examples[language.value] || examples.javascript
     format()

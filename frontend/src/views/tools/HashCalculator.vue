@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import md5 from 'js-md5'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
@@ -128,11 +128,13 @@ function toggleAlgo(key) {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('text')) {
+    if (params.get('auto') === '1') autoMode.value = true
+    else if (params.get('auto') === '0') autoMode.value = false
     input.value = params.get('text')
     if (params.get('algorithms')) {
       selected.value = params.get('algorithms').split(',')
     }
-    calculate()
+    nextTick(() => calculate())
   } else if (!input.value) {
     loadExample()
   } else {

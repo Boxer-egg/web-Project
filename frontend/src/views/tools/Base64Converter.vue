@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -40,11 +40,13 @@ watch(textInput, () => {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('text')) {
+    if (params.get('auto') === '1') autoMode.value = true
+    else if (params.get('auto') === '0') autoMode.value = false
     textInput.value = params.get('text')
   } else if (!textInput.value) {
     textInput.value = 'Hello 世界! 这是一段示例文本。'
   }
-  if (autoMode.value) autoProcess()
+  if (autoMode.value) nextTick(() => autoProcess())
 })
 
 function utf8ToBase64(str) {

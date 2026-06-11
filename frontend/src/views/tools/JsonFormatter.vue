@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -119,8 +119,10 @@ function getUrlParams() {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('input')) {
+    if (params.get('auto') === '1') autoMode.value = true
+    else if (params.get('auto') === '0') autoMode.value = false
     input.value = params.get('input')
-    format()
+    nextTick(() => format())
   } else if (!input.value) {
     loadExample()
   } else {

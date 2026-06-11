@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -140,9 +140,13 @@ watch(autoMode, (v) => {
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('text')) {
+    // 先设置 autoMode，避免 watch 在 mode 更新前就触发 process()
+    if (params.get('auto') === '1') autoMode.value = true
+    else if (params.get('auto') === '0') autoMode.value = false
     input.value = params.get('text')
     if (params.get('action')) mode.value = params.get('action')
-    process()
+    // 使用 nextTick 确保所有响应式值已同步后再执行
+    nextTick(() => process())
   } else if (!input.value) {
     loadExample()
   }

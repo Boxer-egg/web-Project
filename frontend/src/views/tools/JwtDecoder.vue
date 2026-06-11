@@ -9,6 +9,7 @@ const payload = ref('')
 const signature = ref('')
 const error = ref('')
 const expired = ref('')
+const autoMode = useStorage('jwt-auto', true)
 
 function getUrlParams() {
   // History mode: read from search
@@ -79,15 +80,19 @@ function parse() {
 }
 
 watch(input, () => {
-  if (input.value && input.value.includes('.')) {
+  if (input.value && input.value.includes('.') && autoMode.value) {
     parse()
-  } else {
+  } else if (!input.value) {
     header.value = ''
     payload.value = ''
     signature.value = ''
     error.value = ''
   }
 }, { immediate: false })
+
+watch(autoMode, (v) => {
+  if (v && input.value && input.value.includes('.')) parse()
+})
 
 function clearAll() {
   input.value = ''
@@ -137,6 +142,11 @@ onMounted(() => {
       <button class="btn" @click="parse">解析</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">加载示例</button>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

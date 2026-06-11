@@ -8,6 +8,7 @@ const error = ref('')
 const indent = useStorage('json-indent', 2)
 const copyText = ref('复制结果')
 const looksEscaped = ref(false)
+const autoMode = useStorage('json-auto', true)
 
 function detectEscaped(str) {
   if (!str || !str.trim()) return false
@@ -98,12 +99,16 @@ function loadExample() {
 watch(input, () => {
   error.value = ''
   looksEscaped.value = detectEscaped(input.value)
-  if (input.value) {
+  if (input.value && autoMode.value) {
     format()
-  } else {
+  } else if (!input.value) {
     output.value = ''
   }
 }, { immediate: false })
+
+watch(autoMode, (v) => {
+  if (v && input.value) format()
+})
 
 function getUrlParams() {
   // History mode: read from search
@@ -138,6 +143,11 @@ onMounted(() => {
         <option :value="4">4 空格</option>
         <option :value="'\t'">Tab</option>
       </select>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

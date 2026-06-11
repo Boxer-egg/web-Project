@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -7,6 +7,16 @@ const input = useStorage('num-input', '')
 const fromBase = useStorage('num-from', 10)
 const toBases = useStorage('num-to', [2, 8, 16])
 const results = ref([])
+
+const autoMode = useStorage('num-auto', true)
+
+watch([input, fromBase, toBases], () => {
+  if (autoMode.value) convert()
+}, { deep: true })
+
+watch(autoMode, (v) => {
+  if (v && input.value) convert()
+})
 
 const baseOptions = [
   { value: 2, label: '二进制 (2)' },
@@ -155,6 +165,11 @@ onMounted(() => {
           <button class="btn btn-secondary" @click="swap">交换</button>
           <button class="btn btn-secondary" @click="clearAll">清空</button>
           <button class="btn btn-secondary" @click="loadExample">示例</button>
+        </div>
+        <div class="tool-actions" style="margin-top:8px">
+          <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+            自动 {{ autoMode ? 'ON' : 'OFF' }}
+          </button>
         </div>
       </div>
       <div class="tool-panel">

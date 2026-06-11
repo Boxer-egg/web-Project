@@ -133,11 +133,6 @@ function loadExample() {
   <div class="tool-page">
     <h1>🔐 Base64 编解码</h1>
     <div class="tool-actions">
-      <button class="btn" :class="{ 'btn-secondary': !autoMode }" @click="autoMode = !autoMode" style="font-size:12px">
-        自动 {{ autoMode ? 'ON' : 'OFF' }}
-      </button>
-      <span v-if="autoMode && isBase64" style="font-size:12px;color:var(--accent);align-self:center">已识别为 Base64，自动解码</span>
-      <span v-else-if="autoMode && textInput" style="font-size:12px;color:var(--text-muted);align-self:center">自动编码中</span>
       <button class="btn" @click="textToBase64">文本 → Base64</button>
       <button class="btn btn-secondary" @click="base64ToText">Base64 → 文本</button>
       <label class="btn btn-secondary" style="cursor:pointer">
@@ -146,6 +141,13 @@ function loadExample() {
       </label>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">加载示例</button>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
+      <span v-if="autoMode && isBase64" style="font-size:11px;color:var(--accent)">已识别为 Base64，自动解码</span>
+      <span v-else-if="autoMode && textInput" style="font-size:11px;color:var(--text-muted)">自动编码中</span>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

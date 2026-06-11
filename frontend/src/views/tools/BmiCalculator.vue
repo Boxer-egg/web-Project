@@ -43,27 +43,6 @@ onMounted(() => {
 <template>
   <div class="tool-page">
     <h1>⚖️ BMI 计算器</h1>
-    <div class="card" style="margin-bottom: 16px; padding: 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.8">
-      <p style="margin-bottom:8px;color:var(--text-primary)"><strong>BMI（身体质量指数）= 体重(kg) ÷ 身高²(m²)</strong></p>
-      <p style="margin-bottom:8px">BMI 是目前国际上常用的衡量人体胖瘦程度及是否健康的标准，适用于成年人群（18-65岁）。</p>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead>
-          <tr style="border-bottom:1px solid var(--border)">
-            <th style="text-align:left;padding:4px">分类</th>
-            <th style="text-align:left;padding:4px">BMI 范围</th>
-            <th style="text-align:left;padding:4px">健康风险</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td style="padding:4px;color:#f59e0b">偏瘦</td><td style="padding:4px">&lt; 18.5</td><td style="padding:4px">营养不良、免疫力下降风险</td></tr>
-          <tr style="background:rgba(34,197,94,0.05)"><td style="padding:4px;color:#22c55e">正常</td><td style="padding:4px">18.5 ~ 23.9</td><td style="padding:4px">健康范围，慢性病风险最低</td></tr>
-          <tr><td style="padding:4px;color:#f59e0b">偏胖</td><td style="padding:4px">24 ~ 27.9</td><td style="padding:4px">高血压、糖尿病风险开始增加</td></tr>
-          <tr style="background:rgba(239,68,68,0.05)"><td style="padding:4px;color:#ef4444">肥胖</td><td style="padding:4px">28 ~ 31.9</td><td style="padding:4px">心血管疾病风险显著升高</td></tr>
-          <tr style="background:rgba(239,68,68,0.1)"><td style="padding:4px;color:#ef4444">重度肥胖</td><td style="padding:4px">≥ 32</td><td style="padding:4px">多种并发症风险，建议就医</td></tr>
-        </tbody>
-      </table>
-      <p style="margin-top:8px;font-size:11px;color:var(--text-muted)">* 中国成人标准（WS/T 428-2013），不适合运动员、孕妇、未成年人等特殊人群</p>
-    </div>
     <div class="tool-section">
       <div class="tool-panel card">
         <h3>输入信息</h3>
@@ -88,6 +67,27 @@ onMounted(() => {
           请输入身高和体重查看结果
         </div>
       </div>
+    </div>
+    <div class="card" style="margin-top: 20px; padding: 16px; font-size: 13px; color: var(--text-secondary); line-height: 1.8">
+      <p style="margin-bottom:8px;color:var(--text-primary)"><strong>BMI（身体质量指数）= 体重(kg) ÷ 身高²(m²)</strong></p>
+      <p style="margin-bottom:8px">BMI 是目前国际上常用的衡量人体胖瘦程度及是否健康的标准，适用于成年人群（18-65岁）。</p>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border)">
+            <th style="text-align:left;padding:4px">分类</th>
+            <th style="text-align:left;padding:4px">BMI 范围</th>
+            <th style="text-align:left;padding:4px">健康风险</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding:4px;color:#f59e0b">偏瘦</td><td style="padding:4px">&lt; 18.5</td><td style="padding:4px">营养不良、免疫力下降风险</td></tr>
+          <tr style="background:rgba(34,197,94,0.05)"><td style="padding:4px;color:#22c55e">正常</td><td style="padding:4px">18.5 ~ 23.9</td><td style="padding:4px">健康范围，慢性病风险最低</td></tr>
+          <tr><td style="padding:4px;color:#f59e0b">偏胖</td><td style="padding:4px">24 ~ 27.9</td><td style="padding:4px">高血压、糖尿病风险开始增加</td></tr>
+          <tr style="background:rgba(239,68,68,0.05)"><td style="padding:4px;color:#ef4444">肥胖</td><td style="padding:4px">28 ~ 31.9</td><td style="padding:4px">心血管疾病风险显著升高</td></tr>
+          <tr style="background:rgba(239,68,68,0.1)"><td style="padding:4px;color:#ef4444">重度肥胖</td><td style="padding:4px">≥ 32</td><td style="padding:4px">多种并发症风险，建议就医</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:8px;font-size:11px;color:var(--text-muted)">* 中国成人标准（WS/T 428-2013），不适合运动员、孕妇、未成年人等特殊人群</p>
     </div>
   </div>
 </template>

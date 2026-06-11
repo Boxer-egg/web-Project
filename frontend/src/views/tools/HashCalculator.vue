@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import md5 from 'js-md5'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
@@ -10,6 +10,7 @@ const results = ref({})
 const fileMode = ref(false)
 const fileName = ref('')
 const copyText = ref('')
+const autoMode = useStorage('hash-auto', true)
 
 const algos = [
   { key: 'md5', label: 'MD5' },
@@ -24,6 +25,14 @@ function getUrlParams() {
 }
 
 const algoMap = { sha1: 'SHA-1', sha256: 'SHA-256', sha512: 'SHA-512' }
+
+watch([input, selected], () => {
+  if (autoMode.value && !fileMode.value) calculate()
+}, { deep: true })
+
+watch(autoMode, (v) => {
+  if (v && input.value) calculate()
+})
 
 async function computeHash(algo, text) {
   const encoder = new TextEncoder()
@@ -163,6 +172,11 @@ onMounted(() => {
       </label>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">示例</button>
+    </div>
+    <div style="margin-bottom:16px">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import * as beautify from 'js-beautify'
 
@@ -120,6 +120,16 @@ function loadExample() {
   input.value = examples[language.value] || examples.javascript
 }
 
+const autoMode = useStorage('code-auto', true)
+
+watch([input, language, indent], () => {
+  if (autoMode.value) format()
+}, { deep: true })
+
+watch(autoMode, (v) => {
+  if (v && input.value) format()
+})
+
 const compression = computed(() => {
   if (!stats.value.before || !stats.value.after) return 0
   return Math.round((1 - stats.value.after / stats.value.before) * 100)
@@ -144,6 +154,11 @@ const compression = computed(() => {
       <button class="btn btn-secondary" @click="minify">压缩</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">示例</button>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

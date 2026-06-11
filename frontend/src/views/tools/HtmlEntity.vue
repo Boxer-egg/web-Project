@@ -8,6 +8,7 @@ const output = ref('')
 const mode = useStorage('html-entity-mode', 'encode_named')
 const encodeAll = useStorage('html-entity-all', false)
 const copyText = ref('复制结果')
+const autoMode = useStorage('html-auto', true)
 
 const namedEntities = {
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;',
@@ -127,10 +128,14 @@ const quickRef = [
   { char: ' ', named: '&nbsp;', numeric: '&#160;', hex: '&#xA0;' },
 ]
 
-watch(input, () => {
-  if (input.value) process()
-  else output.value = ''
-}, { immediate: false })
+watch([input, mode, encodeAll], () => {
+  if (input.value && autoMode.value) process()
+  else if (!input.value) output.value = ''
+}, { deep: true })
+
+watch(autoMode, (v) => {
+  if (v && input.value) process()
+})
 
 onMounted(() => {
   const params = getUrlParams()
@@ -168,6 +173,11 @@ onMounted(() => {
       </label>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">示例</button>
+    </div>
+    <div class="tool-actions">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

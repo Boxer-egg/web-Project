@@ -1,11 +1,27 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 
 const tsInput = useStorage('ts-input', '')
 const dateInput = useStorage('ts-date', '')
 const output = ref('')
 const copyText = ref('复制')
+const autoMode = useStorage('ts-auto', true)
+
+watch(tsInput, () => {
+  if (autoMode.value && tsInput.value) tsToDate()
+})
+
+watch(dateInput, () => {
+  if (autoMode.value && dateInput.value) dateToTs()
+})
+
+watch(autoMode, (v) => {
+  if (v) {
+    if (tsInput.value) tsToDate()
+    if (dateInput.value) dateToTs()
+  }
+})
 
 function now() {
   const now = Date.now()
@@ -130,6 +146,11 @@ onMounted(() => {
           <button class="btn" @click="dateToTs">转换</button>
         </div>
       </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
     </div>
     <div class="card" style="margin-top:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">

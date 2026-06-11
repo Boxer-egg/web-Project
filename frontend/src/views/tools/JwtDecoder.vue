@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -16,9 +16,12 @@ function getUrlParams() {
 }
 
 function base64UrlDecode(str) {
-  str += new Array(5 - str.length % 4).join('=')
-  str = str.replace(/\-/g, '+').replace(/\_/g, '/')
-  return decodeURIComponent(escape(window.atob(str)))
+  str = str.replace(/-/g, '+').replace(/_/g, '/')
+  const pad = (4 - str.length % 4) % 4
+  str += '='.repeat(pad)
+  const binary = atob(str)
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
 }
 
 function parse() {
@@ -45,7 +48,7 @@ function parse() {
     header.value = JSON.stringify(JSON.parse(base64UrlDecode(parts[0])), null, 2)
   } catch (e) {
     header.value = parts[0]
-    error.value = 'Header 部分不是标准 JSON: ' + e.message
+    error.value = 'Header 解码失败，Token 可能已损坏或格式非标准'
   }
 
   try {
@@ -69,11 +72,22 @@ function parse() {
     }
   } catch (e) {
     payload.value = parts[1]
-    error.value = error.value || 'Payload 部分不是标准 JSON: ' + e.message
+    error.value = error.value || 'Payload 解码失败，Token 可能已损坏或格式非标准'
   }
 
   signature.value = parts[2]
 }
+
+watch(input, () => {
+  if (input.value && input.value.includes('.')) {
+    parse()
+  } else {
+    header.value = ''
+    payload.value = ''
+    signature.value = ''
+    error.value = ''
+  }
+}, { immediate: false })
 
 function clearAll() {
   input.value = ''

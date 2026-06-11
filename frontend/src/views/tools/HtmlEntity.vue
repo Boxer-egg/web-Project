@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
@@ -126,6 +126,11 @@ const quickRef = [
   { char: "'", named: '&#x27;', numeric: '&#39;', hex: '&#x27;' },
   { char: ' ', named: '&nbsp;', numeric: '&#160;', hex: '&#xA0;' },
 ]
+
+watch(input, () => {
+  if (input.value) process()
+  else output.value = ''
+}, { immediate: false })
 
 onMounted(() => {
   const params = getUrlParams()

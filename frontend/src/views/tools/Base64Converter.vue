@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 
 const textInput = useStorage('base64-input', '')
@@ -8,18 +8,42 @@ const isImage = ref(false)
 const imagePreview = ref('')
 const copyText = ref('复制结果')
 const fileInfo = ref('')
+const isBase64 = ref(false)
+const autoMode = useStorage('base64-auto', true)
+
+function getUrlParams() {
+  return new URLSearchParams(window.location.search)
+}
+
+function detectBase64(str) {
+  if (!str || !str.trim()) return false
+  const s = str.trim()
+  return /^[A-Za-z0-9+/]*={0,2}$/.test(s) && s.length % 4 === 0 && s.length > 4
+}
+
+function autoProcess() {
+  if (!textInput.value || !autoMode.value) return
+  if (detectBase64(textInput.value)) {
+    isBase64.value = true
+    base64ToText()
+  } else {
+    isBase64.value = false
+    textToBase64()
+  }
+}
+
+watch(textInput, () => {
+  if (autoMode.value) autoProcess()
+}, { immediate: false })
 
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('text')) {
     textInput.value = params.get('text')
-    textToBase64()
   } else if (!textInput.value) {
     textInput.value = 'Hello 世界! 这是一段示例文本。'
-    textToBase64()
-  } else {
-    textToBase64()
   }
+  if (autoMode.value) autoProcess()
 })
 
 function utf8ToBase64(str) {
@@ -109,6 +133,11 @@ function loadExample() {
   <div class="tool-page">
     <h1>🔐 Base64 编解码</h1>
     <div class="tool-actions">
+      <button class="btn" :class="{ 'btn-secondary': !autoMode }" @click="autoMode = !autoMode" style="font-size:12px">
+        自动 {{ autoMode ? 'ON' : 'OFF' }}
+      </button>
+      <span v-if="autoMode && isBase64" style="font-size:12px;color:var(--accent);align-self:center">已识别为 Base64，自动解码</span>
+      <span v-else-if="autoMode && textInput" style="font-size:12px;color:var(--text-muted);align-self:center">自动编码中</span>
       <button class="btn" @click="textToBase64">文本 → Base64</button>
       <button class="btn btn-secondary" @click="base64ToText">Base64 → 文本</button>
       <label class="btn btn-secondary" style="cursor:pointer">

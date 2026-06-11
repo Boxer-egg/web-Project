@@ -7,6 +7,13 @@ const output = ref('')
 const error = ref('')
 const indent = useStorage('json-indent', 2)
 const copyText = ref('复制结果')
+const looksEscaped = ref(false)
+
+function detectEscaped(str) {
+  if (!str || !str.trim()) return false
+  const s = str.trim()
+  return (s.startsWith('"') && s.endsWith('"')) && (s.includes('\\"') || s.includes('\\n') || s.includes('\\t'))
+}
 
 const example = JSON.stringify({
   name: '张三',
@@ -90,6 +97,12 @@ function loadExample() {
 
 watch(input, () => {
   error.value = ''
+  looksEscaped.value = detectEscaped(input.value)
+  if (input.value) {
+    format()
+  } else {
+    output.value = ''
+  }
 }, { immediate: false })
 
 function getUrlParams() {
@@ -117,7 +130,7 @@ onMounted(() => {
       <button class="btn" @click="format">格式化</button>
       <button class="btn btn-secondary" @click="compress">压缩</button>
       <button class="btn btn-secondary" @click="escape">转义</button>
-      <button class="btn btn-secondary" @click="unescape">去转义</button>
+      <button class="btn" :class="looksEscaped ? '' : 'btn-secondary'" @click="unescape">去转义 {{ looksEscaped ? '←' : '' }}</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">加载示例</button>
       <select v-model="indent" class="input" style="width:auto;min-width:80px">

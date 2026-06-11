@@ -103,8 +103,24 @@ const actions = [
   { name: '转列表', fn: toList },
 ]
 
+const chaining = ref(false)
+const originalInput = ref('')
+
 function runAction(fn) {
+  if (!chaining.value) {
+    originalInput.value = input.value
+  }
+  if (output.value) {
+    input.value = output.value
+  }
   fn()
+  chaining.value = true
+}
+
+function resetChain() {
+  input.value = originalInput.value
+  output.value = ''
+  chaining.value = false
 }
 
 async function copy() {
@@ -174,6 +190,10 @@ onMounted(() => {
       <div class="tool-panel">
         <h3>输入</h3>
         <textarea v-model="input" class="textarea" placeholder="输入文本..." rows="12"></textarea>
+        <div v-if="chaining" style="font-size:12px;color:var(--accent);margin-bottom:6px">
+          🔗 复合模式：每次操作基于上次结果
+          <button class="btn btn-sm btn-secondary" @click="resetChain" style="font-size:11px">重置</button>
+        </div>
         <div class="actions-grid">
           <button v-for="act in actions" :key="act.name" class="btn btn-sm btn-secondary" @click="runAction(act.fn)">
             {{ act.name }}

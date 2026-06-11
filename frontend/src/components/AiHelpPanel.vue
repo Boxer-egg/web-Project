@@ -18,13 +18,13 @@ onUnmounted(() => {
 })
 
 const exampleUrl = computed(() => {
-  const base = window.location.origin + window.location.pathname
-  const hash = route.path
+  const base = window.location.origin
+  const path = route.path
   const query = props.params
     .filter(p => p.example)
     .map(p => `${p.name}=${encodeURIComponent(p.example)}`)
     .join('&')
-  return query ? `${base}#${hash}?${query}&auto=1` : `${base}#${hash}?auto=1`
+  return query ? `${base}${path}?${query}&auto=1` : `${base}${path}?auto=1`
 })
 
 async function copyUrl() {

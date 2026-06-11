@@ -83,7 +83,7 @@ function goToTool(path) {
         </details>
         <details class="faq-item">
           <summary>支持 AI 自动化调用吗？</summary>
-          <p>支持。每个工具都支持通过 URL 参数进行 AI 友好模式的调用。例如：<code>/#/tools/json-formatter?input={"a":1}&auto=1</code> 可以自动触发 JSON 格式化并展示结果。每个工具页面都提供了 AI 调用说明。</p>
+          <p>支持。每个工具都支持通过 URL 参数进行 AI 友好模式的调用。例如：<code>/tools/json-formatter?input={"a":1}&auto=1</code> 可以自动触发 JSON 格式化并展示结果。每个工具页面都提供了 AI 调用说明。</p>
         </details>
         <details class="faq-item">
           <summary>工具的输入数据会保存在本地吗？</summary>

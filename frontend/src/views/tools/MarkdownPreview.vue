@@ -156,12 +156,16 @@ def hello():
 `
 }
 
+const copyHtmlText = ref('复制 HTML')
+
 async function copyHtml() {
   try {
     await navigator.clipboard.writeText(html.value)
-    alert('HTML 已复制')
+    copyHtmlText.value = '已复制'
+    setTimeout(() => copyHtmlText.value = '复制 HTML', 2000)
   } catch {
-    alert('复制失败')
+    copyHtmlText.value = '复制失败'
+    setTimeout(() => copyHtmlText.value = '复制 HTML', 2000)
   }
 }
 
@@ -202,7 +206,7 @@ ${html.value}
       <button class="btn btn-secondary" :class="{ active: layout === 'split' }" @click="layout = 'split'">分屏</button>
       <button class="btn btn-secondary" :class="{ active: layout === 'edit' }" @click="layout = 'edit'">编辑</button>
       <button class="btn btn-secondary" :class="{ active: layout === 'preview' }" @click="layout = 'preview'">预览</button>
-      <button class="btn btn-secondary" @click="copyHtml">复制 HTML</button>
+      <button class="btn btn-secondary" @click="copyHtml">{{ copyHtmlText }}</button>
       <button class="btn btn-secondary" @click="exportHtml">导出 HTML</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">示例</button>

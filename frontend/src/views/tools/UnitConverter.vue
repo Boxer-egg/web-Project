@@ -186,13 +186,25 @@ onMounted(() => {
         <h3>输入</h3>
         <input v-model="value" class="input" type="number" placeholder="输入数值">
         <label style="font-size: 13px; color: var(--text-secondary); display: block; margin: 12px 0 4px">从</label>
-        <select v-model="fromUnit" class="input">
-          <option v-for="(unit, key) in currentCategory.units" :key="key" :value="key">{{ unit.name }}</option>
-        </select>
+        <div class="unit-selector">
+          <button
+            v-for="(unit, key) in currentCategory.units"
+            :key="'f'+key"
+            class="unit-btn"
+            :class="{ active: fromUnit === key }"
+            @click="fromUnit = key"
+          >{{ unit.name }}</button>
+        </div>
         <label style="font-size: 13px; color: var(--text-secondary); display: block; margin: 12px 0 4px">到</label>
-        <select v-model="toUnit" class="input">
-          <option v-for="(unit, key) in currentCategory.units" :key="key" :value="key">{{ unit.name }}</option>
-        </select>
+        <div class="unit-selector">
+          <button
+            v-for="(unit, key) in currentCategory.units"
+            :key="'t'+key"
+            class="unit-btn"
+            :class="{ active: toUnit === key }"
+            @click="toUnit = key"
+          >{{ unit.name }}</button>
+        </div>
         <div class="tool-actions" style="margin-top: 16px">
           <button class="btn btn-secondary" @click="clearAll">重置</button>
         </div>
@@ -218,6 +230,30 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.unit-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.unit-btn {
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.unit-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.unit-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
 .result-highlight {
   font-size: 28px;
   font-weight: 600;

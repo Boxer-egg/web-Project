@@ -54,7 +54,7 @@ const tools = [
         :key="tool.path"
         :to="tool.path"
         class="nav-item"
-        :class="{ active: route.path.startsWith(tool.path) }"
+        :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
       >
         <span class="nav-icon">{{ tool.icon }}</span>
         <span v-if="!collapsed" class="nav-text">{{ tool.name }}</span>

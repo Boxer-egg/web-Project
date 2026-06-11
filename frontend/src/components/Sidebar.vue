@@ -33,6 +33,7 @@ const tools = [
   { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️' },
   { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
+  { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
 ]
 </script>
 
@@ -101,6 +102,13 @@ const tools = [
 .logo-icon {
   font-size: 20px;
   flex-shrink: 0;
+}
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 12px 0;
+}
+.sidebar.collapsed .toggle-btn {
+  display: none;
 }
 .toggle-btn {
   background: none;

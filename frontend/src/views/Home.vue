@@ -30,6 +30,7 @@ const tools = [
   { path: '/tools/chinese-converter', name: '简繁体转换', icon: '🈷️', desc: '简体中文与繁体中文互相转换', category: '文本' },
   { path: '/tools/date-calculator', name: '日期计算器', icon: '📅', desc: '日期间隔计算与日期加减', category: '效率' },
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', desc: '专注计时器，自定义专注与休息时长', category: '效率' },
+  { path: '/tools/timer', name: '专业计时器', icon: '⏱️', desc: '倒计时/正计时/时钟，节目单串联，舞台全屏', category: '效率' },
 ]
 
 function goToTool(path) {

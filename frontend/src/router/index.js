@@ -251,6 +251,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/timer',
+      name: 'timer',
+      component: () => import('../views/tools/Timer.vue'),
+      meta: {
+        title: '专业计时器 - 倒计时/正计时/时钟/节目单',
+        description: '专业舞台计时器，支持倒计时、正计时、时钟模式，节目单串联计时，颜色分级预警，全屏显示，快捷键操控。'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "title": "科目一系统学习",
+    "subject": 1,
+    "licenseType": "C1",
+    "version": "2026.06"
+  },
+  "chapters": [
+    {
+      "id": "traffic-signs",
+      "title": "交通信号与标志",
+      "order": 1,
+      "topics": [
+        {
+          "id": "warning-pedestrian",
+          "title": "警告标志：注意行人",
+          "content": "蓝底三角形，内有一个行人图案，用于警告驾驶人减速慢行，注意行人。常见场景包括学校、居民小区、人行横道前。",
+          "tip": "蓝三角、黄三角，警告标志要记牢；看见行人早减速。",
+          "image": "signs/pedestrian.svg",
+          "quizChapter": "交通标志"
+        },
+        {
+          "id": "prohibition-no-entry",
+          "title": "禁令标志：禁止通行",
+          "content": "红色圆圈空白，是禁止通行标志，表示禁止一切车辆和行人通行。通常设置在施工路段、危险区域或单向道路出口。",
+          "tip": "红圈白底一杠红，禁止通行莫强冲。",
+          "image": "signs/no-entry.svg",
+          "quizChapter": "交通标志"
+        }
+      ]
+    },
+    {
+      "id": "license-rules",
+      "title": "驾驶证管理规定",
+      "order": 2,
+      "topics": [
+        {
+          "id": "license-probation",
+          "title": "实习期规定",
+          "content": "机动车驾驶人初次取得汽车类准驾车型后的12个月为实习期。实习期内驾驶机动车应当在车身后部粘贴或悬挂统一式样的实习标志。",
+          "tip": "初次领证12个月，实习标志要贴稳。",
+          "image": "",
+          "quizChapter": "驾驶证"
+        },
+        {
+          "id": "license-validity",
+          "title": "驾驶证有效期",
+          "content": "机动车驾驶证有效期分为六年、十年和长期。在有效期满前九十日内可申请换证。",
+          "tip": "六年十年和长期，期满之前要换证。",
+          "image": "",
+          "quizChapter": "驾驶证"
+        }
+      ]
+    },
+    {
+      "id": "road-rules",
+      "title": "道路通行规则",
+      "order": 3,
+      "topics": [
+        {
+          "id": "speed-limit-no-center",
+          "title": "无中心线城市道路限速",
+          "content": "在没有道路中心线的城市道路上，最高时速不得超过30公里；公路上不得超过40公里。",
+          "tip": "无中心线城市30，公路40要牢记。",
+          "image": "",
+          "quizChapter": "限速"
+        },
+        {
+          "id": "highway-max-speed",
+          "title": "高速公路最高车速",
+          "content": "高速公路最高车速不得超过每小时120公里，最低车速不得低于每小时60公里。",
+          "tip": "高速上限120，下限60别忘记。",
+          "image": "",
+          "quizChapter": "高速公路"
+        }
+      ]
+    },
+    {
+      "id": "violations",
+      "title": "违法处罚与安全驾驶",
+      "order": 4,
+      "topics": [
+        {
+          "id": "drunk-driving",
+          "title": "酒驾与醉驾标准",
+          "content": "车辆驾驶人员血液中的酒精含量大于或等于20mg/100ml、小于80mg/100ml属于饮酒驾驶；大于或等于80mg/100ml属于醉酒驾驶。",
+          "tip": "20算酒驾，80算醉驾，喝酒绝对不开车。",
+          "image": "",
+          "quizChapter": "酒驾"
+        },
+        {
+          "id": "emergency-light",
+          "title": "车辆故障时的灯光使用",
+          "content": "机动车在道路上发生故障，需要停车排除故障时，驾驶人应当立即开启危险报警闪光灯，将机动车移至不妨碍交通的地方停放。",
+          "tip": "车辆故障停路边，双闪开启要明显。",
+          "image": "",
+          "quizChapter": "应急处理"
+        }
+      ]
+    }
+  ]
+}

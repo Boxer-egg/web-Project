@@ -46,6 +46,7 @@ const tools = [
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
   { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
+  { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
 ]
 </script>
 

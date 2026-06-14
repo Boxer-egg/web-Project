@@ -134,6 +134,7 @@ function selectOption(index) {
   const qid = currentQuestion.value.id
   const type = currentQuestion.value.type
 
+  // 单选/判断题：选择后立即显示对错并锁定
   if (type === 'multiple') {
     const current = answers.value[qid] || []
     if (current.includes(index)) {
@@ -141,33 +142,30 @@ function selectOption(index) {
     } else {
       answers.value[qid] = [...current, index].sort((a, b) => a - b)
     }
+    showExplain.value = false
   } else {
     answers.value[qid] = [index]
+    showExplain.value = true
   }
 }
 
-/** 判断是否正确 */
-function isCorrect(qid) {
-  const q = bank.value.questions.find(x => x.id === qid)
-  if (!q) return false
-  const selected = answers.value[qid] || []
-  const correct = q.answer || []
-  return selected.length === correct.length && selected.every(i => correct.includes(i))
-}
-
-/** 是否已答 */
-function isAnswered(qid) {
-  return (answers.value[qid] || []).length > 0
-}
-
-/** 提交答案（考试模式） */
-function submitAnswer() {
+/** 提交多选题答案 */
+function confirmMultiple() {
   if (!currentQuestion.value) return
   if (!isAnswered(currentQuestion.value.id)) {
     error.value = '请先选择答案'
     return
   }
   error.value = ''
+  showExplain.value = true
+}
+
+/** 当前题是否已锁定（单选/判断选中后，或多选提交后） */
+function isLocked() {
+  if (!currentQuestion.value) return false
+  const type = currentQuestion.value.type
+  if (type === 'multiple') return showExplain.value
+  return isAnswered(currentQuestion.value.id)
 }
 
 /** 完成考试/练习 */
@@ -394,6 +392,7 @@ onUnmounted(stopTimer)
               correct: showExplain && (currentQuestion.answer || []).includes(i),
               wrong: showExplain && (answers[currentQuestion.id] || []).includes(i) && !(currentQuestion.answer || []).includes(i)
             }"
+            :disabled="isLocked() && !(answers[currentQuestion.id] || []).includes(i) && !(currentQuestion.answer || []).includes(i)"
             @click="selectOption(i)"
           >
             <span class="option-label">{{ optionLabel(i) }}</span>
@@ -403,13 +402,11 @@ onUnmounted(stopTimer)
 
         <div class="question-actions">
           <button class="btn btn-secondary" @click="prevQuestion" :disabled="currentIndex === 0">上一题</button>
-          <button class="btn btn-secondary" @click="showExplain = !showExplain">
-            {{ showExplain ? '隐藏解析' : '查看解析' }}
-          </button>
+          <button v-if="currentQuestion?.type === 'multiple' && !showExplain" class="btn" @click="confirmMultiple">确认答案</button>
           <button class="btn" @click="nextQuestion" :disabled="currentIndex === sessionQuestions.length - 1">下一题</button>
         </div>
 
-        <div v-if="showExplain" class="explain-box">
+        <div v-if="showExplain || (currentQuestion?.type !== 'multiple' && isAnswered(currentQuestion?.id))" class="explain-box">
           <strong>正确答案：</strong>{{ currentQuestion.answer.map(i => optionLabel(i)).join('、') }}<br>
           <strong>解析：</strong>{{ currentQuestion.explain }}
         </div>

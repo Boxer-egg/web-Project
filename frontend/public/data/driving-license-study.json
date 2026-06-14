@@ -14,17 +14,57 @@
         {
           "id": "warning-pedestrian",
           "title": "警告标志：注意行人",
-          "content": "蓝底三角形，内有一个行人图案，用于警告驾驶人减速慢行，注意行人。常见场景包括学校、居民小区、人行横道前。",
-          "tip": "蓝三角、黄三角，警告标志要记牢；看见行人早减速。",
-          "image": "signs/pedestrian.svg",
+          "content": "黄底黑边三角形，内有一个行人图案，用于警告驾驶人前方行人密集或有人行横道，应减速慢行、注意避让。常见场景包括学校、居民小区、人行横道前。",
+          "tip": "黄三角、黑图案，警告标志要记牢；看见行人早减速。",
+          "image": "/images/driving-signs/pedestrian.gif",
           "quizChapter": "交通标志"
         },
         {
-          "id": "prohibition-no-entry",
-          "title": "禁令标志：禁止通行",
-          "content": "红色圆圈空白，是禁止通行标志，表示禁止一切车辆和行人通行。通常设置在施工路段、危险区域或单向道路出口。",
-          "tip": "红圈白底一杠红，禁止通行莫强冲。",
-          "image": "signs/no-entry.svg",
+          "id": "warning-children",
+          "title": "警告标志：注意儿童",
+          "content": "黄底黑边三角形，内有儿童图案，设在小学、幼儿园、少年宫等儿童频繁出入路段前，提醒驾驶人减速、谨慎驾驶。",
+          "tip": "学校附近黄三角，儿童图案要认清；提前减速防意外。",
+          "image": "/images/driving-signs/children.gif",
+          "quizChapter": "交通标志"
+        },
+        {
+          "id": "prohibition-redlight",
+          "title": "禁令与信号灯：红灯停、绿灯行",
+          "content": "红灯亮时，车辆、行人禁止通行；绿灯亮时，准许通行；黄灯亮时，已越过停止线的可继续通行，未越过的应停车等待。信号灯路口应服从信号灯和交警指挥。",
+          "tip": "红灯停、绿灯行，黄灯亮了等一等；信号灯前别抢行。",
+          "image": "/images/driving-signs/signal-light.gif",
+          "quizChapter": "交通标志"
+        },
+        {
+          "id": "prohibition-no-stopping",
+          "title": "禁令标志：禁止停车",
+          "content": "蓝底红圈红叉，表示在限定范围内禁止一切车辆停放。与禁止长时停放（单斜杠）不同，禁止停车标志不允许临时上下客或装卸货物。",
+          "tip": "红叉蓝底禁停车，单斜杠是禁长停；看清标志再靠边。",
+          "image": "/images/driving-signs/no-stopping.gif",
+          "quizChapter": "交通标志"
+        },
+        {
+          "id": "mandatory-straight",
+          "title": "指示标志：直行",
+          "content": "蓝底白色箭头，表示一切车辆只准直行。通常设在交叉口前，用于明确车道行驶方向，驾驶人应按指示方向行驶，不得转弯或掉头。",
+          "tip": "蓝底白箭是指示，直行标志别转弯；按线行驶不违章。",
+          "image": "/images/driving-signs/straight.gif",
+          "quizChapter": "交通标志"
+        },
+        {
+          "id": "mandatory-turnright",
+          "title": "指示标志：向左或向右转弯",
+          "content": "蓝底白色箭头，表示车辆只准按箭头方向转弯。此类标志用于规范交叉口车流方向，驾驶人应提前选择车道，不得直行。",
+          "tip": "蓝底白箭指转弯，提前变道别直行；指示标志要遵守。",
+          "image": "/images/driving-signs/turn-right.gif",
+          "quizChapter": "交通标志"
+        },
+        {
+          "id": "guide-exit",
+          "title": "指路标志：出口预告与方向选择",
+          "content": "绿色为高速公路、城市快速路指路标志，用于预告出口编号、地点方向和距离。看到出口预告标志后，应提前变道、减速，按标志指示驶出，禁止在出口附近突然变道或倒车。",
+          "tip": "绿色指路看出口，提前变道不迟疑；错过出口继续走，切勿倒车或逆行。",
+          "image": "/images/driving-signs/exit-signs.jpg",
           "quizChapter": "交通标志"
         }
       ]
@@ -68,9 +108,9 @@
         {
           "id": "highway-max-speed",
           "title": "高速公路最高车速",
-          "content": "高速公路最高车速不得超过每小时120公里，最低车速不得低于每小时60公里。",
-          "tip": "高速上限120，下限60别忘记。",
-          "image": "",
+          "content": "高速公路最高车速不得超过每小时120公里，最低车速不得低于每小时60公里。同方向有2条车道的，左侧车道最低时速100公里；3条以上车道的，最左侧110公里，中间90公里。",
+          "tip": "高速上限120，下限60别忘记；分道限速要分清。",
+          "image": "/images/driving-signs/min-speed.gif",
           "quizChapter": "高速公路"
         }
       ]

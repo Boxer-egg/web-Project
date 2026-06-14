@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+const route = useRoute()
 
 /** 题目类型 */
 const QUESTION_TYPES = {
@@ -87,7 +90,16 @@ function startSession(selectedMode) {
   } else if (selectedMode === 'exam') {
     questions = shuffleArray([...bank.value.questions]).slice(0, Math.min(100, bank.value.questions.length))
   } else {
-    questions = [...bank.value.questions]
+    const chapter = route.query.chapter
+    if (chapter) {
+      questions = bank.value.questions.filter(q => q.chapter === chapter)
+      if (!questions.length) {
+        error.value = `章节「${chapter}」暂无题目`
+        return
+      }
+    } else {
+      questions = [...bank.value.questions]
+    }
   }
 
   sessionQuestions.value = questions
@@ -304,6 +316,11 @@ onUnmounted(stopTimer)
 
     <!-- 首页 -->
     <div v-if="view === 'home'" class="quiz-home">
+      <div v-if="route.query.chapter" class="card" style="margin-bottom:16px;padding:12px;background:var(--bg-secondary)"
+      >
+        <span style="font-size:14px">当前为「{{ route.query.chapter }}」章节练习</span>
+      </div>
+
       <div class="quiz-stats card" style="margin-bottom:20px">
         <h3 style="font-size:16px;margin-bottom:12px">学习统计</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px">

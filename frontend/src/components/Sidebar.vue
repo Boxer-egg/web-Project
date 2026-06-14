@@ -45,6 +45,7 @@ const tools = [
   { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
+  { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
 ]
 </script>
 

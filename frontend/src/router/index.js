@@ -260,6 +260,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/driving-license-quiz',
+      name: 'driving-license-quiz',
+      component: () => import('../views/tools/DrivingLicenseQuiz.vue'),
+      meta: {
+        title: '驾考刷题 - C1/C2 科目一模拟考试',
+        description: '在线驾考刷题工具，支持顺序练习、随机抽题、模拟考试和错题本，C1/C2 科目一题库离线可用。'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

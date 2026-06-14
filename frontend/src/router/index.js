@@ -260,6 +260,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/driving-license-study',
+      name: 'driving-license-study',
+      component: () => import('../views/tools/DrivingLicenseStudy.vue'),
+      meta: {
+        title: '科目一系统学习 - 驾考理论知识',
+        description: '系统学习 C1/C2 科目一理论知识，按章节逐步掌握交通标志、通行规则、驾驶证规定和安全驾驶要点。'
+      }
+    },
+    {
       path: '/tools/driving-license-quiz',
       name: 'driving-license-quiz',
       component: () => import('../views/tools/DrivingLicenseQuiz.vue'),

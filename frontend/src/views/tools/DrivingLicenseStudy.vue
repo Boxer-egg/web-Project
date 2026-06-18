@@ -160,7 +160,7 @@ watch(currentTopicId, (id) => {
         >
           <div class="chapter-header">
             <h3>🚦 交通标志图库</h3>
-            <span class="chapter-count">236 个标志</span>
+            <span class="chapter-count">230 个标志</span>
           </div>
           <p style="font-size:14px;color:var(--text-secondary);line-height:1.6;margin:0">
             系统收录深圳交警 213 个标志图解和 GB 5768 标准 23 页图集，支持分类筛选、搜索和详情查看，与学习/刷题形成一站式闭环。

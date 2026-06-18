@@ -257,14 +257,6 @@
       "description": "设在禁止超车的终点。"
     },
     {
-      "id": "shenzhen-4466979",
-      "title": "易滑路段",
-      "category": "警告",
-      "source": "shenzhen",
-      "image": "/images/traffic-signs/易滑路段_32.jpg",
-      "description": "设在路面的摩擦系数不能满足相应行驶速度下要求紧急刹车距离的路段前适当位置。"
-    },
-    {
       "id": "shenzhen-4466985",
       "title": "驼峰桥",
       "category": "其他",
@@ -439,14 +431,6 @@
       "source": "shenzhen",
       "image": "/images/traffic-signs/计重收费.png",
       "description": "设置于采用计重收费的收费站前适当位置。"
-    },
-    {
-      "id": "shenzhen-4467253",
-      "title": "解除禁止超车",
-      "category": "禁令",
-      "source": "shenzhen",
-      "image": "/images/traffic-signs/解除禁止超车_55.png",
-      "description": "图解：解除禁止超车。"
     },
     {
       "id": "shenzhen-4467256",
@@ -657,14 +641,6 @@
       "description": "禁止长时停车线 禁止停车线"
     },
     {
-      "id": "shenzhen-4467738",
-      "title": "禁止跨越同向车行道分界线",
-      "category": "标线",
-      "source": "shenzhen",
-      "image": "/images/traffic-signs/禁止跨越同向车行道分界线_82.jpg",
-      "description": "禁止跨越同向车行道分界线"
-    },
-    {
       "id": "shenzhen-4467707",
       "title": "禁止跨越对向车行道分界线",
       "category": "标线",
@@ -777,14 +753,6 @@
       "description": "车行道边缘白色实线 车行道边缘白色虚线 车行道边缘白色虚实线 黄色单实线车行道边缘线"
     },
     {
-      "id": "shenzhen-4468502",
-      "title": "潮汐车道线",
-      "category": "标线",
-      "source": "shenzhen",
-      "image": "/images/traffic-signs/潮汐车道线.jpg",
-      "description": "潮汐车道线"
-    },
-    {
       "id": "shenzhen-4468495",
       "title": "可跨越同向车行道分界线",
       "category": "标线",
@@ -887,14 +855,6 @@
       "source": "shenzhen",
       "image": "/images/traffic-signs/地点指引标志.jpg",
       "description": "地点识别"
-    },
-    {
-      "id": "shenzhen-4469396",
-      "title": "路径指引标志",
-      "category": "其他",
-      "source": "shenzhen",
-      "image": "/images/traffic-signs/路径指引标志_111.jpg",
-      "description": "国道编号 国道编号 省道编号 县道编号 乡道编号 街道名称 街道名称 路名牌 地点距离"
     },
     {
       "id": "shenzhen-4469452",
@@ -1295,14 +1255,6 @@
       "source": "shenzhen",
       "image": "/images/traffic-signs/禁止电动三轮车驶入标志.gif",
       "description": "禁止电动三轮车驶入 表示禁止电动三轮车驶入。"
-    },
-    {
-      "id": "shenzhen-4469946",
-      "title": "禁止载货汽车驶入标志",
-      "category": "禁令",
-      "source": "shenzhen",
-      "image": "/images/traffic-signs/禁止载货汽车驶入标志.gif",
-      "description": "禁止载货汽车驶入 表示禁止载货汽车驶入。"
     },
     {
       "id": "shenzhen-4469924",

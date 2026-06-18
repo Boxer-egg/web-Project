@@ -1,42 +1,72 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
-const PAGE_SIZE = 20
-
-const rawData = ref({})
-const ids = ref([])
+const meta = ref(null)
 const loading = ref(true)
+const pageLoading = ref(false)
 const error = ref('')
 const currentPage = ref(1)
+const pageCache = ref({})
 const showAnswer = ref({})
 
-const questions = computed(() => {
-  return ids.value.map(id => rawData.value[id]).filter(Boolean)
-})
+const totalCount = computed(() => meta.value?.total || 0)
+const pageSize = computed(() => meta.value?.pageSize || 20)
+const totalPages = computed(() => meta.value?.totalPages || 1)
 
-const totalCount = computed(() => questions.value.length)
-const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / PAGE_SIZE)))
+const pagedQuestions = computed(() => pageCache.value[currentPage.value] || [])
 
-const pagedQuestions = computed(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
-  return questions.value.slice(start, start + PAGE_SIZE)
-})
-
-async function loadData() {
+async function loadMeta() {
   try {
-    const [rawRes, idsRes] = await Promise.all([
-      fetch('/data/jsyks-kms4/tiku_raw.json'),
-      fetch('/data/jsyks-kms4/ids.json'),
-    ])
-    if (!rawRes.ok || !idsRes.ok) throw new Error('题库加载失败')
-    rawData.value = await rawRes.json()
-    ids.value = await idsRes.json()
+    const res = await fetch('/data/jsyks-kms4/meta.json')
+    if (!res.ok) throw new Error('题库索引加载失败')
+    meta.value = await res.json()
     currentPage.value = 1
+    await loadPage(1)
   } catch (e) {
     error.value = e.message || '加载失败'
   } finally {
     loading.value = false
   }
+}
+
+async function loadPage(p) {
+  if (!meta.value || p < 1 || p > totalPages.value) return
+  if (pageCache.value[p]) {
+    currentPage.value = p
+    showAnswer.value = {}
+    scrollTop()
+    prefetchPage(p + 1)
+    return
+  }
+  pageLoading.value = true
+  try {
+    const res = await fetch(`/data/jsyks-kms4/pages/page-${p.toString().padStart(3, '0')}.json`)
+    if (!res.ok) throw new Error(`第 ${p} 页加载失败`)
+    const data = await res.json()
+    pageCache.value[p] = data
+    currentPage.value = p
+    showAnswer.value = {}
+    scrollTop()
+    prefetchPage(p + 1)
+  } catch (e) {
+    error.value = e.message || '加载失败'
+  } finally {
+    pageLoading.value = false
+  }
+}
+
+function prefetchPage(p) {
+  if (!meta.value || p < 1 || p > totalPages.value || pageCache.value[p]) return
+  const link = document.createElement('link')
+  link.rel = 'prefetch'
+  link.href = `/data/jsyks-kms4/pages/page-${p.toString().padStart(3, '0')}.json`
+  link.as = 'fetch'
+  link.onload = () => link.remove()
+  document.head.appendChild(link)
+}
+
+function scrollTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 function parseQuestion(tm, tx) {
@@ -62,13 +92,27 @@ function toggleAnswer(globalIndex) {
 
 function goPage(p) {
   const target = Math.min(Math.max(1, p), totalPages.value)
-  if (target === currentPage.value) return
-  currentPage.value = target
-  showAnswer.value = {}
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  if (target !== currentPage.value) {
+    loadPage(target)
+  }
 }
 
-onMounted(loadData)
+function onKeydown(e) {
+  if (e.key === 'ArrowLeft') {
+    goPage(currentPage.value - 1)
+  } else if (e.key === 'ArrowRight') {
+    goPage(currentPage.value + 1)
+  }
+}
+
+onMounted(() => {
+  loadMeta()
+  window.addEventListener('keydown', onKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <template>
@@ -80,24 +124,28 @@ onMounted(loadData)
     </div>
     <div v-else-if="error" class="card error-msg" style="padding:20px">
       {{ error }}
-      <button class="btn btn-sm" style="margin-top:12px" @click="loadData">重试</button>
+      <button class="btn btn-sm" style="margin-top:12px" @click="loadMeta">重试</button>
     </div>
     <template v-else>
       <div class="card summary" style="padding:16px;margin-bottom:16px">
         <div class="summary-row">
-          <span>共 {{ totalCount }} 题，每页 {{ PAGE_SIZE }} 题</span>
+          <span>共 {{ totalCount }} 题，每页 {{ pageSize }} 题</span>
           <span>第 {{ currentPage }} / {{ totalPages }} 页</span>
         </div>
       </div>
 
-      <div class="question-list">
+      <div v-if="pageLoading" class="card" style="text-align:center;padding:40px">
+        正在加载第 {{ currentPage }} 页...
+      </div>
+
+      <div v-else class="question-list">
         <div
           v-for="(q, idx) in pagedQuestions"
           :key="q.tkId"
           class="card question-card"
         >
           <div class="question-header">
-            <span class="question-index">第 {{ (currentPage - 1) * PAGE_SIZE + idx + 1 }} 题</span>
+            <span class="question-index">第 {{ (currentPage - 1) * pageSize + idx + 1 }} 题</span>
             <span v-if="q.tags" class="question-tags">{{ q.tags.split('|').join(' · ') }}</span>
           </div>
 
@@ -108,6 +156,7 @@ onMounted(loadData)
               :src="imagePath(q.tp)"
               alt="题图"
               loading="lazy"
+              decoding="async"
               @error="$event.target.style.display='none'"
             >
           </div>
@@ -116,7 +165,7 @@ onMounted(loadData)
             <li
               v-for="(opt, oidx) in parseQuestion(q.tm, q.tx).options"
               :key="oidx"
-              :class="{ correct: showAnswer[(currentPage - 1) * PAGE_SIZE + idx] && q.da === (q.tx === 1 ? opt : optionLabel(oidx)) }"
+              :class="{ correct: showAnswer[(currentPage - 1) * pageSize + idx] && q.da === (q.tx === 1 ? opt : optionLabel(oidx)) }"
             >
               <span class="opt-label">{{ optionLabel(oidx) }}.</span>
               <span class="opt-text">{{ opt }}</span>
@@ -126,11 +175,11 @@ onMounted(loadData)
           <div class="answer-row">
             <button
               class="btn btn-sm btn-secondary"
-              @click="toggleAnswer((currentPage - 1) * PAGE_SIZE + idx)"
+              @click="toggleAnswer((currentPage - 1) * pageSize + idx)"
             >
-              {{ showAnswer[(currentPage - 1) * PAGE_SIZE + idx] ? '隐藏答案' : '显示答案' }}
+              {{ showAnswer[(currentPage - 1) * pageSize + idx] ? '隐藏答案' : '显示答案' }}
             </button>
-            <span v-if="showAnswer[(currentPage - 1) * PAGE_SIZE + idx]" class="answer-text">
+            <span v-if="showAnswer[(currentPage - 1) * pageSize + idx]" class="answer-text">
               答案：<b>{{ q.da }}</b>
             </span>
           </div>

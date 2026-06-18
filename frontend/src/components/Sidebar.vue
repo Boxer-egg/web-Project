@@ -47,6 +47,7 @@ const tools = [
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
   { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
   { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
+  { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦' },
 ]
 </script>
 

@@ -278,6 +278,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/traffic-signs',
+      name: 'traffic-signs',
+      component: () => import('../views/tools/TrafficSignGallery.vue'),
+      meta: {
+        title: '交通标志图库 - 驾考理论知识',
+        description: '深圳交警与 GB 5768 道路交通标志图库，支持分类筛选、搜索和查看详情。'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

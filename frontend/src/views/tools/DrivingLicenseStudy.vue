@@ -144,6 +144,13 @@ watch(currentTopicId, (id) => {
         <button v-else class="btn" style="margin-top:16px;width:100%" @click="startStudy()">
           重新学习
         </button>
+        <button
+          class="btn btn-secondary"
+          style="margin-top:12px;width:100%"
+          @click="router.push('/tools/traffic-signs')"
+        >
+          查看全部标志图库
+        </button>
       </div>
 
       <div class="study-chapters">
@@ -160,6 +167,13 @@ watch(currentTopicId, (id) => {
               :class="{ completed: isCompleted(topic.id) }"
               @click="goToTopic(topic.id)"
             >
+              <img
+                v-if="topic.image"
+                :src="topic.image"
+                class="topic-thumb"
+                :alt="topic.title"
+                @error="$event.target.style.display = 'none'"
+              >
               <span class="topic-status">{{ isCompleted(topic.id) ? '✓' : '○' }}</span>
               <span class="topic-title">{{ topic.title }}</span>
             </button>

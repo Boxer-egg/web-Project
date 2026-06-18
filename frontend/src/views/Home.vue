@@ -31,6 +31,9 @@ const tools = [
   { path: '/tools/date-calculator', name: '日期计算器', icon: '📅', desc: '日期间隔计算与日期加减', category: '效率' },
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', desc: '专注计时器，自定义专注与休息时长', category: '效率' },
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️', desc: '倒计时/正计时/时钟，节目单串联，舞台全屏', category: '效率' },
+  { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚', desc: '系统学习 C1/C2 科目一理论知识', category: '驾考' },
+  { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗', desc: '科目一顺序/随机/模拟考试练习', category: '驾考' },
+  { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦', desc: '分类浏览交通标志与说明', category: '驾考' },
 ]
 
 function goToTool(path) {

@@ -287,6 +287,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/jsyks-kms4',
+      name: 'jsyks-kms4',
+      component: () => import('../views/tools/JsyksKms4View.vue'),
+      meta: {
+        title: '科目四顺序练习 - 驾考刷题',
+        description: '驾校一点通 2026 科目四顺序练习题库，共 1550 题，支持分页浏览和答案查看。'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

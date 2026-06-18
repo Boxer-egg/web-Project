@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const signs = ref([])
 const loading = ref(true)
@@ -27,6 +27,14 @@ const filteredSigns = computed(() => {
   return list
 })
 
+const selectedIndex = computed(() => {
+  if (!selectedSign.value) return -1
+  return filteredSigns.value.findIndex(s => s.id === selectedSign.value.id)
+})
+
+const hasPrev = computed(() => selectedIndex.value > 0)
+const hasNext = computed(() => selectedIndex.value >= 0 && selectedIndex.value < filteredSigns.value.length - 1)
+
 async function loadData() {
   try {
     const res = await fetch('/data/traffic-signs.json')
@@ -48,7 +56,50 @@ function closeDetail() {
   selectedSign.value = null
 }
 
-onMounted(loadData)
+function prevSign() {
+  if (!hasPrev.value) return
+  selectedSign.value = filteredSigns.value[selectedIndex.value - 1]
+}
+
+function nextSign() {
+  if (!hasNext.value) return
+  selectedSign.value = filteredSigns.value[selectedIndex.value + 1]
+}
+
+function onKeydown(e) {
+  if (!selectedSign.value) return
+  if (e.key === 'Escape') {
+    closeDetail()
+  } else if (e.key === 'ArrowLeft') {
+    prevSign()
+  } else if (e.key === 'ArrowRight') {
+    nextSign()
+  }
+}
+
+let touchStartX = 0
+function onTouchStart(e) {
+  touchStartX = e.changedTouches[0].screenX
+}
+function onTouchEnd(e) {
+  const endX = e.changedTouches[0].screenX
+  const delta = endX - touchStartX
+  if (Math.abs(delta) < 50) return
+  if (delta > 0) {
+    prevSign()
+  } else {
+    nextSign()
+  }
+}
+
+onMounted(() => {
+  loadData()
+  window.addEventListener('keydown', onKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <template>
@@ -104,7 +155,20 @@ onMounted(loadData)
       </div>
     </div>
 
-    <div v-if="selectedSign" class="modal-overlay" @click.self="closeDetail">
+    <div
+      v-if="selectedSign"
+      class="modal-overlay"
+      @click.self="closeDetail"
+      @touchstart="onTouchStart"
+      @touchend="onTouchEnd"
+    >
+      <button
+        v-if="hasPrev"
+        class="nav-arrow nav-prev"
+        @click.stop="prevSign"
+      >
+        ‹
+      </button>
       <div class="modal-card card">
         <button class="modal-close" @click="closeDetail">✕</button>
         <h2>{{ selectedSign.title }}</h2>
@@ -113,7 +177,17 @@ onMounted(loadData)
         </div>
         <p class="modal-desc">{{ selectedSign.description || '暂无说明' }}</p>
         <span class="sign-category">{{ selectedSign.category }}</span>
+        <div class="modal-counter">
+          {{ selectedIndex + 1 }} / {{ filteredSigns.length }}
+        </div>
       </div>
+      <button
+        v-if="hasNext"
+        class="nav-arrow nav-next"
+        @click.stop="nextSign"
+      >
+        ›
+      </button>
     </div>
   </div>
 </template>
@@ -202,7 +276,7 @@ onMounted(loadData)
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,7 +285,7 @@ onMounted(loadData)
 }
 .modal-card {
   position: relative;
-  max-width: 600px;
+  max-width: 900px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -233,7 +307,7 @@ onMounted(loadData)
 }
 .modal-image img {
   max-width: 100%;
-  max-height: 50vh;
+  max-height: 70vh;
   border-radius: var(--radius);
   border: 1px solid var(--border);
 }
@@ -243,6 +317,38 @@ onMounted(loadData)
   color: var(--text-primary);
   margin-bottom: 12px;
 }
+.modal-counter {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+.nav-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+  transition: background 0.2s;
+}
+.nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.nav-prev {
+  left: 20px;
+}
+.nav-next {
+  right: 20px;
+}
 
 @media (max-width: 600px) {
   .sign-grid {
@@ -251,6 +357,20 @@ onMounted(loadData)
   }
   .sign-image-wrap {
     height: 90px;
+  }
+  .nav-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+  }
+  .nav-prev {
+    left: 8px;
+  }
+  .nav-next {
+    right: 8px;
+  }
+  .modal-card {
+    padding: 16px;
   }
 }
 </style>

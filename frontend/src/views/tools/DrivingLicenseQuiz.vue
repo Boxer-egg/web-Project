@@ -275,6 +275,31 @@ function shuffleArray(arr) {
   return copy
 }
 
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false
+  }
+  return true
+}
+
+/** 是否已作答 */
+function isAnswered(qid) {
+  return qid != null && (answers.value[qid] || []).length > 0
+}
+
+/** 是否答对 */
+function isCorrect(qid) {
+  const q = sessionQuestions.value.find(x => x.id === qid)
+  if (!q) return false
+  const ans = answers.value[qid] || []
+  if (!ans.length) return false
+  return arraysEqual(
+    [...ans].sort((a, b) => a - b),
+    [...(q.answer || [])].sort((a, b) => a - b)
+  )
+}
+
 /** 选项标签 */
 function optionLabel(i) {
   return String.fromCharCode(65 + i)

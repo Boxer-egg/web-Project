@@ -154,9 +154,54 @@ def build_shenzhen():
     return results
 
 
+PDF_PATH = "/Users/box/Downloads/69da61319333ade9e9774f63e21b5dab.pdf"
+
+
+def build_gb5768():
+    results = []
+    # 获取总页数
+    info = subprocess.run(
+        ["pdfinfo", PDF_PATH], capture_output=True, text=True, check=True
+    ).stdout
+    pages_match = re.search(r"Pages:\s+(\d+)", info)
+    if not pages_match:
+        raise RuntimeError("无法获取 PDF 页数")
+    total_pages = int(pages_match.group(1))
+    for page in range(1, total_pages + 1):
+        img_name = f"gb5768-page-{page:02d}.jpg"
+        img_path = os.path.join(OUT_DIR, img_name)
+        if not os.path.exists(img_path):
+            subprocess.run(
+                ["pdftoppm", "-png", "-r", "200", "-f", str(page), "-l", str(page), PDF_PATH, "/tmp/gb-page"],
+                check=True,
+            )
+            # 转换为 jpg 并压缩尺寸
+            subprocess.run(
+                ["sips", "-Z", "1200", "-s", "format", "jpeg", f"/tmp/gb-page-{page:02d}.png", "--out", img_path],
+                check=True,
+            )
+        # 提取该页文字
+        text = subprocess.run(
+            ["pdftotext", "-layout", "-f", str(page), "-l", str(page), PDF_PATH, "-"],
+            capture_output=True, text=True, check=True,
+        ).stdout
+        text = re.sub(r"\s+", " ", text).strip()[:300]
+        results.append({
+            "id": f"gb5768-page-{page:02d}",
+            "title": f"GB 5768 第{page}页",
+            "category": "GB 5768 图集",
+            "source": "gb5768",
+            "image": f"/images/traffic-signs/{img_name}",
+            "description": text,
+            "page": page,
+        })
+    return results
+
+
 if __name__ == "__main__":
     shenzhen_signs = build_shenzhen()
-    output = {"signs": shenzhen_signs}
+    gb_signs = build_gb5768()
+    output = {"signs": shenzhen_signs + gb_signs}
     with open(os.path.join(DATA_DIR, "traffic-signs.json"), "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f"深圳交警：生成 {len(shenzhen_signs)} 条记录")
+    print(f"深圳交警：{len(shenzhen_signs)} 条，GB 5768：{len(gb_signs)} 页")

@@ -55,6 +55,12 @@ function calculate() {
 </template>
 
 <style scoped>
+.tool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 .config-row { margin-bottom: 16px; }
 .config-row label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
 .result-card { background: var(--bg-secondary); padding: 20px; border-radius: var(--radius); text-align: center; }

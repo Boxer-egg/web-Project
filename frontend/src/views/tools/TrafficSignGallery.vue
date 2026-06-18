@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 const signs = ref([])
 const loading = ref(true)
@@ -7,6 +7,8 @@ const error = ref('')
 const search = ref('')
 const activeCategory = ref('全部')
 const selectedSign = ref(null)
+const currentPage = ref(1)
+const PAGE_SIZE = 40
 
 const categories = computed(() => {
   const set = new Set(signs.value.map(s => s.category).filter(Boolean))
@@ -25,6 +27,17 @@ const filteredSigns = computed(() => {
     list = list.filter(s => s.title.toLowerCase().includes(kw))
   }
   return list
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredSigns.value.length / PAGE_SIZE)))
+
+const pagedSigns = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return filteredSigns.value.slice(start, start + PAGE_SIZE)
+})
+
+watch([search, activeCategory], () => {
+  currentPage.value = 1
 })
 
 const selectedIndex = computed(() => {
@@ -135,9 +148,14 @@ onUnmounted(() => {
     <div v-else-if="filteredSigns.length === 0" class="card" style="text-align:center;padding:40px">
       没有找到匹配的标志
     </div>
-    <div v-else class="sign-grid">
+    <div v-else class="card summary" style="padding:12px 16px;margin-bottom:16px">
+      <span style="font-size:14px;color:var(--text-secondary)">
+        共 {{ filteredSigns.length }} 个标志，第 {{ currentPage }} / {{ totalPages }} 页
+      </span>
+    </div>
+    <div v-if="pagedSigns.length" class="sign-grid">
       <div
-        v-for="sign in filteredSigns"
+        v-for="sign in pagedSigns"
         :key="sign.id"
         class="card sign-card"
         @click="openDetail(sign)"
@@ -147,11 +165,28 @@ onUnmounted(() => {
             :src="sign.image"
             :alt="sign.title"
             loading="lazy"
+            decoding="async"
             @error="$event.target.style.display = 'none'"
           >
         </div>
         <div class="sign-title">{{ sign.title }}</div>
         <span class="sign-category">{{ sign.category }}</span>
+      </div>
+    </div>
+
+    <div v-if="totalPages > 1" class="card pagination-card" style="padding:16px;margin-top:16px">
+      <div class="pagination">
+        <button class="btn btn-sm" :disabled="currentPage === 1" @click="currentPage--">上一页</button>
+        <input
+          v-model.number="currentPage"
+          type="number"
+          min="1"
+          :max="totalPages"
+          class="page-input"
+          @change="currentPage = Math.min(Math.max(1, currentPage), totalPages)"
+        >
+        <span class="page-total">/ {{ totalPages }}</span>
+        <button class="btn btn-sm" :disabled="currentPage === totalPages" @click="currentPage++">下一页</button>
       </div>
     </div>
 
@@ -348,6 +383,34 @@ onUnmounted(() => {
 }
 .nav-next {
   right: 20px;
+}
+
+.summary {
+  display: flex;
+  justify-content: center;
+}
+.pagination-card {
+  display: flex;
+  justify-content: center;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-input {
+  width: 60px;
+  padding: 6px 8px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+.page-total {
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
 @media (max-width: 600px) {

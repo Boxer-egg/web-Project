@@ -1,0 +1,1708 @@
+{
+  "signs": [
+    {
+      "id": "shenzhen-8397902",
+      "title": "无人看守铁路道口",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/无人看守铁路道口.png",
+      "description": "表示：前方路口有无人看守铁路道口，用以警告车辆驾驶人注意慢行或及时停车。"
+    },
+    {
+      "id": "shenzhen-8329649",
+      "title": "有人看守铁路道口",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/有人看守铁路道口.png",
+      "description": "表示：道路前方有人看守的铁路道口，用以警告车辆驾驶人注意慢行或及时停车。"
+    },
+    {
+      "id": "shenzhen-8250296",
+      "title": "两侧通行",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/两侧通行.png",
+      "description": "表示：前方两侧道路均可通行，用于引导行车方向，提示道路使用者前方线行变化，注意谨慎驾驶。设于中央隔离实施端部、渠化设施端部、桥头等。"
+    },
+    {
+      "id": "shenzhen-8165219",
+      "title": "禁止车辆临时或长时停放",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止车辆临时或长时停放.png",
+      "description": "表示：在限定范围内，禁止一切车辆停放。"
+    },
+    {
+      "id": "shenzhen-8049151",
+      "title": "立体交叉直行和左转弯行驶",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/立体交叉直行和左转弯行驶.png",
+      "description": "立体交叉直行和左转弯行驶 表示：一切车辆在立体交叉处可以直行和按图示路线左转弯行驶。"
+    },
+    {
+      "id": "shenzhen-7974291",
+      "title": "禁止车辆长时停车",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止车辆长时停车.png",
+      "description": "表示：在限定的范围内，禁止一切车辆长时停、放，临时停车不受限制。"
+    },
+    {
+      "id": "shenzhen-7848634",
+      "title": "前方1Km右道封闭",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/前方1Km右道封闭.png",
+      "description": "表示：前方1Km右道封闭"
+    },
+    {
+      "id": "shenzhen-7759589",
+      "title": "多乘员车辆专用车道",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/多乘员车辆专用车道.png",
+      "description": "多乘员车辆专用车道 表示：该车道只供多乘员的车辆行驶。"
+    },
+    {
+      "id": "shenzhen-7312744",
+      "title": "大型车靠右",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/大型车靠右.png",
+      "description": "提醒行驶速度较慢的大型车辆靠右行驶"
+    },
+    {
+      "id": "shenzhen-7131603",
+      "title": "禁止运输危险物品车辆驶入",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止运输危险物品车辆驶入.png",
+      "description": "表示：该路段禁止运输危险物品车辆驶入"
+    },
+    {
+      "id": "shenzhen-6738809",
+      "title": "避险车道",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/避险车道.jpg",
+      "description": "避险车道 表示：在长陡下坡路段行车道外侧，增设的供速度失控车辆驶离正线,安全减速的专用车道。"
+    },
+    {
+      "id": "shenzhen-6858123",
+      "title": "直行",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/直行.jpg",
+      "description": "直行 表示一切车辆只准前行"
+    },
+    {
+      "id": "shenzhen-6858126",
+      "title": "停车位",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/停车位.jpg",
+      "description": "停车位 表示机动车允许停放的区域。"
+    },
+    {
+      "id": "shenzhen-4466733",
+      "title": "禁止汽车拖、挂车通行",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止汽车拖、挂车通行.png",
+      "description": "设在禁止汽车拖、挂车通行路段路口。"
+    },
+    {
+      "id": "shenzhen-4466745",
+      "title": "禁止电动三轮车驶入",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止电动三轮车驶入.jpg",
+      "description": "禁止电动三轮车驶入 表示禁止电动三轮车驶入，设在禁止电动三轮车驶入路段的入口处。"
+    },
+    {
+      "id": "shenzhen-4466753",
+      "title": "视距不良双车道路面局部施工时设施布设例",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/视距不良双车道路面局部施工时设施布设例.jpg",
+      "description": "视距不良双车道路面局部施工时设施布设例"
+    },
+    {
+      "id": "shenzhen-4466808",
+      "title": "右道封闭标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/右道封闭标志.png",
+      "description": "以通告高速公路及一般道路交通阻断、绕行等情况。设在道路施工、养护等路段前适当位置。"
+    },
+    {
+      "id": "shenzhen-4466820",
+      "title": "禁止载货汽车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止载货汽车驶入标志.jpg",
+      "description": "设在载货机动车驶入的路段入口处。"
+    },
+    {
+      "id": "shenzhen-4466831",
+      "title": "潮汐车道线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/潮汐车道线.png",
+      "description": "潮汐车道线 \"潮汐车道\"是指根据早晚交通流量不同情况，对有条件的道路，试点开辟潮汐车道，通过车道灯的指示方向变化，控制主干道车道行驶方向，来调整车道数，提高车道使用效率。比如，早晨从城外往城里走的车多，就可以通过增加某一道路进城方向车道、减少出城方向车道的方式，缓解交通压力，疏导交通。晚高峰时分则可以采取与之相反的车道调配疏导车辆出城。"
+    },
+    {
+      "id": "shenzhen-4466844",
+      "title": "易滑路段",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/易滑路段.jpg",
+      "description": "设在路面的摩擦系数不能满足相应行驶速度下要求紧急刹车距离的路段前适当位置。"
+    },
+    {
+      "id": "shenzhen-4466857",
+      "title": "禁止路边长时停放车辆线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止路边长时停放车辆线.jpg",
+      "description": "禁止路边长时停放车辆线"
+    },
+    {
+      "id": "shenzhen-4466869",
+      "title": "双车道路面局部施工时设施布设例",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/双车道路面局部施工时设施布设例.jpg",
+      "description": "双车道路面局部施工时设施布设例"
+    },
+    {
+      "id": "shenzhen-4466875",
+      "title": "禁止跨越同向车行道分界线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止跨越同向车行道分界线.jpg",
+      "description": "禁止跨越同向车行道分界线"
+    },
+    {
+      "id": "shenzhen-4466888",
+      "title": "改道施工时设施布设例",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/改道施工时设施布设例.jpg",
+      "description": "改道施工时设施布设例"
+    },
+    {
+      "id": "shenzhen-4466898",
+      "title": "向左行驶",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/向左行驶.jpg",
+      "description": "，施工路段警示，提醒车辆驾驶员向左行驶，减少交通事故的发生。"
+    },
+    {
+      "id": "shenzhen-4466907",
+      "title": "移动性施工",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/移动性施工.png",
+      "description": "为黄底黑色图案、黑边框、反光，背面斜插红色旗面。"
+    },
+    {
+      "id": "shenzhen-4466918",
+      "title": "双向交通",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/双向交通.png",
+      "description": "。"
+    },
+    {
+      "id": "shenzhen-4466927",
+      "title": "会车让行",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/会车让行.jpg",
+      "description": "的车辆必须停车，让对方车辆先行。"
+    },
+    {
+      "id": "shenzhen-4466941",
+      "title": "注意牲畜",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意牲畜.png",
+      "description": "设在经常有牲畜活动的路段特别是视线不良的路段以前适当位置。"
+    },
+    {
+      "id": "shenzhen-4466952",
+      "title": "十字交叉",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/十字交叉.jpg",
+      "description": "。"
+    },
+    {
+      "id": "shenzhen-4466966",
+      "title": "限宽",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/限宽.jpg",
+      "description": "所示数值的车辆通行"
+    },
+    {
+      "id": "shenzhen-4466974",
+      "title": "解除禁止超车",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/解除禁止超车.png",
+      "description": "设在禁止超车的终点。"
+    },
+    {
+      "id": "shenzhen-4466979",
+      "title": "易滑路段",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/易滑路段_32.jpg",
+      "description": "设在路面的摩擦系数不能满足相应行驶速度下要求紧急刹车距离的路段前适当位置。"
+    },
+    {
+      "id": "shenzhen-4466985",
+      "title": "驼峰桥",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/驼峰桥.jpg",
+      "description": "等都被纳入其中。"
+    },
+    {
+      "id": "shenzhen-4466992",
+      "title": "禁止大客车通行图解",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止大客车通行图解.jpg",
+      "description": "禁止大客车通行"
+    },
+    {
+      "id": "shenzhen-4466999",
+      "title": "注意牲畜图解",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意牲畜图解.jpg",
+      "description": "设在经常有牲畜活动的路段特别是视线不良的路段以前适当位置。"
+    },
+    {
+      "id": "shenzhen-4467012",
+      "title": "禁止变换车道线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止变换车道线.jpg",
+      "description": "禁止变换车道线是一条白色实线，它施划在路段上，与白色虚线相连，机动车在并线或变更车道时要特别注意，不要轧过此线。"
+    },
+    {
+      "id": "shenzhen-4467032",
+      "title": "百米牌",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/百米牌.gif",
+      "description": "便于司机确认车距，以保持安全车距。"
+    },
+    {
+      "id": "shenzhen-4467044",
+      "title": "左右绕行",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/左右绕行.jpg",
+      "description": "指示减速慢行， 左右绕行通过。 放置在路段前适当位置。减少交通事故的发生。"
+    },
+    {
+      "id": "shenzhen-4467057",
+      "title": "限制轴重",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/限制轴重.jpg",
+      "description": "所示数值的车辆通行。 设在需要限制车辆轴重的较短的桥梁两端。"
+    },
+    {
+      "id": "shenzhen-4467069",
+      "title": "路面不平",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路面不平.jpg",
+      "description": "使用。"
+    },
+    {
+      "id": "shenzhen-4467095",
+      "title": "注意横风",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意横风.jpg",
+      "description": "就证明该地区经常有大风光临 车主在开车的时候一定要提高警觉"
+    },
+    {
+      "id": "shenzhen-4467109",
+      "title": "连续下坡",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/连续下坡.jpg",
+      "description": "提醒连续下坡，请谨慎行驶。"
+    },
+    {
+      "id": "shenzhen-4467138",
+      "title": "注意落石",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意落石.jpg",
+      "description": "用以提醒车辆驾驶人注意落石。"
+    },
+    {
+      "id": "shenzhen-4467150",
+      "title": "区域禁止停车",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/区域禁止停车.jpg",
+      "description": "区域禁止停车"
+    },
+    {
+      "id": "shenzhen-4467160",
+      "title": "掉头车道",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/掉头车道.jpg",
+      "description": "掉头车道"
+    },
+    {
+      "id": "shenzhen-4467192",
+      "title": "掉头和左转合用车道",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/掉头和左转合用车道.jpg",
+      "description": "掉头和左转合用车道"
+    },
+    {
+      "id": "shenzhen-4467201",
+      "title": "非机动车车道",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/非机动车车道.jpg",
+      "description": "非机动车车道：表示该车道只供非机动车行驶。"
+    },
+    {
+      "id": "shenzhen-4467208",
+      "title": "允许掉头",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/允许掉头.jpg",
+      "description": "：表示该处允许机动车掉头。"
+    },
+    {
+      "id": "shenzhen-4467215",
+      "title": "残疾人专用设施",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/残疾人专用设施.jpg",
+      "description": "用以指示残疾人设施的位置。"
+    },
+    {
+      "id": "shenzhen-4467222",
+      "title": "绕行",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/绕行.jpg",
+      "description": "：用于指示前方路口车辆需绕行的路线，设于实施交通管制路口前适当位置。"
+    },
+    {
+      "id": "shenzhen-4467225",
+      "title": "此路不通",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/此路不通.jpg",
+      "description": "：用以指示前方道路无出口，不能通行。"
+    },
+    {
+      "id": "shenzhen-4467232",
+      "title": "严禁乱扔弃物",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/严禁乱扔弃物.png",
+      "description": "严禁乱扔弃物"
+    },
+    {
+      "id": "shenzhen-4467241",
+      "title": "系安全带",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/系安全带.png",
+      "description": "系安全带"
+    },
+    {
+      "id": "shenzhen-4467247",
+      "title": "计重收费",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/计重收费.png",
+      "description": "设置于采用计重收费的收费站前适当位置。"
+    },
+    {
+      "id": "shenzhen-4467253",
+      "title": "解除禁止超车",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/解除禁止超车_55.png",
+      "description": "图解：解除禁止超车。"
+    },
+    {
+      "id": "shenzhen-4467256",
+      "title": "紧急停车带",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/紧急停车带.png",
+      "description": "用于指示紧急停车的位置，设在紧急停车带的前端。"
+    },
+    {
+      "id": "shenzhen-4467264",
+      "title": "校车停靠站点图解",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/校车停靠站点图解.png",
+      "description": "校车停靠站点图解：提醒机动车驾驶员注意此处为校车停靠站点。"
+    },
+    {
+      "id": "shenzhen-4467274",
+      "title": "行人左右分道的人行横道线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/行人左右分道的人行横道线.jpg",
+      "description": "行人左右分道的人行横道线：行人过街交通量特别大的路口，可并列设置两道人行横道线，使斑马线虚实段相互交错，并辅以方向箭头指示行人靠左右分道过街。"
+    },
+    {
+      "id": "shenzhen-4467422",
+      "title": "“拉链式”交替通行图解",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/“拉链式”交替通行图解.png",
+      "description": "汇流点前方有车辆行驶，两侧车道均有车辆时，按照右车、左车、右车……次序依次交替通行; 汇流点前方没有车辆，两侧车道车辆同时驶入汇流点的，应当让右车先行，按照右车、左车、右车……次序依次交替通行; 一侧车道车辆正常行驶，另一侧车道来车的，从同时驶入汇流点的车辆开始，按照右车、左车、右车……次序依次交替通行."
+    },
+    {
+      "id": "shenzhen-4467430",
+      "title": "安全岛设置示例",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/安全岛设置示例.png",
+      "description": "安全岛设置示例"
+    },
+    {
+      "id": "shenzhen-4467436",
+      "title": "右转弯导流线图解",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/右转弯导流线图解.png",
+      "description": "右转弯导流线：有导流岛的右转弯专用道上，为使一般车辆行驶顺畅，可设置右转弯导流线。"
+    },
+    {
+      "id": "shenzhen-4467440",
+      "title": "蓝色虚、实线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/蓝色虚、实线标识.png",
+      "description": "作为非机动车专用道标线；划为停车位标线时，指示免费停车位。"
+    },
+    {
+      "id": "shenzhen-4467444",
+      "title": "橙色虚、实线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/橙色虚、实线标识.png",
+      "description": "用于作业区标线。"
+    },
+    {
+      "id": "shenzhen-4467454",
+      "title": "黄色虚实线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/黄色虚实线标识.png",
+      "description": "划于路段中时，用以分隔对向行驶的交通流，实线侧禁止车辆越线，虚线侧准许车辆临时越线。"
+    },
+    {
+      "id": "shenzhen-4467456",
+      "title": "双黄虚线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/双黄虚线标识.png",
+      "description": "划于城市道路路段中，用于指示潮汐车道。"
+    },
+    {
+      "id": "shenzhen-4467463",
+      "title": "双黄实线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/双黄实线标识.png",
+      "description": "划于路段中，用以分隔对向行驶的交通流。"
+    },
+    {
+      "id": "shenzhen-4467474",
+      "title": "白色虚实线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/白色虚实线.png",
+      "description": "用于指示车辆可临时跨线行驶的车行道边缘，虚线侧允许车辆临时跨越，实线侧禁止车辆跨越。"
+    },
+    {
+      "id": "shenzhen-4467500",
+      "title": "双白实线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/双白实线标识.png",
+      "description": "划于路口时，作为停车让行线。"
+    },
+    {
+      "id": "shenzhen-4467510",
+      "title": "双白虚线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/双白虚线标识.png",
+      "description": "划于路口时，作为减速让行线。"
+    },
+    {
+      "id": "shenzhen-4467533",
+      "title": "黄色实线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/黄色实线标识.png",
+      "description": "划于路段中时，用以分隔对向行驶的交通流或作为公交车、校车专用停靠站标线；划于路侧或缘石上时，表示禁止路边停放车辆；划于网格线时，标示禁止停车的区域；划于停车位时，表示专属停车位。"
+    },
+    {
+      "id": "shenzhen-4467574",
+      "title": "黄色虚线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/黄色虚线标识.png",
+      "description": "划于路段中时，用以分隔对向行驶的交通流或作为公交专用车道线；划于交叉路口时，用以告示非机动车禁止驶入的范围或用于连接相邻道路中心线的路口导向线；划于路侧或缘石上时，表示禁止路边长时停放车辆。"
+    },
+    {
+      "id": "shenzhen-4467585",
+      "title": "白色实线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/白色实线标识.png",
+      "description": "划于路段中时，用以分隔同向行驶的机动车和非机动车，或指示车行道的边缘；划于路口时，用作导向车行道或停止线，或用以引导车辆行驶轨迹；划为停车场标线时，指示收费停车位。"
+    },
+    {
+      "id": "shenzhen-4467594",
+      "title": "白色虚线标识",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/白色虚线标识.png",
+      "description": "划于路段中时，用以分隔同向行驶的交通流；划于路口时，用于引导车辆行进。"
+    },
+    {
+      "id": "shenzhen-4467604",
+      "title": "突起路标",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/突起路标.jpg",
+      "description": "突起路标与标线配合设置示例 出口匝道突起路标布设示例 突起路标组成的虚线标线示例 突起路标组成的单实线示例 突起路标组成的双实线示例"
+    },
+    {
+      "id": "shenzhen-4467628",
+      "title": "立面标记",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/立面标记.jpg",
+      "description": "立面标记"
+    },
+    {
+      "id": "shenzhen-4467638",
+      "title": "减速标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/减速标线.jpg",
+      "description": "收费广场减速标线 车行道横向减速标线 车行道纵向减速标线 车行道纵向减速标线渐变段"
+    },
+    {
+      "id": "shenzhen-4467649",
+      "title": "铁路平交道口标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/铁路平交道口标线.jpg",
+      "description": "铁路平交道口标线"
+    },
+    {
+      "id": "shenzhen-4467658",
+      "title": "非机动车禁驶区标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/非机动车禁驶区标线.jpg",
+      "description": "非机动车禁驶区标线"
+    },
+    {
+      "id": "shenzhen-4467751",
+      "title": "让行线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/让行线.jpg",
+      "description": "停车让行线 减速让行线"
+    },
+    {
+      "id": "shenzhen-4467716",
+      "title": "停止线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/停止线.jpg",
+      "description": "停止线"
+    },
+    {
+      "id": "shenzhen-4467770",
+      "title": "禁止停车线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止停车线.jpg",
+      "description": "禁止长时停车线 禁止停车线"
+    },
+    {
+      "id": "shenzhen-4467738",
+      "title": "禁止跨越同向车行道分界线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止跨越同向车行道分界线_82.jpg",
+      "description": "禁止跨越同向车行道分界线"
+    },
+    {
+      "id": "shenzhen-4467707",
+      "title": "禁止跨越对向车行道分界线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止跨越对向车行道分界线.jpg",
+      "description": "双黄实线禁止跨越对向车行道分界线 黄色虚实线禁止跨越对向车行道分界线 黄色单实线禁止跨越对向车行道分界线"
+    },
+    {
+      "id": "shenzhen-4467821",
+      "title": "路面图形标记",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路面图形标记.jpg",
+      "description": "非机动车道路面标记 残疾人专用停车位路面标记 注意前方路面状况标记"
+    },
+    {
+      "id": "shenzhen-4467814",
+      "title": "路面文字标记",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路面文字标记.jpg",
+      "description": "路面限速标记字符 路面限速标记字符"
+    },
+    {
+      "id": "shenzhen-4467778",
+      "title": "导向箭头",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/导向箭头.jpg",
+      "description": "指示直行 指示前方可直行或左转 指示前方左转 指示前方右转 指示前方可直行或右转 指示前方掉头 指示前方可直行或掉头 指示前方可左转或掉头 指示前方道路仅可左右转弯 提示前方道路有左弯或需向左合流 提示前方道路有右弯或需向右合流"
+    },
+    {
+      "id": "shenzhen-4467795",
+      "title": "减速丘标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/减速丘标线.jpg",
+      "description": "减速丘标线"
+    },
+    {
+      "id": "shenzhen-4467786",
+      "title": "停靠站标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/停靠站标线.jpg",
+      "description": "港湾式停靠站标线 港湾式停靠站标线 车种专用港湾式停靠站标线 车种专用港湾式停靠站标线"
+    },
+    {
+      "id": "shenzhen-4467845",
+      "title": "停车位标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/停车位标线.jpg",
+      "description": "倾斜式停车位标线 垂直式停车位标线 固定停车方向停车位标线 出租车专用待客停车位标线 出租车专用上下客停车位标线 残疾人专用停车位标线 非机动车停车位标线 平行式机动车限时停车位标线 倾斜式机动车限时停车位标线 垂直式机动车限时停车位标线 平行式停车位标线"
+    },
+    {
+      "id": "shenzhen-4513771",
+      "title": "道路出入口标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/道路出入口标线.jpg",
+      "description": "出口标线设置示例 出口标线设置示例 入口标线设置示例 入口标线设置示例"
+    },
+    {
+      "id": "shenzhen-4467828",
+      "title": "车距确认标线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/车距确认标线.jpg",
+      "description": "白色折线车距确认线 白色折线车距确认线"
+    },
+    {
+      "id": "shenzhen-4467830",
+      "title": "人行横道线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/人行横道线.jpg",
+      "description": "与道路中心线垂直的人行横道线 与道路中心线斜交的人行横道线 行人左右分道的人行横道线 人行横道预告标识线"
+    },
+    {
+      "id": "shenzhen-4467838",
+      "title": "导向车道线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/导向车道线.jpg",
+      "description": "导向车道线"
+    },
+    {
+      "id": "shenzhen-4468461",
+      "title": "路口导向线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路口导向线.jpg",
+      "description": "路口导向线 路口导向线"
+    },
+    {
+      "id": "shenzhen-4468469",
+      "title": "左弯待转区线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/左弯待转区线.jpg",
+      "description": "左弯待转区线"
+    },
+    {
+      "id": "shenzhen-4468481",
+      "title": "车行道边缘线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/车行道边缘线.jpg",
+      "description": "车行道边缘白色实线 车行道边缘白色虚线 车行道边缘白色虚实线 黄色单实线车行道边缘线"
+    },
+    {
+      "id": "shenzhen-4468502",
+      "title": "潮汐车道线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/潮汐车道线.jpg",
+      "description": "潮汐车道线"
+    },
+    {
+      "id": "shenzhen-4468495",
+      "title": "可跨越同向车行道分界线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/可跨越同向车行道分界线.jpg",
+      "description": "可跨越同向车行道分界线 可跨越同向车行道分界线"
+    },
+    {
+      "id": "shenzhen-4468722",
+      "title": "可跨越对向车行道分界线",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/可跨越对向车行道分界线.jpg",
+      "description": "可跨越对向车行道分界线"
+    },
+    {
+      "id": "shenzhen-4469068",
+      "title": "告示标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/告示标志.jpg",
+      "description": "校车停靠站点"
+    },
+    {
+      "id": "shenzhen-4468786",
+      "title": "辅助标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/辅助标志.jpg",
+      "description": "组合辅助"
+    },
+    {
+      "id": "shenzhen-4468736",
+      "title": "旅游符号",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/旅游符号.jpg",
+      "description": "问讯处 徒步 索道 野营地 营火 游戏场 骑马 钓鱼 高尔夫球 潜水 游泳 划船 冬季游览区 滑雪 滑冰"
+    },
+    {
+      "id": "shenzhen-4468794",
+      "title": "指引标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/指引标志.jpg",
+      "description": "旅游区距离 旅游区方向 旅游区方向"
+    },
+    {
+      "id": "shenzhen-4468740",
+      "title": "方向标志",
+      "category": "指路",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/方向标志.jpg",
+      "description": "版面外的方向"
+    },
+    {
+      "id": "shenzhen-4469267",
+      "title": "沿线设施指引标志",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/沿线设施指引标志.jpg",
+      "description": "紧急电话 电话位置指示 电话位置指示 电话位置指示 救援电话 救援电话 不设电子不停车收费(ETC) 车道的收费站预告及收费站 不设电子不停车收费(ETC) 车道的收费站预告及收费站 不设电子不停车收费(ETC) 车道的收费站预告及收费站 不设电子不停车收费(ETC) 车道的收费站预告及收费站 设有电子不停车收费(ETC) 车道的收费站预告及收费站 设有电子不停车收费(ETC) 车道的收费站预告及收费站 设有电子不停车收费(ETC) 车道的收费站预告及收费站 设有电子不停车收费(ETC) 车道的收费站预告及收费站 超限超载检测站 超限超载检测站 超限超载检测站 超限超载检测站 爬坡车道 爬坡车道 爬坡车道 爬坡车道 计重收费 加油站 紧急停车带 服务区预告 服务区预告 服务区预告 服务区预告 服务区预告 服务区预告 服务区预告 服务区预告 停车区预告 停车区预告 停车区预告 停车场预告 停车场预告 停车场预告 停车场 停车场 ETC 车道指示 ETC 车道指示"
+    },
+    {
+      "id": "shenzhen-4469389",
+      "title": "沿线信息指引标志",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/沿线信息指引标志.jpg",
+      "description": "国家高速公路、省级高速公路终点 国家高速公路、省级高速公路终点 无统一编号的高速公路或城市快速路终点 道路交通信息 里程牌 无统一编号的高速公路或城市快速路里程牌 百米牌 特殊天气建议速度 特殊天气建议速度 停车领卡 车距确认 车距确认 车距确认 车距确认 车距确认"
+    },
+    {
+      "id": "shenzhen-4469078",
+      "title": "路径指引标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路径指引标志.jpg",
+      "description": "及出口地点方向"
+    },
+    {
+      "id": "shenzhen-4469176",
+      "title": "其他道路信息指引标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/其他道路信息指引标志.jpg",
+      "description": "车道数变少 车道数变少 车道数增加 交通监控设备 隧道出口距离预告 隧道出口距离预告 线形诱导基本单元 线形诱导基本单元 基本单元组合使用 基本单元组合使用 基本单元组合使用 两侧通行 右侧通行 左侧通行 此路不通 里程碑 里程碑 里程牌 百米桩 公路界碑"
+    },
+    {
+      "id": "shenzhen-4469182",
+      "title": "道路沿线设施指引标志",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/道路沿线设施指引标志.jpg",
+      "description": "错车道 人行天桥 人行地下通道 残疾人专用设施 观景台 观景台 应急避难设施( 场所) 休息区 休息区"
+    },
+    {
+      "id": "shenzhen-4469440",
+      "title": "地点指引标志",
+      "category": "指路",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/地点指引标志.jpg",
+      "description": "地点识别"
+    },
+    {
+      "id": "shenzhen-4469396",
+      "title": "路径指引标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路径指引标志_111.jpg",
+      "description": "国道编号 国道编号 省道编号 县道编号 乡道编号 街道名称 街道名称 路名牌 地点距离"
+    },
+    {
+      "id": "shenzhen-4469452",
+      "title": "允许掉头标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/允许掉头标志.gif",
+      "description": "允许掉头 表示该处允许机动车掉头。"
+    },
+    {
+      "id": "shenzhen-4469414",
+      "title": "停车位标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/停车位标志.gif",
+      "description": "表示机动车允许停放的区域 停车位 停车位 停车位 停车位"
+    },
+    {
+      "id": "shenzhen-4469504",
+      "title": "专用道路和车道标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/专用道路和车道标志.gif",
+      "description": "公交线路专用车道 表示该车道专供本线路行驶的公交车辆行驶。 机动车行驶 表示该道路只供机动车行驶。 机动车车道 表示该车道只供机动车行驶。 非机动车行驶 表示该道路只供非机动车行驶。 非机动车车道 表示该车道只供非机动车行驶。 快速公交系统专用车道 表示该车道专供BRT车辆行驶。 多乘员车辆专用车道 表示该车道只供多乘员的车辆行驶。"
+    },
+    {
+      "id": "shenzhen-4469430",
+      "title": "车道行驶方向标志",
+      "category": "指路",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/车道行驶方向标志.gif",
+      "description": "掉头车道 表示车道的行驶方向。 掉头和左转合用车道 表示车道的行驶方向。 右转车道 表示车道的行驶方向。 直行车道 表示车道的行驶方向。 直行和右转合用车道 表示车道的行驶方向。 直行和左转合用车道 表示车道的行驶方向。 左转车道 表示车道的行驶方向。"
+    },
+    {
+      "id": "shenzhen-4469491",
+      "title": "人行横道标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/人行横道标志.gif",
+      "description": "人行横道 表示该处为人行横道。"
+    },
+    {
+      "id": "shenzhen-4469512",
+      "title": "会车先行标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/会车先行标志.gif",
+      "description": "会车先行 表示车辆在会车时享有优先通行权利。"
+    },
+    {
+      "id": "shenzhen-4469578",
+      "title": "路口优先通行标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路口优先通行标志.gif",
+      "description": "路口优先通行 表示交叉口主要道路上车辆享有优先通行权利。"
+    },
+    {
+      "id": "shenzhen-4469532",
+      "title": "最低限速标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/最低限速标志.gif",
+      "description": "最低限速 表示机动车驶入前方道路的最低时速限制。"
+    },
+    {
+      "id": "shenzhen-4469476",
+      "title": "鸣喇叭标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/鸣喇叭标志.gif",
+      "description": "处应鸣喇叭，以提醒对向车辆驾驶人注意并减速慢行。"
+    },
+    {
+      "id": "shenzhen-4469587",
+      "title": "步行标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/步行标志.gif",
+      "description": "步行 表示该段道路只供步行，任何车辆不准进入。"
+    },
+    {
+      "id": "shenzhen-4469543",
+      "title": "单行路标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/单行路标志.jpg",
+      "description": "指示方向行车。"
+    },
+    {
+      "id": "shenzhen-4469560",
+      "title": "环岛行驶标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/环岛行驶标志.gif",
+      "description": "环岛行驶 表示一切车辆只准靠右环行。"
+    },
+    {
+      "id": "shenzhen-4469551",
+      "title": "立体交叉行驶路线标志",
+      "category": "标线",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/立体交叉行驶路线标志.gif",
+      "description": "立体交叉直行和左转弯行驶 表示一切车辆在立体交叉处可以直行和按图示路线左转弯行驶。 立体交叉直行和右转弯行驶 表示一切车辆在立体交叉处可以直行和按图示路线右转弯行驶。"
+    },
+    {
+      "id": "shenzhen-4469610",
+      "title": "靠右侧(或靠左侧)道路行驶标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/靠右侧(或靠左侧)道路行驶标志.gif",
+      "description": "靠右侧道路行驶 表示一切车辆只准靠右侧行驶。 靠左侧道路行驶 表示一切车辆只准靠左侧行驶。"
+    },
+    {
+      "id": "shenzhen-4469617",
+      "title": "向左和向右转弯标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/向左和向右转弯标志.gif",
+      "description": "向左和向右转弯 表示一切车辆只准向左和向右转弯。"
+    },
+    {
+      "id": "shenzhen-4469599",
+      "title": "直行和向左转弯( 或直行和向右转弯) 标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/直行和向左转弯(_或直行和向右转弯)_标志.gif",
+      "description": "直行和向左转弯 表示一切车辆只准直行和向左转弯。 直行和向右转弯 表示一切车辆只准直行和向右转弯。"
+    },
+    {
+      "id": "shenzhen-4467696",
+      "title": "向左( 或向右) 转弯标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/向左(_或向右)_转弯标志.gif",
+      "description": "向左转弯 表示一切车辆只准向左转弯。 向右转弯 表示一切车辆只准向右转弯。"
+    },
+    {
+      "id": "shenzhen-4469623",
+      "title": "直行标志",
+      "category": "指示",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/直行标志.gif",
+      "description": "直行 表示一切车辆只准直行。"
+    },
+    {
+      "id": "shenzhen-4469648",
+      "title": "区域禁止及解除标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/区域禁止及解除标志.gif",
+      "description": "区域禁止长时停车 区域禁止长时停车解除 区域禁止停车 区域禁止停车解除 区域限制速度 区域限制速度解除"
+    },
+    {
+      "id": "shenzhen-4469634",
+      "title": "海关标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/海关标志.gif",
+      "description": "海关 表示道路前方是海关，所有机动车应停车后方可通过。"
+    },
+    {
+      "id": "shenzhen-4469661",
+      "title": "禁止运输危险物品车辆驶入标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止运输危险物品车辆驶入标志.gif",
+      "description": "禁止运输危险物品车辆驶入 表示禁止运输危险物品车辆驶入。"
+    },
+    {
+      "id": "shenzhen-4469653",
+      "title": "停车检查标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/停车检查标志.gif",
+      "description": "停车检查 表示机动车应停车接受检查。"
+    },
+    {
+      "id": "shenzhen-4469690",
+      "title": "解除限制速度标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/解除限制速度标志.gif",
+      "description": "解除限制速度 表示限制速度路段结束。"
+    },
+    {
+      "id": "shenzhen-4469639",
+      "title": "限制速度标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/限制速度标志.gif",
+      "description": "所示数值。"
+    },
+    {
+      "id": "shenzhen-4469700",
+      "title": "限制轴重标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/限制轴重标志.gif",
+      "description": "所示数值的车辆通行。"
+    },
+    {
+      "id": "shenzhen-4469671",
+      "title": "限制质量标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/限制质量标志.gif",
+      "description": "所示数值的车辆通行。"
+    },
+    {
+      "id": "shenzhen-4469681",
+      "title": "限制高度标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/限制高度标志.gif",
+      "description": "所示数值的车辆通行。"
+    },
+    {
+      "id": "shenzhen-4469707",
+      "title": "限制宽度标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/限制宽度标志.gif",
+      "description": "所示数值的车辆通行。"
+    },
+    {
+      "id": "shenzhen-4469750",
+      "title": "禁止鸣喇叭标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止鸣喇叭标志.gif",
+      "description": "禁止鸣喇叭 表示禁止车辆鸣喇叭。"
+    },
+    {
+      "id": "shenzhen-4469729",
+      "title": "禁止长时停车标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止长时停车标志.gif",
+      "description": "禁止长时停车 表示在限定的范围内，禁止一切车辆长时停、放，临时停车不受限制。"
+    },
+    {
+      "id": "shenzhen-4469712",
+      "title": "禁止停车标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止停车标志.gif",
+      "description": "禁止停车 表示在限定的范围内，禁止一切车辆停、放。"
+    },
+    {
+      "id": "shenzhen-4469762",
+      "title": "解除禁止超车标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/解除禁止超车标志.gif",
+      "description": "解除禁止超车 表示禁止超车路段结束"
+    },
+    {
+      "id": "shenzhen-4469718",
+      "title": "禁止超车标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止超车标志.gif",
+      "description": "的路段内，不允许机动车超车。"
+    },
+    {
+      "id": "shenzhen-4469797",
+      "title": "禁止掉头标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止掉头标志.gif",
+      "description": "禁止掉头 表示禁止机动车掉头。"
+    },
+    {
+      "id": "shenzhen-4469825",
+      "title": "禁止直行和向左转弯( 或直行和向右转弯) 标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止直行和向左转弯(_或直行和向右转弯)_标志.gif",
+      "description": "禁止直行和向右转弯 表示前方路口禁止一切车辆直行和向右转弯。 禁止直行和向左转弯 表示前方路口禁止一切车辆直行和向左转弯。"
+    },
+    {
+      "id": "shenzhen-4469807",
+      "title": "禁止向左向右转弯标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止向左向右转弯标志.gif",
+      "description": "禁止向左向右转弯 表示前方路口禁止一切车辆向左向右转弯。"
+    },
+    {
+      "id": "shenzhen-4469775",
+      "title": "禁止直行标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止直行标志.gif",
+      "description": "禁止直行 表示前方路口禁止一切车辆直行。"
+    },
+    {
+      "id": "shenzhen-4469786",
+      "title": "禁止向左( 或向右) 转弯标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止向左(_或向右)_转弯标志.gif",
+      "description": "禁止向右转弯 表示前方路口禁止一切车辆向右转弯。 禁止向左转弯 表示前方路口禁止一切车辆向左转弯。 禁止小客车向右转弯 表示前方路口禁止小客车向右转弯。 禁止载货汽车左转 表示前方路口禁止载货汽车向左转弯。"
+    },
+    {
+      "id": "shenzhen-4469882",
+      "title": "禁止行人进入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止行人进入标志.gif",
+      "description": "禁止行人进入 表示禁止行人进入。"
+    },
+    {
+      "id": "shenzhen-4469870",
+      "title": "禁止人力车进入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止人力车进入标志.gif",
+      "description": "禁止人力车进入 表示禁止人力车进入。"
+    },
+    {
+      "id": "shenzhen-4469858",
+      "title": "禁止人力( 客、货) 三轮车进入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止人力(_客、货)_三轮车进入标志.gif",
+      "description": "禁止人力货运三轮车进入 表示禁止人力货运三轮车进入。 禁止人力客运三轮车进入 表示禁止人力客运三轮车进入。"
+    },
+    {
+      "id": "shenzhen-4469847",
+      "title": "禁止畜力车进入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止畜力车进入标志.gif",
+      "description": "禁止畜力车进入 表示禁止畜力车进入。"
+    },
+    {
+      "id": "shenzhen-4469836",
+      "title": "禁止非机动车进入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止非机动车进入标志.gif",
+      "description": "禁止各类非机动车进入 表示禁止各类非机动车进入。"
+    },
+    {
+      "id": "shenzhen-4469902",
+      "title": "禁止某两种车辆驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止某两种车辆驶入标志.gif",
+      "description": "上所示的两种车辆驶入。"
+    },
+    {
+      "id": "shenzhen-4469893",
+      "title": "禁止摩托车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止摩托车驶入标志.gif",
+      "description": "禁止摩托车驶入 表示禁止摩托车驶入。"
+    },
+    {
+      "id": "shenzhen-4469915",
+      "title": "禁止三轮汽车、低速货车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止三轮汽车、低速货车驶入标志.gif",
+      "description": "禁止三轮汽车、低速货车驶入 表示禁止三轮汽车、低速货车驶入。"
+    },
+    {
+      "id": "shenzhen-4469906",
+      "title": "禁止拖拉机驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止拖拉机驶入标志.gif",
+      "description": "禁止拖拉机驶入 表示前方禁止各类拖拉机驶入。"
+    },
+    {
+      "id": "shenzhen-4469935",
+      "title": "禁止挂车、半挂车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止挂车、半挂车驶入标志.gif",
+      "description": "禁止挂车、半挂车驶入 表示禁止挂车、半挂车驶入。"
+    },
+    {
+      "id": "shenzhen-4469973",
+      "title": "禁止大型(或小型)客车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止大型(或小型)客车驶入标志.gif",
+      "description": "禁止大型客车驶入 表示禁止大型客车驶入。 禁止小型客车驶入 表示禁止小型客车驶入。"
+    },
+    {
+      "id": "shenzhen-4469992",
+      "title": "禁止电动三轮车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止电动三轮车驶入标志.gif",
+      "description": "禁止电动三轮车驶入 表示禁止电动三轮车驶入。"
+    },
+    {
+      "id": "shenzhen-4469946",
+      "title": "禁止载货汽车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止载货汽车驶入标志.gif",
+      "description": "禁止载货汽车驶入 表示禁止载货汽车驶入。"
+    },
+    {
+      "id": "shenzhen-4469924",
+      "title": "禁止机动车驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止机动车驶入标志.gif",
+      "description": "禁止机动车驶入 表示禁止各类机动车驶入。"
+    },
+    {
+      "id": "shenzhen-4470038",
+      "title": "禁止驶入标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止驶入标志.gif",
+      "description": "禁止驶入 表示禁止一切车辆驶入。"
+    },
+    {
+      "id": "shenzhen-4470054",
+      "title": "禁止通行标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/禁止通行标志.gif",
+      "description": "禁止通行 表示禁止一切车辆和行人通行。"
+    },
+    {
+      "id": "shenzhen-4470017",
+      "title": "会车让行标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/会车让行标志.gif",
+      "description": "会车让行 表示车辆会车时，应停车让对方车先行。"
+    },
+    {
+      "id": "shenzhen-4470009",
+      "title": "减速让行标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/减速让行标志.gif",
+      "description": "减速让行 表示车辆应减速让行，告示车辆驾驶人应慢行或停车，观察干道行车情况，在确保干道车辆优先，确保安全的前提下，方可进入路口。"
+    },
+    {
+      "id": "shenzhen-4470044",
+      "title": "停车让行标志",
+      "category": "禁令",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/停车让行标志.gif",
+      "description": "停车让行 表示车辆应在停止线前停车瞭望，确认安全后，方可通行。"
+    },
+    {
+      "id": "shenzhen-4470091",
+      "title": "注意路面结冰、注意雨（雪）天气、注意雾天、注意不利气象条件标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意路面结冰、注意雨（雪）天气、注意雾天、注意不利气象条件标志.gif",
+      "description": "注意不利气象条件 用以警告车辆驾驶人注意不利气象条件谨慎驾驶。 注意路面结冰 用以警告车辆驾驶人注意路面结冰谨慎驾驶。 注意雾天 用以警告车辆驾驶人注意雾天谨慎驾驶。 注意雨（雪）天 用以警告车辆驾驶人注意雨( 雪)天谨慎驾驶。"
+    },
+    {
+      "id": "shenzhen-4470072",
+      "title": "注意前方车辆排队标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意前方车辆排队标志.gif",
+      "description": "注意前方车辆排队 用以警告车辆驾驶人注意前方车辆排队。"
+    },
+    {
+      "id": "shenzhen-4470066",
+      "title": "注意保持车距标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意保持车距标志.gif",
+      "description": "注意保持车距 用以警告车辆驾驶人注意和前车保持安全距离。"
+    },
+    {
+      "id": "shenzhen-4470101",
+      "title": "注意分离式道路标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意分离式道路标志.gif",
+      "description": "丁字平面交叉 用以警告车辆驾驶人注意前方平面交叉的被交道路是分离式道路。 十字平面交叉 用以警告车辆驾驶人注意前方平面交叉的被交道路是分离式道路。"
+    },
+    {
+      "id": "shenzhen-4470113",
+      "title": "注意合流标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意合流标志.gif",
+      "description": "注意合流 用以警告车辆驾驶人注意前方有车辆汇合进来。 注意合流 用以警告车辆驾驶人注意前方有车辆汇合进来。"
+    },
+    {
+      "id": "shenzhen-4470248",
+      "title": "避险车辆标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/避险车辆标志.gif",
+      "description": "。"
+    },
+    {
+      "id": "shenzhen-4470142",
+      "title": "注意潮汐车道标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意潮汐车道标志.gif",
+      "description": "注意潮汐车道 用以警告车辆驾驶人注意前方为潮汐车道。"
+    },
+    {
+      "id": "shenzhen-4470121",
+      "title": "隧道开车灯标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/隧道开车灯标志.gif",
+      "description": "隧道开车灯 用以警告车辆驾驶人进入隧道打开前照灯，注意行驶。"
+    },
+    {
+      "id": "shenzhen-4470171",
+      "title": "建议减速标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/建议减速标志.gif",
+      "description": "建议减速 用以提醒车辆驾驶人以建议的速度行驶，设在弯道、出口、匝道的适当位置。"
+    },
+    {
+      "id": "shenzhen-4470329",
+      "title": "施工标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/施工标志.gif",
+      "description": "施工 用以告示前方道路施工，车辆应减速慢行或绕道行驶。"
+    },
+    {
+      "id": "shenzhen-4470258",
+      "title": "注意危险标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意危险标志.gif",
+      "description": "注意危险 用以提醒车辆驾驶人谨慎驾驶。"
+    },
+    {
+      "id": "shenzhen-4470300",
+      "title": "注意障碍物标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意障碍物标志.gif",
+      "description": "指示减速慢行。"
+    },
+    {
+      "id": "shenzhen-4470310",
+      "title": "慢行标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/慢行标志.gif",
+      "description": "慢行 用以提醒车辆驾驶人减速慢行。"
+    },
+    {
+      "id": "shenzhen-4470321",
+      "title": "事故易发路段标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/事故易发路段标志.gif",
+      "description": "事故易发路段 用以告示前方道路为事故易发路段，谨慎驾驶。"
+    },
+    {
+      "id": "shenzhen-4470269",
+      "title": "注意残疾人标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意残疾人标志.gif",
+      "description": "注意残疾人 用以提醒车辆驾驶人减速慢行，注意残疾人。"
+    },
+    {
+      "id": "shenzhen-4470280",
+      "title": "注意非机动车标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意非机动车标志.gif",
+      "description": "注意非机动车 用以提醒车辆驾驶人注意慢行。"
+    },
+    {
+      "id": "shenzhen-4470379",
+      "title": "铁道路口标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/铁道路口标志.gif",
+      "description": "有人看守铁道路口 用以警告车辆驾驶人注意慢行或及时停车。 无人看守铁道路口 用以警告车辆驾驶人注意慢行或及时停车。 叉形符号 用以警告车辆驾驶人注意慢行或及时停车。"
+    },
+    {
+      "id": "shenzhen-4470389",
+      "title": "过水路面（或漫水桥）标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/过水路面（或漫水桥）标志.gif",
+      "description": "过水路面 用以提醒车辆驾驶人谨慎慢行。"
+    },
+    {
+      "id": "shenzhen-4470367",
+      "title": "路面低洼标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路面低洼标志.gif",
+      "description": "用以提醒车辆驾驶人减速慢行。设在路面突然低洼以前适当位置。"
+    },
+    {
+      "id": "shenzhen-4470420",
+      "title": "路面高突标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路面高突标志.gif",
+      "description": "路面高突 用以提醒车辆驾驶人减速慢行。"
+    },
+    {
+      "id": "shenzhen-4470347",
+      "title": "路面不平标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/路面不平标志.gif",
+      "description": "路面不平 用以提醒车辆驾驶人减速慢行。"
+    },
+    {
+      "id": "shenzhen-4470357",
+      "title": "驼峰桥标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/驼峰桥标志.gif",
+      "description": "驼峰桥 用以提醒车辆驾驶人谨慎驾驶。"
+    },
+    {
+      "id": "shenzhen-4470479",
+      "title": "隧道标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/隧道标志.gif",
+      "description": "用以提醒车辆驾驶人注意慢行。"
+    },
+    {
+      "id": "shenzhen-4470470",
+      "title": "堤坝路标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/堤坝路标志.gif",
+      "description": "堤坝路 用以提醒车辆驾驶人小心驾驶。 堤坝路 用以提醒车辆驾驶人小心驾驶。"
+    },
+    {
+      "id": "shenzhen-4470431",
+      "title": "傍山险路标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/傍山险路标志.gif",
+      "description": "用以提醒车辆驾驶人小心驾驶。"
+    },
+    {
+      "id": "shenzhen-4470500",
+      "title": "注意横风标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意横风标志.gif",
+      "description": "用以提醒车辆驾驶人小心驾驶。"
+    },
+    {
+      "id": "shenzhen-4470409",
+      "title": "注意落石标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意落石标志.gif",
+      "description": "用以提醒车辆驾驶人注意落石。"
+    },
+    {
+      "id": "shenzhen-4470522",
+      "title": "村庄标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/村庄标志.gif",
+      "description": "用以提醒车辆驾驶人小心驾驶。"
+    },
+    {
+      "id": "shenzhen-4470566",
+      "title": "注意信号灯标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意信号灯标志.gif",
+      "description": "注意信号灯 用以警告车辆驾驶人注意前方路段设有信号灯，应依信号灯指示行车。"
+    },
+    {
+      "id": "shenzhen-4470534",
+      "title": "注意野生动物标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意野生动物标志.gif",
+      "description": "注意野生动物 用以提醒车辆驾驶人注意慢行。"
+    },
+    {
+      "id": "shenzhen-4470510",
+      "title": "渡口标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/渡口标志.gif",
+      "description": "用以提醒车辆驾驶人谨慎驾驶。"
+    },
+    {
+      "id": "shenzhen-4470720",
+      "title": "注意牲畜标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意牲畜标志.gif",
+      "description": "用以提醒车辆驾驶人注意慢行。"
+    },
+    {
+      "id": "shenzhen-4470578",
+      "title": "注意儿童标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意儿童标志.gif",
+      "description": "用以警告车辆驾驶人减速慢行，注意儿童。"
+    },
+    {
+      "id": "shenzhen-4470729",
+      "title": "注意行人标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/注意行人标志.gif",
+      "description": "用以警告车辆驾驶人减速慢行，注意行人。"
+    },
+    {
+      "id": "shenzhen-4470699",
+      "title": "双向交通标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/双向交通标志.gif",
+      "description": "用以提醒车辆驾驶人注意会车。"
+    },
+    {
+      "id": "shenzhen-4470709",
+      "title": "易滑标志",
+      "category": "警告",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/易滑标志.gif",
+      "description": "用以促使车辆驾驶人注意慢行。"
+    },
+    {
+      "id": "shenzhen-4470591",
+      "title": "窄桥标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/窄桥标志.gif",
+      "description": "用以警告车辆驾驶人注意前方桥面宽度变窄，应谨慎驾驶。"
+    },
+    {
+      "id": "shenzhen-4470817",
+      "title": "交叉路口标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/交叉路口标志.png",
+      "description": "用以警告车辆驾驶人谨慎慢行，注意横向来车"
+    },
+    {
+      "id": "shenzhen-4470825",
+      "title": "急弯路标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/急弯路标志.png",
+      "description": "用以警告车辆驾驶人减速慢行 向右急转弯                                    向左急转弯"
+    },
+    {
+      "id": "shenzhen-4470806",
+      "title": "反向弯路标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/反向弯路标志.png",
+      "description": "用以警告车辆驾驶人减速慢行"
+    },
+    {
+      "id": "shenzhen-4470794",
+      "title": "连续弯路标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/连续弯路标志.png",
+      "description": "用以警告车辆驾驶人减速慢行"
+    },
+    {
+      "id": "shenzhen-4470774",
+      "title": "陡坡标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/陡坡标志.png",
+      "description": "用以提醒车辆驾驶人小心驾驶 上坡路                                 下坡路"
+    },
+    {
+      "id": "shenzhen-4470762",
+      "title": "连续下坡标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/连续下坡标志.png",
+      "description": "用以提醒车辆驾驶人小心驾驶"
+    },
+    {
+      "id": "shenzhen-4470737",
+      "title": "窄路标志",
+      "category": "其他",
+      "source": "shenzhen",
+      "image": "/images/traffic-signs/窄路标志.png",
+      "description": "用以警告车辆驾驶人注意前方车行道或路面狭窄情况，遇有来车应予减速避让 二侧变窄                              右侧变窄                              左侧变窄"
+    }
+  ]
+}

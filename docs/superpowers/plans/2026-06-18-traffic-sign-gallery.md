@@ -686,7 +686,132 @@ git commit -m "feat(gallery): 实现交通标志图库页面"
 
 ---
 
-## Task 5: 验证页面
+## Task 6: 侧边栏二级目录与展开按钮
+
+**Files:**
+- Modify: `frontend/src/components/Sidebar.vue`
+
+- [ ] **Step 1: 重构侧边栏数据为分组结构**
+
+把 `frontend/src/components/Sidebar.vue` 中的 `tools` 数组改成 `groups` 数组：
+
+```javascript
+const groups = [
+  {
+    title: '',
+    tools: [
+      { path: '/', name: '首页', icon: '🏠' },
+    ]
+  },
+  {
+    title: '开发者工具',
+    tools: [
+      { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋' },
+      { path: '/tools/base64', name: 'Base64 编解码', icon: '🔐' },
+      { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗' },
+      { path: '/tools/regex', name: '正则测试', icon: '🔍' },
+      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰' },
+      { path: '/tools/color', name: '颜色转换器', icon: '🎨' },
+      { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝' },
+      { path: '/tools/text-diff', name: '文本差异对比', icon: '📊' },
+      { path: '/tools/code-formatter', name: '代码格式化', icon: '💻' },
+      { path: '/tools/password', name: '密码生成器', icon: '🔑' },
+      { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜' },
+      { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔' },
+      { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣' },
+      { path: '/tools/html-entity', name: 'HTML 实体', icon: '🔤' },
+      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰' },
+      { path: '/tools/number-converter', name: '进制转换', icon: '🔢' },
+      { path: '/tools/json-csv', name: 'JSON↔CSV', icon: '📑' },
+      { path: '/tools/qrcode', name: '二维码', icon: '▣' },
+      { path: '/tools/css-unit', name: 'CSS单位', icon: '📐' },
+      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝' },
+      { path: '/tools/word-counter', name: '字数统计', icon: '📝' },
+      { path: '/tools/unit-converter', name: '单位换算', icon: '📐' },
+      { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️' },
+      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️' },
+      { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
+      { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
+      { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
+    ]
+  },
+  {
+    title: '交通学习',
+    tools: [
+      { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
+      { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
+      { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦' },
+    ]
+  }
+]
+```
+
+- [ ] **Step 2: 渲染二级目录**
+
+把 `nav` 模板替换为按组渲染：
+
+```html
+    <nav class="nav">
+      <template v-for="group in groups" :key="group.title || 'home'">
+        <div v-if="group.title && !collapsed" class="nav-group-title">{{ group.title }}</div>
+        <RouterLink
+          v-for="tool in group.tools"
+          :key="tool.path"
+          :to="tool.path"
+          class="nav-item"
+          :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
+        >
+          <span class="nav-icon">{{ tool.icon }}</span>
+          <span v-if="!collapsed" class="nav-text">{{ tool.name }}</span>
+        </RouterLink>
+      </template>
+    </nav>
+```
+
+- [ ] **Step 3: 修复展开按钮**
+
+删除 `.sidebar.collapsed .toggle-btn { display: none; }` 这条样式，让折叠状态下也能看到 `→` 按钮。
+
+```css
+/* 删除或注释掉 */
+.sidebar.collapsed .toggle-btn {
+  display: none;
+}
+```
+
+同时给 `.sidebar.collapsed .sidebar-header` 添加右侧内边距，避免按钮贴边：
+
+```css
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+  padding: 12px 8px;
+}
+```
+
+- [ ] **Step 4: 添加分组标题样式**
+
+在 `<style scoped>` 末尾追加：
+
+```css
+.nav-group-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 12px 12px 4px;
+  letter-spacing: 0.5px;
+}
+```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add frontend/src/components/Sidebar.vue
+git commit -m "feat(ui): 侧边栏支持二级目录并修复展开按钮"
+```
+
+---
+
+## Task 7: 验证页面
 
 **Files:**
 - Test: `frontend` dev server
@@ -698,7 +823,7 @@ cd /Users/box/new/Mac/web-Project/frontend
 npm run dev
 ```
 
-- [ ] **Step 2: 检查 URL 与功能**
+- [ ] **Step 2: 检查图库 URL 与功能**
 
 Open `http://localhost:5174/tools/traffic-signs` and verify:
 
@@ -709,11 +834,17 @@ Open `http://localhost:5174/tools/traffic-signs` and verify:
 - 侧边栏「交通标志图库」入口可点击进入。
 - 学习页「查看全部标志图库」按钮可跳转。
 
-- [ ] **Step 3: 检查响应式**
+- [ ] **Step 3: 检查侧边栏二级目录与展开按钮**
 
-缩小浏览器窗口，确认网格自动适配移动端。
+- 侧边栏展开时能看到「开发者工具」「交通学习」分组标题。
+- 点击侧边栏顶部的 `←` 折叠后，再点击 `→` 能重新展开。
+- 折叠后仍能看到各工具图标。
 
-- [ ] **Step 4: Commit final or report**
+- [ ] **Step 4: 检查响应式**
+
+缩小浏览器窗口，确认网格自动适配移动端；移动端侧边栏正常展开/关闭。
+
+- [ ] **Step 5: 最终提交或报告**
 
 If all checks pass, no additional commit is needed beyond prior tasks. Report success.
 
@@ -726,6 +857,7 @@ If all checks pass, no additional commit is needed beyond prior tasks. Report su
    - PDF 渲染与本地保存 → Task 2
    - 独立页面与入口 → Task 3
    - 分类/搜索/详情 → Task 4
+   - 侧边栏二级目录与展开按钮 → Task 6
    - 现有学习页不变 → 明确排除在改动范围外
 2. **Placeholder scan:** 无 TBD/TODO，所有代码片段完整。
 3. **Type consistency:** JSON schema 与 Vue 模板字段一致（`sign.id`, `sign.title`, `sign.category`, `sign.image`, `sign.description`）。
@@ -735,5 +867,17 @@ If all checks pass, no additional commit is needed beyond prior tasks. Report su
 ## Execution Handoff
 
 Plan complete and saved to `docs/superpowers/plans/2026-06-18-traffic-sign-gallery.md`.
+
+Because you said "直接一口气全部写完即可", I will use **Inline Execution** via `superpowers:executing-plans` to implement all tasks in this session.
+
+### Execution Handoff
+
+**"Plan complete and saved to `docs/superpowers/plans/2026-06-18-traffic-sign-gallery.md`. Two execution options:**
+
+**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
+
+**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
+
+**Which approach?"**
 
 Because you said "直接一口气全部写完即可", I will use **Inline Execution** via `superpowers:executing-plans` to implement all tasks in this session.

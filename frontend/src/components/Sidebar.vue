@@ -16,38 +16,53 @@ watch(() => route.path, () => {
   emit('close')
 })
 
-const tools = [
-  { path: '/', name: '首页', icon: '🏠' },
-  { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋' },
-  { path: '/tools/base64', name: 'Base64 编解码', icon: '🔐' },
-  { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗' },
-  { path: '/tools/regex', name: '正则测试', icon: '🔍' },
-  { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰' },
-  { path: '/tools/color', name: '颜色转换器', icon: '🎨' },
-  { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝' },
-  { path: '/tools/text-diff', name: '文本差异对比', icon: '📊' },
-  { path: '/tools/code-formatter', name: '代码格式化', icon: '💻' },
-  { path: '/tools/password', name: '密码生成器', icon: '🔑' },
-  { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜' },
-  { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔' },
-  { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣' },
-  { path: '/tools/html-entity', name: 'HTML 实体', icon: '🔤' },
-  { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰' },
-  { path: '/tools/number-converter', name: '进制转换', icon: '🔢' },
-  { path: '/tools/json-csv', name: 'JSON↔CSV', icon: '📑' },
-  { path: '/tools/qrcode', name: '二维码', icon: '▣' },
-  { path: '/tools/css-unit', name: 'CSS单位', icon: '📐' },
-  { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝' },
-  { path: '/tools/word-counter', name: '字数统计', icon: '📝' },
-  { path: '/tools/unit-converter', name: '单位换算', icon: '📐' },
-  { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️' },
-  { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️' },
-  { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
-  { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
-  { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
-  { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
-  { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
-  { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦' },
+const groups = [
+  {
+    title: '',
+    tools: [
+      { path: '/', name: '首页', icon: '🏠' },
+    ]
+  },
+  {
+    title: '开发者工具',
+    tools: [
+      { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋' },
+      { path: '/tools/base64', name: 'Base64 编解码', icon: '🔐' },
+      { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗' },
+      { path: '/tools/regex', name: '正则测试', icon: '🔍' },
+      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰' },
+      { path: '/tools/color', name: '颜色转换器', icon: '🎨' },
+      { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝' },
+      { path: '/tools/text-diff', name: '文本差异对比', icon: '📊' },
+      { path: '/tools/code-formatter', name: '代码格式化', icon: '💻' },
+      { path: '/tools/password', name: '密码生成器', icon: '🔑' },
+      { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜' },
+      { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔' },
+      { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣' },
+      { path: '/tools/html-entity', name: 'HTML 实体', icon: '🔤' },
+      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰' },
+      { path: '/tools/number-converter', name: '进制转换', icon: '🔢' },
+      { path: '/tools/json-csv', name: 'JSON↔CSV', icon: '📑' },
+      { path: '/tools/qrcode', name: '二维码', icon: '▣' },
+      { path: '/tools/css-unit', name: 'CSS单位', icon: '📐' },
+      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝' },
+      { path: '/tools/word-counter', name: '字数统计', icon: '📝' },
+      { path: '/tools/unit-converter', name: '单位换算', icon: '📐' },
+      { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️' },
+      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️' },
+      { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
+      { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
+      { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
+    ]
+  },
+  {
+    title: '交通学习',
+    tools: [
+      { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
+      { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
+      { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦' },
+    ]
+  }
 ]
 </script>
 
@@ -64,16 +79,19 @@ const tools = [
       </button>
     </div>
     <nav class="nav">
-      <RouterLink
-        v-for="tool in tools"
-        :key="tool.path"
-        :to="tool.path"
-        class="nav-item"
-        :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
-      >
-        <span class="nav-icon">{{ tool.icon }}</span>
-        <span v-if="!collapsed" class="nav-text">{{ tool.name }}</span>
-      </RouterLink>
+      <template v-for="group in groups" :key="group.title || 'home'">
+        <div v-if="group.title && !collapsed" class="nav-group-title">{{ group.title }}</div>
+        <RouterLink
+          v-for="tool in group.tools"
+          :key="tool.path"
+          :to="tool.path"
+          class="nav-item"
+          :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
+        >
+          <span class="nav-icon">{{ tool.icon }}</span>
+          <span v-if="!collapsed" class="nav-text">{{ tool.name }}</span>
+        </RouterLink>
+      </template>
     </nav>
   </aside>
 </template>
@@ -120,10 +138,7 @@ const tools = [
 }
 .sidebar.collapsed .sidebar-header {
   justify-content: center;
-  padding: 12px 0;
-}
-.sidebar.collapsed .toggle-btn {
-  display: none;
+  padding: 12px 8px;
 }
 .toggle-btn {
   background: none;
@@ -166,6 +181,13 @@ const tools = [
 .nav-icon {
   font-size: 16px;
   flex-shrink: 0;
+}
+.nav-group-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 12px 12px 4px;
+  letter-spacing: 0.5px;
 }
 
 @media (max-width: 768px) {

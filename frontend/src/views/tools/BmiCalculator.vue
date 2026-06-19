@@ -40,6 +40,7 @@ function calculate() {
       <AiHelpPanel
         title="BMI 计算器"
         desc="身体质量指数计算"
+        api-tool="bmi"
         :params="[
           { name: 'weight', desc: '体重 (kg)', required: true, example: '65' },
           { name: 'height', desc: '身高 (cm)', required: true, example: '170' }

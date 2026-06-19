@@ -29,6 +29,7 @@ const {
       <AiHelpPanel
         title="Lorem Ipsum 生成器"
         desc="生成占位文本"
+        api-tool="lorem"
         :params="[
           { name: 'paragraphs', desc: '段落数', required: false, example: '3' },
           { name: 'sentences', desc: '每段句子数', required: false, example: '5' },

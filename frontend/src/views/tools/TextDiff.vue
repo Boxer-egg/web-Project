@@ -79,6 +79,7 @@ function handleLoadExample() {
       <AiHelpPanel
         title="文本差异对比"
         desc="对比两段文本的行级和字符级差异"
+        api-tool="text_diff"
         :params="[
           { name: 'text1', desc: '原始文本', required: true, example: 'function add(a,b){return a+b}' },
           { name: 'text2', desc: '对比文本', required: true, example: 'function add(a,b,c){return a+b+c}' },

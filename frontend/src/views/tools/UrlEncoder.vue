@@ -49,6 +49,7 @@ const parsedParams = computed(() => {
       <AiHelpPanel
         title="URL 编解码"
         desc="URL 编码与解码，自动识别方向，解析 URL 参数"
+        api-tool="url"
         :params="[
           { name: 'text', desc: '要编码/解码的 URL 或文本', required: true, example: 'https://example.com?q=你好' },
           { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }

@@ -84,6 +84,7 @@ function clearAll() {
       <AiHelpPanel
         title="UUID 生成器"
         desc="批量生成 UUID v4，支持多种输出格式"
+        api-tool="uuid"
         :params="[
           { name: 'count', desc: '生成数量 (1-100)', required: false, example: '10' },
           { name: 'format', desc: '输出格式：standard/nohyphen/uppercase/quoted/array', required: false, example: 'standard' },

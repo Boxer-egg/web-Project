@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStorage } from '@vueuse/core'
-import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const route = useRoute()
 
@@ -321,14 +320,6 @@ onUnmounted(stopTimer)
   <div class="tool-page driving-quiz">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
       <h1>🚗 驾考刷题</h1>
-      <AiHelpPanel
-        title="驾考刷题"
-        desc="C1/C2 科目一题库练习、模拟考试与错题本"
-        :params="[
-          { name: 'mode', desc: '模式：sequential/random/exam/wrong', required: false, example: 'exam' },
-          { name: 'auto', desc: '是否自动开始（填 1）', required: false, example: '1' }
-        ]"
-      />
     </div>
 
     <!-- 加载中 -->

@@ -123,6 +123,7 @@ const actions = [
       <AiHelpPanel
         title="文本处理工具箱"
         desc="提供大小写转换、去重去空行、排序翻转、查找替换等 16+ 种文本处理功能"
+        api-tool="text_toolbox"
         :params="[
           { name: 'text', desc: '要处理的文本', required: true, example: 'Hello World' },
           { name: 'action', desc: '操作：upper/lower/capitalize/swapcase/dedup/noempty/trim/mergeempty/sortasc/sortdesc/reverselines/reversechars/addlinenum/dellinenum/tolist', required: false, example: 'upper' },

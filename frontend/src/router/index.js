@@ -42,7 +42,8 @@ const router = createRouter({
       component: () => import('../views/tools/UrlEncoder.vue'),
       meta: {
         title: 'URL 编解码 - 在线编码解码与参数解析工具',
-        description: '在线 URL 编解码工具，支持自动识别编码/解码，自动解析 URL 查询参数为表格。'
+        description: '在线 URL 编解码工具，支持自动识别编码/解码，自动解析 URL 查询参数为表格。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -51,7 +52,8 @@ const router = createRouter({
       component: () => import('../views/tools/RegexTester.vue'),
       meta: {
         title: '正则表达式测试 - 在线匹配与替换工具',
-        description: '在线正则表达式测试工具，实时匹配高亮、分组提取、替换预览，内置常用正则预设。'
+        description: '在线正则表达式测试工具，实时匹配高亮、分组提取、替换预览，内置常用正则预设。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -70,7 +72,8 @@ const router = createRouter({
       component: () => import('../views/tools/ColorConverter.vue'),
       meta: {
         title: '颜色转换器 - HEX / RGB / HSL 互转工具',
-        description: '在线颜色转换工具，支持 HEX、RGB、HSL、HSV 等格式互转，实时预览颜色。'
+        description: '在线颜色转换工具，支持 HEX、RGB、HSL、HSV 等格式互转，实时预览颜色。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -79,7 +82,8 @@ const router = createRouter({
       component: () => import('../views/tools/MarkdownPreview.vue'),
       meta: {
         title: 'Markdown 预览 - 在线编辑器与 HTML 导出工具',
-        description: '在线 Markdown 预览工具，实时渲染 Markdown 为 HTML，支持分屏/编辑/预览模式，可导出为独立 HTML 文件。'
+        description: '在线 Markdown 预览工具，实时渲染 Markdown 为 HTML，支持分屏/编辑/预览模式，可导出为独立 HTML 文件。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -88,7 +92,8 @@ const router = createRouter({
       component: () => import('../views/tools/TextDiff.vue'),
       meta: {
         title: '文本差异对比 - 在线 Diff 工具',
-        description: '在线文本差异对比工具，支持行级和字符级差异高亮，直观展示两段文本的不同之处。'
+        description: '在线文本差异对比工具，支持行级和字符级差异高亮，直观展示两段文本的不同之处。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -107,7 +112,8 @@ const router = createRouter({
       component: () => import('../views/tools/PasswordGenerator.vue'),
       meta: {
         title: '密码生成器 - 安全随机密码生成工具',
-        description: '在线密码生成器，使用加密安全随机数生成强密码，支持自定义长度、字符集、排除易混淆字符。'
+        description: '在线密码生成器，使用加密安全随机数生成强密码，支持自定义长度、字符集、排除易混淆字符。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -126,7 +132,8 @@ const router = createRouter({
       component: () => import('../views/tools/UuidGenerator.vue'),
       meta: {
         title: 'UUID 生成器 - 批量生成 UUID v4 工具',
-        description: '在线 UUID 生成器，批量生成 UUID v4，支持标准格式、无横线、大写、带引号、数组等多种输出格式。'
+        description: '在线 UUID 生成器，批量生成 UUID v4，支持标准格式、无横线、大写、带引号、数组等多种输出格式。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -174,7 +181,8 @@ const router = createRouter({
       component: () => import('../views/tools/JsonCsvConverter.vue'),
       meta: {
         title: 'JSON CSV 转换 - 在线 JSON 数组与 CSV 互转工具',
-        description: '在线 JSON 与 CSV 转换工具，支持 JSON 数组转 CSV、CSV 转 JSON，支持自定义分隔符和表头。'
+        description: '在线 JSON 与 CSV 转换工具，支持 JSON 数组转 CSV、CSV 转 JSON，支持自定义分隔符和表头。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -183,7 +191,8 @@ const router = createRouter({
       component: () => import('../views/tools/QrcodeGenerator.vue'),
       meta: {
         title: '二维码生成器 - 文本/URL 转二维码图片工具',
-        description: '在线二维码生成器，将文本、URL 等内容转换为可扫描的二维码图片，支持自定义颜色和尺寸。'
+        description: '在线二维码生成器，将文本、URL 等内容转换为可扫描的二维码图片，支持自定义颜色和尺寸。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -192,7 +201,8 @@ const router = createRouter({
       component: () => import('../views/tools/CssUnitConverter.vue'),
       meta: {
         title: 'CSS 单位转换 - PX / REM / EM / VH / VW 在线转换',
-        description: '在线 CSS 单位转换工具，支持 PX、REM、EM、VH、VW、百分比等单位互转，基于根字体大小自动计算。'
+        description: '在线 CSS 单位转换工具，支持 PX、REM、EM、VH、VW、百分比等单位互转，基于根字体大小自动计算。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -201,7 +211,8 @@ const router = createRouter({
       component: () => import('../views/tools/LoremIpsum.vue'),
       meta: {
         title: 'Lorem Ipsum 生成器 - 假文占位文本生成工具',
-        description: '在线 Lorem Ipsum 假文生成器，支持拉丁语和中文占位文本，可自定义段落数和每段句数。'
+        description: '在线 Lorem Ipsum 假文生成器，支持拉丁语和中文占位文本，可自定义段落数和每段句数。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -210,7 +221,8 @@ const router = createRouter({
       component: () => import('../views/tools/WordCounter.vue'),
       meta: {
         title: '字数统计 - 在线中文字数与阅读时间工具',
-        description: '在线字数统计工具，实时统计中文字数、英文单词数、字符数、段落数，并预估阅读时间。'
+        description: '在线字数统计工具，实时统计中文字数、英文单词数、字符数、段落数，并预估阅读时间。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -219,7 +231,8 @@ const router = createRouter({
       component: () => import('../views/tools/UnitConverter.vue'),
       meta: {
         title: '单位换算 - 在线长度重量温度体积换算工具',
-        description: '在线单位换算工具，支持长度、重量、面积、体积、温度、数据存储等多种单位的互转。'
+        description: '在线单位换算工具，支持长度、重量、面积、体积、温度、数据存储等多种单位的互转。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -228,7 +241,8 @@ const router = createRouter({
       component: () => import('../views/tools/BmiCalculator.vue'),
       meta: {
         title: 'BMI 计算器 - 在线身体质量指数计算工具',
-        description: '在线 BMI 计算器，根据身高体重计算身体质量指数，按照中国成人标准给出分类和健康建议。'
+        description: '在线 BMI 计算器，根据身高体重计算身体质量指数，按照中国成人标准给出分类和健康建议。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -237,7 +251,8 @@ const router = createRouter({
       component: () => import('../views/tools/ChineseConverter.vue'),
       meta: {
         title: '简繁体转换 - 在线简体中文与繁体中文互转工具',
-        description: '在线简繁体转换工具，支持约 2000 个常用汉字的简体与繁体中文互相转换。'
+        description: '在线简繁体转换工具，支持约 2000 个常用汉字的简体与繁体中文互相转换。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -246,7 +261,8 @@ const router = createRouter({
       component: () => import('../views/tools/DateCalculator.vue'),
       meta: {
         title: '日期计算器 - 在线日期间隔与日期加减工具',
-        description: '在线日期计算器，支持计算两个日期之间的间隔天数，以及对指定日期进行加减天数计算。'
+        description: '在线日期计算器，支持计算两个日期之间的间隔天数，以及对指定日期进行加减天数计算。',
+        apiPath: '/api/tool'
       }
     },
     {

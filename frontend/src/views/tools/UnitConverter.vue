@@ -176,6 +176,7 @@ onMounted(() => {
       <AiHelpPanel
         title="单位换算"
         desc="长度、重量、面积、体积、温度、数据存储等多种单位互转"
+        api-tool="unit_converter"
         :params="[
           { name: 'value', desc: '数值', required: true, example: '1' },
           { name: 'category', desc: '类别：length/weight/area/volume/temperature/data', required: false, example: 'length' },

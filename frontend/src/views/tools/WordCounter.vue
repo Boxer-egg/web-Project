@@ -25,6 +25,7 @@ const stats = computed(() => wordLogic.countStats(input.value))
       <AiHelpPanel
         title="字数统计"
         desc="实时统计中文字数、英文单词数、字符数、段落数及阅读时间"
+        api-tool="word_counter"
         :params="[
           { name: 'text', desc: '要统计的文本', required: true, example: 'Hello 你好 World 世界' },
           { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }

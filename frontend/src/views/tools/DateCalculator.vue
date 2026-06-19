@@ -26,6 +26,7 @@ function calculate() {
       <AiHelpPanel
         title="日期计算器"
         desc="计算两个日期之间的天数差"
+        api-tool="date_calculator"
         :params="[
           { name: 'date1', desc: '起始日期', required: true, example: '2026-06-11' },
           { name: 'date2', desc: '结束日期', required: true, example: '2026-07-11' }

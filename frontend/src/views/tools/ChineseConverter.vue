@@ -36,6 +36,7 @@ function swap() {
       <AiHelpPanel
         title="简繁体转换"
         desc="简体中文与繁体中文互相转换，覆盖约2000个常用汉字"
+        api-tool="chinese_converter"
         :params="[
           { name: 'text', desc: '要转换的文本', required: true, example: '简体转繁体测试' },
           { name: 'direction', desc: '转换方向：s2t（简→繁）或 t2s（繁→简）', required: false, example: 's2t' },

@@ -26,9 +26,10 @@ const filteredGroups = computed(() => {
     .map(group => {
       if (!group.title) return group
       if (!q) return group
-      const matchedTools = group.tools.filter(tool =>
-        tool.name.toLowerCase().includes(q)
-      )
+      const matchedTools = group.tools.filter(tool => {
+        const haystack = [tool.name, ...(tool.keywords || [])].join(' ').toLowerCase()
+        return haystack.includes(q)
+      })
       return { ...group, tools: matchedTools }
     })
     .filter(group => !group.title || group.tools.length > 0 || !q)
@@ -38,78 +39,78 @@ const groups = [
   {
     title: '',
     tools: [
-      { path: '/', name: '首页', icon: '🏠' },
+      { path: '/', name: '首页', icon: '🏠', keywords: ['shouye', 'home'] },
     ]
   },
   {
     title: '开发工具',
     tools: [
-      { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋' },
-      { path: '/tools/base64', name: 'Base64 编解码', icon: '🔐' },
-      { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗' },
-      { path: '/tools/regex', name: '正则测试', icon: '🔍' },
-      { path: '/tools/code-formatter', name: '代码格式化', icon: '💻' },
-      { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜' },
-      { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔' },
-      { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣' },
-      { path: '/tools/html-entity', name: 'HTML 实体', icon: '🔤' },
-      { path: '/tools/number-converter', name: '进制转换', icon: '🔢' },
-      { path: '/tools/json-csv', name: 'JSON↔CSV', icon: '📑' },
-      { path: '/tools/css-unit', name: 'CSS单位', icon: '📐' },
-      { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝' },
-      { path: '/tools/text-diff', name: '文本差异对比', icon: '📊' },
+      { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋', keywords: ['json', 'geshihua', 'ge shi hua', 'format', 'meihua', 'yasuo', 'compress'] },
+      { path: '/tools/base64', name: 'Base64 编解码', icon: '🔐', keywords: ['base64', 'bianjiema', 'bian ma', 'jie ma', 'encode', 'decode'] },
+      { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗', keywords: ['url', 'bianjiema', 'encode', 'decode', 'percent', 'escape'] },
+      { path: '/tools/regex', name: '正则测试', icon: '🔍', keywords: ['zhengze', 'regular', 'regex', 'regexp', 'test', 'pipei'] },
+      { path: '/tools/code-formatter', name: '代码格式化', icon: '💻', keywords: ['code', 'daima', 'format', 'beautify', 'javascript', 'css', 'html'] },
+      { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜', keywords: ['jwt', 'jiema', 'decode', 'token', 'verify'] },
+      { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔', keywords: ['uuid', 'shengcheng', 'guid', 'generate', 'unique'] },
+      { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣', keywords: ['hash', 'md5', 'sha', 'jisuan', 'digest'] },
+      { path: '/tools/html-entity', name: 'HTML 实体', icon: '🔤', keywords: ['html', 'shiti', 'entity', 'encode', 'decode'] },
+      { path: '/tools/number-converter', name: '进制转换', icon: '🔢', keywords: ['jinzhi', 'jin zhi', 'binary', 'hex', 'octal', 'decimal', 'radix'] },
+      { path: '/tools/json-csv', name: 'JSON↔CSV', icon: '📑', keywords: ['json', 'csv', 'convert', 'zhuanhuan', 'excel'] },
+      { path: '/tools/css-unit', name: 'CSS单位', icon: '📐', keywords: ['css', 'danwei', 'unit', 'px', 'rem', 'em', 'vh', 'vw'] },
+      { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝', keywords: ['markdown', 'yulan', 'preview', 'md'] },
+      { path: '/tools/text-diff', name: '文本差异对比', icon: '📊', keywords: ['wenben', 'text', 'chayi', 'diff', 'compare', 'duibi'] },
     ]
   },
   {
     title: '文本处理',
     tools: [
-      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰' },
-      { path: '/tools/word-counter', name: '字数统计', icon: '📝' },
-      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️' },
-      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝' },
+      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰', keywords: ['wenben', 'text', 'toolbox', 'daxiao', 'case', 'quchong', 'sort', 'fanzhuan', 'reverse'] },
+      { path: '/tools/word-counter', name: '字数统计', icon: '📝', keywords: ['zishu', 'word', 'count', 'tongji', 'character'] },
+      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️', keywords: ['jianfan', 'chinese', 'convert', 'simplified', 'traditional', 'fantizhongwen'] },
+      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝', keywords: ['jiawen', 'lorem', 'ipsum', 'dummy', 'placeholder', 'shengcheng'] },
     ]
   },
   {
     title: '转换计算',
     tools: [
-      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰' },
-      { path: '/tools/color', name: '颜色转换器', icon: '🎨' },
-      { path: '/tools/unit-converter', name: '单位换算', icon: '📐' },
-      { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
+      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰', keywords: ['shijianchuo', 'timestamp', 'date', 'unix', 'shijian'] },
+      { path: '/tools/color', name: '颜色转换器', icon: '🎨', keywords: ['yanse', 'color', 'hex', 'rgb', 'hsl', 'convert'] },
+      { path: '/tools/unit-converter', name: '单位换算', icon: '📐', keywords: ['danwei', 'unit', 'length', 'weight', 'temperature', 'huansuan'] },
+      { path: '/tools/date-calculator', name: '日期计算', icon: '📅', keywords: ['riqi', 'date', 'jisuan', 'days', 'tianshu'] },
     ]
   },
   {
     title: '图像分享',
     tools: [
-      { path: '/tools/qrcode', name: '二维码', icon: '▣' },
+      { path: '/tools/qrcode', name: '二维码', icon: '▣', keywords: ['erweima', 'qrcode', 'barcode', 'scan', 'shengcheng'] },
     ]
   },
   {
     title: '安全工具',
     tools: [
-      { path: '/tools/password', name: '密码生成器', icon: '🔑' },
+      { path: '/tools/password', name: '密码生成器', icon: '🔑', keywords: ['mima', 'password', 'suiji', 'random', 'generate'] },
     ]
   },
   {
     title: '效率生活',
     tools: [
-      { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
-      { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
+      { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', keywords: ['fanqie', 'pomodoro', 'timer', 'zhong', 'jishi'] },
+      { path: '/tools/timer', name: '专业计时器', icon: '⏱️', keywords: ['jishi', 'timer', 'stopwatch', 'countdown', 'daojishi'] },
     ]
   },
   {
     title: '健康生活',
     tools: [
-      { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️' },
+      { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️', keywords: ['bmi', 'shengao', 'tizhong', 'body', 'mass', 'index', 'jisuan'] },
     ]
   },
   {
     title: '驾考学习',
     tools: [
-      { path: '/driving/license-study', name: '科目一学习', icon: '📚' },
-      { path: '/driving/quiz', name: '驾考刷题', icon: '🚗' },
-      { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦' },
-      { path: '/driving/jk', name: '科目四顺序练习', icon: '🚌' },
+      { path: '/driving/license-study', name: '科目一学习', icon: '📚', keywords: ['kemu', 'subject', 'one', 'study', 'jiaxiao', 'xuexi'] },
+      { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', keywords: ['shuati', 'quiz', 'exam', 'jiaxiao', 'moni'] },
+      { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', keywords: ['jiaotong', 'traffic', 'sign', 'biaozhi', 'tuku', 'tubiao'] },
+      { path: '/driving/jk', name: '科目四顺序练习', icon: '🚌', keywords: ['kemu', 'subject', 'four', 'practice', 'jk', 'shunxu'] },
     ]
   }
 ]
@@ -186,12 +187,20 @@ watch(() => route.path, expandActiveGroup)
       </button>
     </div>
     <div v-if="!collapsed" class="search-box">
-      <input
-        v-model="search"
-        class="search-input"
-        type="text"
-        placeholder="搜索工具，如 BMI、番茄钟…"
-      >
+      <div class="search-input-wrap">
+        <input
+          v-model="search"
+          class="search-input"
+          type="text"
+          placeholder="搜索工具，如 BMI、番茄钟、password…"
+        >
+        <button
+          v-if="search"
+          class="search-clear"
+          title="清除"
+          @click="search = ''"
+        >×</button>
+      </div>
     </div>
     <nav class="nav">
       <template v-for="group in filteredGroups" :key="group.title || 'home'">
@@ -302,7 +311,7 @@ watch(() => route.path, expandActiveGroup)
 }
 .search-input {
   width: 100%;
-  padding: 8px 10px;
+  padding: 8px 30px 8px 10px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-primary);
@@ -316,6 +325,32 @@ watch(() => route.path, expandActiveGroup)
 }
 .search-input::placeholder {
   color: var(--text-muted);
+}
+.search-input-wrap {
+  position: relative;
+}
+.search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--border);
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.search-clear:hover {
+  background: var(--error);
+  color: white;
 }
 .nav {
   flex: 1;

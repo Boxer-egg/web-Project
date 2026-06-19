@@ -2,6 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const hex = ref('#3B82F6')
 const rgb = ref({ r: 59, g: 130, b: 246 })
@@ -128,7 +129,17 @@ watch(hex, updateFromHex, { immediate: true })
 
 <template>
   <div class="tool-page">
-    <h1>🎨 颜色转换器</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h1>🎨 颜色转换器</h1>
+      <AiHelpPanel
+        title="颜色转换器"
+        desc="HEX / RGB / HSL 互转"
+        api-tool="color"
+        :params="[
+          { name: 'color', desc: '颜色 HEX 值', required: true, example: '#3B82F6' }
+        ]"
+      />
+    </div>
     <div class="tool-section">
       <div class="tool-panel">
         <div class="preview" :style="{ background: hex }"></div>

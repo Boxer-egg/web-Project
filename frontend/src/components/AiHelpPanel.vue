@@ -6,6 +6,7 @@ const props = defineProps({
   title: { type: String, required: true },
   desc: { type: String, required: true },
   params: { type: Array, default: () => [] },
+  apiTool: { type: String, default: '' }
 })
 
 const route = useRoute()
@@ -26,10 +27,13 @@ const relevantParams = computed(() =>
 const exampleUrl = computed(() => {
   const base = window.location.origin
   const path = apiPath.value || route.path
-  const query = relevantParams.value
+  const queryParts = relevantParams.value
     .filter(p => p.example)
     .map(p => `${p.name}=${encodeURIComponent(p.example)}`)
-    .join('&')
+  if (props.apiTool) {
+    queryParts.unshift(`tool=${encodeURIComponent(props.apiTool)}`)
+  }
+  const query = queryParts.join('&')
   if (apiPath.value) {
     return query ? `${base}${path}?${query}` : `${base}${path}`
   }

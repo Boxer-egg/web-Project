@@ -47,6 +47,7 @@ function handleExport() {
       <AiHelpPanel
         title="Markdown 预览"
         desc="实时渲染 Markdown 为 HTML，支持导出"
+        api-tool="markdown"
         :params="[
           { name: 'text', desc: 'Markdown 文本', required: true, example: '# Hello World' },
           { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }

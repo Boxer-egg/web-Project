@@ -74,6 +74,7 @@ onMounted(() => {
       <AiHelpPanel
         title="二维码生成器"
         desc="将文本或 URL 转换为可扫描的二维码图片，支持自定义尺寸、颜色和纠错级别"
+        api-tool="qrcode"
         :params="[
           { name: 'text', desc: '要编码的内容', required: true, example: 'https://example.com' },
           { name: 'size', desc: '尺寸：128/256/512/1024', required: false, example: '256' },

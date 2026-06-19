@@ -87,6 +87,7 @@ function clearAll() {
       <AiHelpPanel
         title="JSON ↔ CSV 转换"
         desc="JSON 数组与 CSV 格式互相转换，支持嵌套对象和自定义分隔符"
+        api-tool="json_csv"
         :params="[
           { name: 'data', desc: '要转换的内容（JSON 或 CSV）', required: true, example: '[{&quot;a&quot;:1}]' },
           { name: 'direction', desc: '方向：json-to-csv 或 csv-to-json', required: false, example: 'json-to-csv' },

@@ -64,6 +64,7 @@ function clearAll() {
       <AiHelpPanel
         title="正则测试器"
         desc="实时测试正则表达式，支持 flags 配置和匹配高亮"
+        api-tool="regex"
         :params="[
           { name: 'text', desc: '测试文本', required: true, example: 'Hello World' },
           { name: 'pattern', desc: '正则表达式', required: false, example: '\\w+' },

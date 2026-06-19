@@ -115,6 +115,7 @@ onMounted(() => {
       <AiHelpPanel
         title="CSS 单位转换"
         desc="PX/REM/EM/VH/VW/百分比/PT/PC/IN/CM/MM 互转，支持自定义根字体和视口尺寸"
+        api-tool="css_unit"
         :params="[
           { name: 'value', desc: '数值', required: true, example: '16' },
           { name: 'from', desc: '源单位：px/rem/em/vh/vw/%/pt/pc/in/cm/mm', required: false, example: 'px' },

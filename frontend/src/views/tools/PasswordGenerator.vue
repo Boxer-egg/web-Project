@@ -85,6 +85,7 @@ function clearAll() {
       <AiHelpPanel
         title="密码生成器"
         desc="使用加密安全随机数生成强密码，支持自定义长度和字符集"
+        api-tool="password"
         :params="[
           { name: 'length', desc: '密码长度（4-64）', required: false, example: '16' },
           { name: 'count', desc: '生成数量（1-20）', required: false, example: '5' },

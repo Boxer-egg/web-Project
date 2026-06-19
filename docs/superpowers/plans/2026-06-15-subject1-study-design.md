@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-_SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 为驾考刷题工具新增 `/tools/driving-license-study` 科目一系统学习页面，采用课程式向导，支持章节进度持久化和章节练习跳转。
+**Goal:** 为驾考刷题工具新增 `/driving/license-study` 科目一系统学习页面，采用课程式向导，支持章节进度持久化和章节练习跳转。
 
 **Architecture:** 新增独立 Vue 页面组件 + composable 管理学习数据与进度，静态 JSON 存放章节化学习内容，通过 URL 参数与现有刷题页联动实现按章节练习。
 
@@ -17,7 +17,7 @@
 | `frontend/public/data/driving-license-study.json` | 创建 | 科目一学习章节与知识点数据 |
 | `frontend/src/composables/useDrivingStudy.js` | 创建 | 学习数据加载、进度读写、导航计算 |
 | `frontend/src/views/tools/DrivingLicenseStudy.vue` | 创建 | 学习页面主组件 |
-| `frontend/src/router/index.js` | 修改 | 注册 `/tools/driving-license-study` 路由 |
+| `frontend/src/router/index.js` | 修改 | 注册 `/driving/license-study` 路由 |
 | `frontend/src/components/Sidebar.vue` | 修改 | 新增侧边栏入口 |
 | `frontend/src/views/tools/DrivingLicenseQuiz.vue` | 修改 | 支持 `chapter` URL 参数筛选题目 |
 
@@ -384,7 +384,7 @@ function goToQuiz() {
   const chapter = currentChapter.value
   const quizChapter = currentTopic.value?.quizChapter || chapter?.title
   if (quizChapter) {
-    router.push(`/tools/driving-license-quiz?mode=sequential&chapter=${encodeURIComponent(quizChapter)}`)
+    router.push(`/driving/quiz?mode=sequential&chapter=${encodeURIComponent(quizChapter)}`)
   }
 }
 
@@ -507,7 +507,7 @@ watch(currentTopicId, (id) => {
           共学习 {{ totalCount }} 个知识点，现在可以去刷题巩固了。
         </p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-          <button class="btn" @click="router.push('/tools/driving-license-quiz')">去刷题</button>
+          <button class="btn" @click="router.push('/driving/quiz')">去刷题</button>
           <button class="btn btn-secondary" @click="goHome">返回概览</button>
         </div>
       </div>
@@ -659,7 +659,7 @@ git commit -m "feat(study): add DrivingLicenseStudy page with overview, topic an
 
 ```javascript
     {
-      path: '/tools/driving-license-study',
+      path: '/driving/license-study',
       name: 'driving-license-study',
       component: () => import('../views/tools/DrivingLicenseStudy.vue'),
       meta: {
@@ -685,10 +685,10 @@ git commit -m "feat(study): register driving-license-study route"
 
 - [ ] **Step 1: 在 tools 数组中驾考刷题下方新增入口**
 
-找到 `frontend/src/components/Sidebar.vue` 第 48 行的 `{ path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' }`，在其后添加：
+找到 `frontend/src/components/Sidebar.vue` 第 48 行的 `{ path: '/driving/quiz', name: '驾考刷题', icon: '🚗' }`，在其后添加：
 
 ```javascript
-  { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
+  { path: '/driving/license-study', name: '科目一学习', icon: '📚' },
 ```
 
 - [ ] **Step 2: 提交**
@@ -780,7 +780,7 @@ Expected: 开发服务器启动，终端显示本地 URL（如 `http://localhost
 
 - [ ] **Step 2: 访问学习页面**
 
-打开 `http://localhost:5173/tools/driving-license-study`。
+打开 `http://localhost:5173/driving/license-study`。
 
 Expected:
 - 页面显示「科目一系统学习」标题

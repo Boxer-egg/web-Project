@@ -1,7 +1,7 @@
 # 科目一系统学习页面设计文档
 
 **日期**：2026-06-15  
-**功能**：新增 `/tools/driving-license-study` 科目一系统学习页面  
+**功能**：新增 `/driving/license-study` 科目一系统学习页面  
 **参考**：用户提供的知乎文章（未能直接获取，按通用科目一知识体系设计）
 
 ---
@@ -16,7 +16,7 @@
 
 ### 2.1 页面结构
 
-- **独立页面**：`/tools/driving-license-study`
+- **独立页面**：`/driving/license-study`
 - **侧边栏入口**：驾考刷题下方新增「科目一学习」
 - **首页**：展示章节列表、总进度、继续学习按钮
 - **学习页**：顶部进度条 + 当前知识点 + 底部导航
@@ -63,7 +63,7 @@
 | `frontend/src/views/tools/DrivingLicenseStudy.vue` | 学习页面主组件 |
 | `frontend/src/composables/useDrivingStudy.js` | 学习数据加载、进度管理 |
 | `frontend/public/data/driving-license-study.json` | 章节化学习内容 |
-| `frontend/src/router/index.js` | 注册 `/tools/driving-license-study` |
+| `frontend/src/router/index.js` | 注册 `/driving/license-study` |
 | `frontend/src/components/Sidebar.vue` | 新增侧边栏入口 |
 
 ### 4.2 数据结构
@@ -104,7 +104,7 @@
 
 ### 4.4 与刷题页集成
 
-- 「练习本章」跳转链接：`/tools/driving-license-quiz?mode=sequential&chapter=交通标志`
+- 「练习本章」跳转链接：`/driving/quiz?mode=sequential&chapter=交通标志`
 - 刷题页需支持按 `chapter` URL 参数筛选题目（本次一并实现）。
 
 ---

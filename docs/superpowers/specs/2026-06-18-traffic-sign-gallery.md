@@ -13,9 +13,9 @@
 
 ## 入口
 
-- 新增独立页面 `/tools/traffic-signs`。
+- 新增独立页面 `/driving/traffic-signs`。
 - 侧边栏在「科目一学习」下方新增「交通标志图库」入口。
-- 现有 `/tools/driving-license-study` 页面顶部加一个「查看全部标志图库」链接，跳转到新页面。
+- 现有 `/driving/license-study` 页面顶部加一个「查看全部标志图库」链接，跳转到新页面。
 - 可选：首页工具网格增加「交通标志图库」卡片。
 
 ---
@@ -74,7 +74,7 @@
 
 ## 不变的部分
 
-- `/tools/driving-license-study` 学习进度页面的章节、知识点、进度逻辑完全不动。
+- `/driving/license-study` 学习进度页面的章节、知识点、进度逻辑完全不动。
 
 ---
 

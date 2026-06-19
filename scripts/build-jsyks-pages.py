@@ -1,8 +1,16 @@
-import json, os
+"""Build paginated JSON question bank for the subject-4 driving test tool.
+
+Reads raw question data from the local jsyks source directory and writes
+per-page JSON files plus a meta index under frontend/public/data/jk.
+Also copies question images to frontend/public/images/jk.
+"""
+import json, os, shutil
 
 SRC_DIR = '/Users/box/new/Mac/food/通用资料/jsyks_kms4_sxlx_tiku_1550'
-OUT_DIR = '/Users/box/new/Mac/web-Project/frontend/public/data/jsyks-kms4'
+OUT_DIR = '/Users/box/new/Mac/web-Project/frontend/public/data/jk'
 PAGE_DIR = os.path.join(OUT_DIR, 'pages')
+IMG_SRC_DIR = os.path.join(SRC_DIR, 'images')
+IMG_OUT_DIR = '/Users/box/new/Mac/web-Project/frontend/public/images/jk'
 
 with open(os.path.join(SRC_DIR, 'tiku_raw.json'), 'r', encoding='utf-8') as f:
     raw = json.load(f)
@@ -30,5 +38,16 @@ for name in ('tiku_raw.json', 'ids.json'):
     path = os.path.join(OUT_DIR, name)
     if os.path.exists(path):
         os.remove(path)
+
+if os.path.isdir(IMG_SRC_DIR):
+    os.makedirs(IMG_OUT_DIR, exist_ok=True)
+    for fname in os.listdir(IMG_SRC_DIR):
+        src = os.path.join(IMG_SRC_DIR, fname)
+        dst = os.path.join(IMG_OUT_DIR, fname)
+        if os.path.isfile(src):
+            shutil.copy2(src, dst)
+    print(f'copied images to {IMG_OUT_DIR}')
+else:
+    print(f'warning: image source directory not found: {IMG_SRC_DIR}')
 
 print(f'generated {total_pages} pages, total {total} questions, page size {PAGE_SIZE}')

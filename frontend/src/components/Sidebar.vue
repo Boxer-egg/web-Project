@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
 const props = defineProps({
@@ -10,6 +10,8 @@ const emit = defineEmits(['close'])
 
 const route = useRoute()
 const collapsed = ref(false)
+const expandedGroups = ref({})
+const STORAGE_KEY = 'sidebar-groups-expanded'
 
 // Close sidebar on route change on mobile
 watch(() => route.path, () => {
@@ -58,13 +60,71 @@ const groups = [
   {
     title: '交通学习',
     tools: [
-      { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
-      { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
-      { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦' },
-      { path: '/tools/jsyks-kms4', name: '科目四顺序练习', icon: '🚌' },
+      { path: '/driving/license-study', name: '科目一学习', icon: '📚' },
+      { path: '/driving/quiz', name: '驾考刷题', icon: '🚗' },
+      { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦' },
+      { path: '/driving/jk', name: '科目四顺序练习', icon: '🚌' },
     ]
   }
 ]
+
+/** Determine which group contains the current route. */
+function findActiveGroupTitle() {
+  for (const group of groups) {
+    if (!group.title) continue
+    const active = group.tools.some(tool =>
+      tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path)
+    )
+    if (active) return group.title
+  }
+  return ''
+}
+
+/** Load saved group expansion state from localStorage. */
+function loadExpandedState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    expandedGroups.value = raw ? JSON.parse(raw) : {}
+  } catch {
+    expandedGroups.value = {}
+  }
+}
+
+/** Persist group expansion state to localStorage. */
+function saveExpandedState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(expandedGroups.value))
+  } catch {
+    // Ignore storage errors (e.g. private mode).
+  }
+}
+
+/** Check whether a named group is currently expanded. */
+function isExpanded(title) {
+  return !!expandedGroups.value[title]
+}
+
+/** Toggle expansion for a named group. */
+function toggleGroup(title) {
+  expandedGroups.value[title] = !isExpanded(title)
+  saveExpandedState()
+}
+
+/** Ensure the active route's group is always expanded. */
+function expandActiveGroup() {
+  const activeTitle = findActiveGroupTitle()
+  if (activeTitle && !isExpanded(activeTitle)) {
+    expandedGroups.value[activeTitle] = true
+    saveExpandedState()
+  }
+}
+
+onMounted(() => {
+  loadExpandedState()
+  expandActiveGroup()
+})
+
+watch(() => route.path, expandActiveGroup)
 </script>
 
 <template>
@@ -81,17 +141,49 @@ const groups = [
     </div>
     <nav class="nav">
       <template v-for="group in groups" :key="group.title || 'home'">
-        <div v-if="group.title && !collapsed" class="nav-group-title">{{ group.title }}</div>
-        <RouterLink
-          v-for="tool in group.tools"
-          :key="tool.path"
-          :to="tool.path"
-          class="nav-item"
-          :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
-        >
-          <span class="nav-icon">{{ tool.icon }}</span>
-          <span v-if="!collapsed" class="nav-text">{{ tool.name }}</span>
-        </RouterLink>
+        <div class="nav-group">
+          <!-- Collapsed sidebar: show tool icons only, no group headers. -->
+          <template v-if="collapsed">
+            <RouterLink
+              v-for="tool in group.tools"
+              :key="tool.path"
+              :to="tool.path"
+              class="nav-item"
+              :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
+              :title="tool.name"
+            >
+              <span class="nav-icon">{{ tool.icon }}</span>
+            </RouterLink>
+          </template>
+
+          <!-- Expanded sidebar: show collapsible group headers. -->
+          <template v-else>
+            <button
+              v-if="group.title"
+              class="nav-group-header"
+              :class="{ expanded: isExpanded(group.title) }"
+              @click="toggleGroup(group.title)"
+            >
+              <span>{{ group.title }}</span>
+              <span class="group-arrow">▸</span>
+            </button>
+            <div
+              v-show="!group.title || isExpanded(group.title)"
+              class="nav-group-tools"
+            >
+              <RouterLink
+                v-for="tool in group.tools"
+                :key="tool.path"
+                :to="tool.path"
+                class="nav-item"
+                :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
+              >
+                <span class="nav-icon">{{ tool.icon }}</span>
+                <span class="nav-text">{{ tool.name }}</span>
+              </RouterLink>
+            </div>
+          </template>
+        </div>
       </template>
     </nav>
   </aside>
@@ -158,6 +250,42 @@ const groups = [
   flex-direction: column;
   gap: 4px;
 }
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-group-header:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+.group-arrow {
+  transition: transform 0.2s;
+  font-size: 12px;
+}
+.nav-group-header.expanded .group-arrow {
+  transform: rotate(90deg);
+}
+.nav-group-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .nav-item {
   display: flex;
   align-items: center;
@@ -183,12 +311,9 @@ const groups = [
   font-size: 16px;
   flex-shrink: 0;
 }
-.nav-group-title {
-  font-size: 11px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  padding: 12px 12px 4px;
-  letter-spacing: 0.5px;
+.nav-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {

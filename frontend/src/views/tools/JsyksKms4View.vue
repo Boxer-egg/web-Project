@@ -7,7 +7,7 @@ const pageLoading = ref(false)
 const error = ref('')
 const currentPage = ref(1)
 const pageCache = ref({})
-const showAnswer = ref({})
+const selectedAnswer = ref({})
 
 const totalCount = computed(() => meta.value?.total || 0)
 const pageSize = computed(() => meta.value?.pageSize || 20)
@@ -17,7 +17,7 @@ const pagedQuestions = computed(() => pageCache.value[currentPage.value] || [])
 
 async function loadMeta() {
   try {
-    const res = await fetch('/data/jsyks-kms4/meta.json')
+    const res = await fetch('/data/jk/meta.json')
     if (!res.ok) throw new Error('题库索引加载失败')
     meta.value = await res.json()
     currentPage.value = 1
@@ -33,19 +33,19 @@ async function loadPage(p) {
   if (!meta.value || p < 1 || p > totalPages.value) return
   if (pageCache.value[p]) {
     currentPage.value = p
-    showAnswer.value = {}
+    selectedAnswer.value = {}
     scrollTop()
     prefetchPage(p + 1)
     return
   }
   pageLoading.value = true
   try {
-    const res = await fetch(`/data/jsyks-kms4/pages/page-${p.toString().padStart(3, '0')}.json`)
+    const res = await fetch(`/data/jk/pages/page-${p.toString().padStart(3, '0')}.json`)
     if (!res.ok) throw new Error(`第 ${p} 页加载失败`)
     const data = await res.json()
     pageCache.value[p] = data
     currentPage.value = p
-    showAnswer.value = {}
+    selectedAnswer.value = {}
     scrollTop()
     prefetchPage(p + 1)
   } catch (e) {
@@ -59,7 +59,7 @@ function prefetchPage(p) {
   if (!meta.value || p < 1 || p > totalPages.value || pageCache.value[p]) return
   const link = document.createElement('link')
   link.rel = 'prefetch'
-  link.href = `/data/jsyks-kms4/pages/page-${p.toString().padStart(3, '0')}.json`
+  link.href = `/data/jk/pages/page-${p.toString().padStart(3, '0')}.json`
   link.as = 'fetch'
   link.onload = () => link.remove()
   document.head.appendChild(link)
@@ -69,25 +69,43 @@ function scrollTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+/** Remove leading option letters and delimiters such as "A、" or "A.A、". */
+function stripOptionPrefix(text) {
+  return text.replace(/^[A-D]([、.．]\s*)?[A-D]?[、.．]\s*/, '').trim()
+}
+
 function parseQuestion(tm, tx) {
   const parts = (tm || '').split(/<br\s*\/?>/i).map(s => s.trim()).filter(Boolean)
   const stem = parts[0] || ''
-  const options = tx === 1 ? ['正确', '错误'] : parts.slice(1)
+  const options = tx === 1 ? ['正确', '错误'] : parts.slice(1).map(stripOptionPrefix)
   return { stem, options }
 }
 
 function imagePath(tp) {
   if (!tp) return ''
   const base = tp.replace(/\.[^.]+$/, '')
-  return `/images/jsyks-kms4/${base}.webp`
+  return `/images/jk/${base}.webp`
 }
 
 function optionLabel(index) {
   return String.fromCharCode(65 + index)
 }
 
-function toggleAnswer(globalIndex) {
-  showAnswer.value[globalIndex] = !showAnswer.value[globalIndex]
+function globalIndex(idx) {
+  return (currentPage.value - 1) * pageSize.value + idx
+}
+
+function optionValue(q, opt, index) {
+  return q.tx === 1 ? opt : optionLabel(index)
+}
+
+function isAnswered(globalIndex) {
+  return selectedAnswer.value[globalIndex] !== undefined
+}
+
+function selectOption(globalIndex, value) {
+  if (isAnswered(globalIndex)) return
+  selectedAnswer.value[globalIndex] = value
 }
 
 function goPage(p) {
@@ -165,23 +183,21 @@ onUnmounted(() => {
             <li
               v-for="(opt, oidx) in parseQuestion(q.tm, q.tx).options"
               :key="oidx"
-              :class="{ correct: showAnswer[(currentPage - 1) * pageSize + idx] && q.da === (q.tx === 1 ? opt : optionLabel(oidx)) }"
+              :class="{
+                selected: selectedAnswer[globalIndex(idx)] === optionValue(q, opt, oidx),
+                correct: isAnswered(globalIndex(idx)) && q.da === optionValue(q, opt, oidx),
+                wrong: isAnswered(globalIndex(idx)) && selectedAnswer[globalIndex(idx)] === optionValue(q, opt, oidx) && q.da !== optionValue(q, opt, oidx)
+              }"
+              @click="selectOption(globalIndex(idx), optionValue(q, opt, oidx))"
             >
               <span class="opt-label">{{ optionLabel(oidx) }}.</span>
               <span class="opt-text">{{ opt }}</span>
             </li>
           </ol>
 
-          <div class="answer-row">
-            <button
-              class="btn btn-sm btn-secondary"
-              @click="toggleAnswer((currentPage - 1) * pageSize + idx)"
-            >
-              {{ showAnswer[(currentPage - 1) * pageSize + idx] ? '隐藏答案' : '显示答案' }}
-            </button>
-            <span v-if="showAnswer[(currentPage - 1) * pageSize + idx]" class="answer-text">
-              答案：<b>{{ q.da }}</b>
-            </span>
+          <div v-if="isAnswered(globalIndex(idx))" class="answer-result">
+            <span v-if="selectedAnswer[globalIndex(idx)] === q.da" class="result-correct">回答正确 ✅</span>
+            <span v-else class="result-wrong">回答错误，正确答案是 <b>{{ q.da }}</b></span>
           </div>
         </div>
       </div>
@@ -279,24 +295,33 @@ onUnmounted(() => {
   background: var(--bg-secondary);
   font-size: 15px;
   line-height: 1.5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.options li:hover {
+  border-color: var(--accent);
+}
+.options li.selected {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.08);
 }
 .options li.correct {
   border-color: var(--success);
   background: rgba(34, 197, 94, 0.08);
 }
-.opt-label {
-  font-weight: 600;
-  color: var(--text-secondary);
-  flex-shrink: 0;
+.options li.wrong {
+  border-color: var(--error, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
 }
-.answer-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.answer-text {
+.answer-result {
+  margin-top: 4px;
   font-size: 15px;
+}
+.result-correct {
   color: var(--success);
+}
+.result-wrong {
+  color: var(--error, #ef4444);
 }
 .pagination-card {
   display: flex;

@@ -260,7 +260,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/tools/driving-license-study',
+      path: '/driving/license-study',
       name: 'driving-license-study',
       component: () => import('../views/tools/DrivingLicenseStudy.vue'),
       meta: {
@@ -269,7 +269,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/tools/driving-license-quiz',
+      path: '/driving/quiz',
       name: 'driving-license-quiz',
       component: () => import('../views/tools/DrivingLicenseQuiz.vue'),
       meta: {
@@ -278,7 +278,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/tools/traffic-signs',
+      path: '/driving/traffic-signs',
       name: 'traffic-signs',
       component: () => import('../views/tools/TrafficSignGallery.vue'),
       meta: {
@@ -287,8 +287,8 @@ const router = createRouter({
       }
     },
     {
-      path: '/tools/jsyks-kms4',
-      name: 'jsyks-kms4',
+      path: '/driving/jk',
+      name: 'jk',
       component: () => import('../views/tools/JsyksKms4View.vue'),
       meta: {
         title: '科目四顺序练习 - 驾考刷题',

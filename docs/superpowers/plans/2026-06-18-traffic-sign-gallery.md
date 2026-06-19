@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 把深圳交警官网 213 篇标志图解和 GB 5768 PDF 整理成本地静态资源，新增 `/tools/traffic-signs` 图库页面，支持分类筛选、搜索和详情弹窗，同时保留现有学习进度页不变。
+**Goal:** 把深圳交警官网 213 篇标志图解和 GB 5768 PDF 整理成本地静态资源，新增 `/driving/traffic-signs` 图库页面，支持分类筛选、搜索和详情弹窗，同时保留现有学习进度页不变。
 
 **Architecture:** 使用一个 Python 构建脚本一次性爬取/处理两个数据源，生成 `frontend/public/data/traffic-signs.json` 和 `frontend/public/images/traffic-signs/` 下的本地图片；前端用 Vue 3 Composition API 读取 JSON 并渲染图库，筛选和搜索纯前端完成。
 
@@ -18,7 +18,7 @@
 | `frontend/public/data/traffic-signs.json` | 图库数据源（深圳 + GB 5768 合并） |
 | `frontend/public/images/traffic-signs/*` | 本地图片 |
 | `frontend/src/views/tools/TrafficSignGallery.vue` | 图库页面 |
-| `frontend/src/router/index.js` | 注册 `/tools/traffic-signs` 路由 |
+| `frontend/src/router/index.js` | 注册 `/driving/traffic-signs` 路由 |
 | `frontend/src/components/Sidebar.vue` | 新增侧边栏入口 |
 | `frontend/src/views/tools/DrivingLicenseStudy.vue` | 新增「查看全部标志图库」链接 |
 | `frontend/src/views/Home.vue` | 可选：首页工具卡片 |
@@ -360,7 +360,7 @@ git commit -m "feat(gallery): 将 GB 5768 PDF 逐页渲染为图集图片"
 
 ```javascript
     {
-      path: '/tools/traffic-signs',
+      path: '/driving/traffic-signs',
       name: 'traffic-signs',
       component: () => import('../views/tools/TrafficSignGallery.vue'),
       meta: {
@@ -372,10 +372,10 @@ git commit -m "feat(gallery): 将 GB 5768 PDF 逐页渲染为图集图片"
 
 - [ ] **Step 2: 在 `frontend/src/components/Sidebar.vue` 中新增入口**
 
-在 `{ path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },` 后面插入：
+在 `{ path: '/driving/license-study', name: '科目一学习', icon: '📚' },` 后面插入：
 
 ```javascript
-  { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦' },
+  { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦' },
 ```
 
 - [ ] **Step 3: 在学习页加跳转链接**
@@ -386,7 +386,7 @@ git commit -m "feat(gallery): 将 GB 5768 PDF 逐页渲染为图集图片"
         <button
           class="btn btn-secondary"
           style="margin-top:12px;width:100%"
-          @click="router.push('/tools/traffic-signs')"
+          @click="router.push('/driving/traffic-signs')"
         >
           查看全部标志图库
         </button>
@@ -397,9 +397,9 @@ git commit -m "feat(gallery): 将 GB 5768 PDF 逐页渲染为图集图片"
 在 `frontend/src/views/Home.vue` 的 `tools` 数组末尾添加：
 
 ```javascript
-  { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚', desc: '系统学习 C1/C2 科目一理论知识', category: '驾考' },
-  { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗', desc: '科目一顺序/随机/模拟考试练习', category: '驾考' },
-  { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦', desc: '分类浏览交通标志与说明', category: '驾考' },
+  { path: '/driving/license-study', name: '科目一学习', icon: '📚', desc: '系统学习 C1/C2 科目一理论知识', category: '驾考' },
+  { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', desc: '科目一顺序/随机/模拟考试练习', category: '驾考' },
+  { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', desc: '分类浏览交通标志与说明', category: '驾考' },
 ```
 
 - [ ] **Step 5: Commit**
@@ -738,9 +738,9 @@ const groups = [
   {
     title: '交通学习',
     tools: [
-      { path: '/tools/driving-license-study', name: '科目一学习', icon: '📚' },
-      { path: '/tools/driving-license-quiz', name: '驾考刷题', icon: '🚗' },
-      { path: '/tools/traffic-signs', name: '交通标志图库', icon: '🚦' },
+      { path: '/driving/license-study', name: '科目一学习', icon: '📚' },
+      { path: '/driving/quiz', name: '驾考刷题', icon: '🚗' },
+      { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦' },
     ]
   }
 ]
@@ -825,7 +825,7 @@ npm run dev
 
 - [ ] **Step 2: 检查图库 URL 与功能**
 
-Open `http://localhost:5174/tools/traffic-signs` and verify:
+Open `http://localhost:5174/driving/traffic-signs` and verify:
 
 - 页面标题显示「交通标志图库」。
 - 分类标签可点击切换，筛选后网格正确更新。

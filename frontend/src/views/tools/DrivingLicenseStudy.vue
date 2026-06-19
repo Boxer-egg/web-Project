@@ -88,7 +88,7 @@ function goToQuiz() {
   const chapter = currentChapter.value
   const quizChapter = currentTopic.value?.quizChapter || chapter?.title
   if (quizChapter) {
-    router.push(`/tools/driving-license-quiz?mode=sequential&chapter=${encodeURIComponent(quizChapter)}`)
+    router.push(`/driving/quiz?mode=sequential&chapter=${encodeURIComponent(quizChapter)}`)
   }
 }
 
@@ -147,7 +147,7 @@ watch(currentTopicId, (id) => {
         <button
           class="btn btn-secondary"
           style="margin-top:12px;width:100%"
-          @click="router.push('/tools/traffic-signs')"
+          @click="router.push('/driving/traffic-signs')"
         >
           查看全部标志图库
         </button>
@@ -156,7 +156,7 @@ watch(currentTopicId, (id) => {
       <div class="study-chapters">
         <div
           class="card chapter-card gallery-card"
-          @click="router.push('/tools/traffic-signs')"
+          @click="router.push('/driving/traffic-signs')"
         >
           <div class="chapter-header">
             <h3>🚦 交通标志图库</h3>
@@ -238,7 +238,7 @@ watch(currentTopicId, (id) => {
           共学习 {{ totalCount }} 个知识点，现在可以去刷题巩固了。
         </p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-          <button class="btn" @click="router.push('/tools/driving-license-quiz')">去刷题</button>
+          <button class="btn" @click="router.push('/driving/quiz')">去刷题</button>
           <button class="btn btn-secondary" @click="goHome">返回概览</button>
         </div>
       </div>

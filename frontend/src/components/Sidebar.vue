@@ -59,6 +59,7 @@ const groups = [
       { path: '/tools/css-unit', name: 'CSS单位', icon: '📐', keywords: ['css', 'danwei', 'unit', 'px', 'rem', 'em', 'vh', 'vw'] },
       { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝', keywords: ['markdown', 'yulan', 'preview', 'md'] },
       { path: '/tools/text-diff', name: '文本差异对比', icon: '📊', keywords: ['wenben', 'text', 'chayi', 'diff', 'compare', 'duibi'] },
+      { path: '/tools/yaml-json', name: 'YAML ↔ JSON', icon: '🔄', keywords: ['yaml', 'json', 'zhuanhuan', 'convert', 'jiaoHU'] },
     ]
   },
   {
@@ -68,6 +69,7 @@ const groups = [
       { path: '/tools/word-counter', name: '字数统计', icon: '📝', keywords: ['zishu', 'word', 'count', 'tongji', 'character'] },
       { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️', keywords: ['jianfan', 'chinese', 'convert', 'simplified', 'traditional', 'fantizhongwen'] },
       { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝', keywords: ['jiawen', 'lorem', 'ipsum', 'dummy', 'placeholder', 'shengcheng'] },
+      { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', keywords: ['shuzi', 'number', 'chinese', 'daxie', 'jine', 'renminbi', 'convert'] },
     ]
   },
   {
@@ -77,18 +79,22 @@ const groups = [
       { path: '/tools/color', name: '颜色转换器', icon: '🎨', keywords: ['yanse', 'color', 'hex', 'rgb', 'hsl', 'convert'] },
       { path: '/tools/unit-converter', name: '单位换算', icon: '📐', keywords: ['danwei', 'unit', 'length', 'weight', 'temperature', 'huansuan'] },
       { path: '/tools/date-calculator', name: '日期计算', icon: '📅', keywords: ['riqi', 'date', 'jisuan', 'days', 'tianshu'] },
+      { path: '/tools/calculator', name: '计算器', icon: '🧮', keywords: ['jisuanqi', 'calculator', 'compute', 'math'] },
+      { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', keywords: ['youbian', 'chepai', 'quhao', 'zip', 'plate', 'area', 'postal'] },
     ]
   },
   {
     title: '图像分享',
     tools: [
       { path: '/tools/qrcode', name: '二维码', icon: '▣', keywords: ['erweima', 'qrcode', 'barcode', 'scan', 'shengcheng'] },
+      { path: '/tools/image-canvas', name: '图片 Canvas 工具箱', icon: '🖌️', keywords: ['tupian', 'image', 'canvas', 'xiangsu', 'shuiyin', 'jiugongge', 'filter'] },
     ]
   },
   {
     title: '安全工具',
     tools: [
       { path: '/tools/password', name: '密码生成器', icon: '🔑', keywords: ['mima', 'password', 'suiji', 'random', 'generate'] },
+      { path: '/tools/random-generator', name: '随机生成器', icon: '🎲', keywords: ['suiji', 'random', 'uuid', 'color', 'number', 'shengcheng'] },
     ]
   },
   {
@@ -96,12 +102,14 @@ const groups = [
     tools: [
       { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', keywords: ['fanqie', 'pomodoro', 'timer', 'zhong', 'jishi'] },
       { path: '/tools/timer', name: '专业计时器', icon: '⏱️', keywords: ['jishi', 'timer', 'stopwatch', 'countdown', 'daojishi'] },
+      { path: '/tools/led-marquee', name: '手持 LED 弹幕', icon: '📱', keywords: ['shouchi', 'led', 'danmu', 'marquee', 'dengpai'] },
     ]
   },
   {
     title: '健康生活',
     tools: [
       { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️', keywords: ['bmi', 'shengao', 'tizhong', 'body', 'mass', 'index', 'jisuan'] },
+      { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', keywords: ['laji', 'garbage', 'fenlei', 'recycle', 'huanbao'] },
     ]
   },
   {

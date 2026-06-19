@@ -22,6 +22,7 @@ const tools = [
   { path: '/tools/number-converter', name: '进制转换器', icon: '🔢', desc: '二/八/十/十六进制互转，支持浮点', category: '转换' },
   { path: '/tools/json-csv', name: 'JSON ↔ CSV 转换', icon: '📑', desc: 'JSON 数组与 CSV 格式互相转换', category: '转换' },
   { path: '/tools/qrcode', name: '二维码生成器', icon: '▣', desc: '文本/URL 转可扫描的二维码图片', category: '图像' },
+  { path: '/tools/image-canvas', name: '图片 Canvas 工具箱', icon: '🖌️', desc: '像素化、水印、九宫格切割、格式转换', category: '图像' },
   { path: '/tools/css-unit', name: 'CSS 单位转换', icon: '📐', desc: 'PX/REM/EM/VH/VW/百分比互转', category: '转换' },
   { path: '/tools/lorem-ipsum', name: 'Lorem Ipsum', icon: '📝', desc: '假文生成，拉丁语/中文占位文本', category: '文本' },
   { path: '/tools/word-counter', name: '字数统计', icon: '📝', desc: '实时统计中文字数、单词数、阅读时间', category: '文本' },
@@ -31,6 +32,13 @@ const tools = [
   { path: '/tools/date-calculator', name: '日期计算器', icon: '📅', desc: '日期间隔计算与日期加减', category: '转换' },
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', desc: '专注计时器，自定义专注与休息时长', category: '效率' },
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️', desc: '倒计时/正计时/时钟，节目单串联，舞台全屏', category: '效率' },
+  { path: '/tools/led-marquee', name: '手持 LED 弹幕', icon: '📱', desc: '全屏滚动文字灯牌，自定义颜色速度方向', category: '效率' },
+  { path: '/tools/calculator', name: '计算器', icon: '🧮', desc: '安全表达式计算，支持键盘与历史记录', category: '转换' },
+  { path: '/tools/random-generator', name: '随机生成器', icon: '🎲', desc: '随机整数、小数、字符串、UUID、颜色', category: '安全' },
+  { path: '/tools/yaml-json', name: 'YAML ↔ JSON', icon: '🔄', desc: 'YAML 与 JSON 双向转换，支持紧凑输出', category: '开发' },
+  { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', desc: '中文大写金额、小写读法、人民币格式', category: '文本' },
+  { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', desc: '离线查询邮编、车牌归属地、电话区号', category: '转换' },
+  { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', desc: '常见生活垃圾所属分类与投放提示', category: '健康' },
   { path: '/driving/license-study', name: '科目一学习', icon: '📚', desc: '系统学习 C1/C2 科目一理论知识', category: '驾考' },
   { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', desc: '科目一顺序/随机/模拟考试练习', category: '驾考' },
   { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', desc: '分类浏览交通标志与说明', category: '驾考' },
@@ -55,6 +63,7 @@ const categories = [
       '/tools/html-entity',
       '/tools/number-converter',
       '/tools/json-csv',
+      '/tools/yaml-json',
       '/tools/css-unit',
       '/tools/markdown',
       '/tools/text-diff',
@@ -70,6 +79,7 @@ const categories = [
       '/tools/word-counter',
       '/tools/chinese-converter',
       '/tools/lorem-ipsum',
+      '/tools/number-chinese',
     ]
   },
   {
@@ -82,6 +92,8 @@ const categories = [
       '/tools/color',
       '/tools/unit-converter',
       '/tools/date-calculator',
+      '/tools/calculator',
+      '/tools/zip-plate-area',
     ]
   },
   {
@@ -89,28 +101,28 @@ const categories = [
     name: '图像分享',
     icon: '🖼️',
     desc: '二维码生成与图像相关工具',
-    paths: ['/tools/qrcode']
+    paths: ['/tools/qrcode', '/tools/image-canvas']
   },
   {
     key: 'security',
     name: '安全工具',
     icon: '🔐',
     desc: '密码生成等安全相关工具',
-    paths: ['/tools/password']
+    paths: ['/tools/password', '/tools/random-generator']
   },
   {
     key: 'productivity',
     name: '效率生活',
     icon: '⏱️',
     desc: '番茄钟、计时器，提升专注与效率',
-    paths: ['/tools/pomodoro', '/tools/timer']
+    paths: ['/tools/pomodoro', '/tools/timer', '/tools/led-marquee']
   },
   {
     key: 'health',
     name: '健康生活',
     icon: '⚖️',
     desc: 'BMI 计算与健康相关工具',
-    paths: ['/tools/bmi']
+    paths: ['/tools/bmi', '/tools/garbage-classification']
   },
   {
     key: 'driving',

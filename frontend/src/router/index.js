@@ -320,6 +320,85 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/led-marquee',
+      name: 'led-marquee',
+      component: () => import('../views/tools/LedMarquee.vue'),
+      meta: {
+        title: '手持 LED 弹幕 - 全屏滚动文字灯牌',
+        description: '手持 LED 弹幕工具，模拟手机灯牌效果，支持自定义文字、颜色、速度、方向和字体大小，可全屏展示。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/image-canvas',
+      name: 'image-canvas',
+      component: () => import('../views/tools/ImageCanvasToolbox.vue'),
+      meta: {
+        title: '图片 Canvas 工具箱 - 像素化/水印/九宫格/格式转换',
+        description: '在线图片处理工具箱，支持像素化、灰度/黑白、文字水印、压缩缩放、九宫格切割、格式转换等操作。'
+      }
+    },
+    {
+      path: '/tools/calculator',
+      name: 'calculator',
+      component: () => import('../views/tools/Calculator.vue'),
+      meta: {
+        title: '计算器 - 安全表达式计算工具',
+        description: '在线安全计算器，支持 + - * / ^ % 和括号运算，支持键盘输入和历史记录。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/random-generator',
+      name: 'random-generator',
+      component: () => import('../views/tools/RandomGenerator.vue'),
+      meta: {
+        title: '随机生成器 - 随机数/字符串/UUID/颜色生成工具',
+        description: '在线随机生成器，支持生成随机整数、小数、字符串、UUID 和颜色，使用加密安全随机数。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/yaml-json',
+      name: 'yaml-json',
+      component: () => import('../views/tools/YamlJsonConverter.vue'),
+      meta: {
+        title: 'YAML/JSON 互转 - 在线 YAML 与 JSON 转换工具',
+        description: '在线 YAML 与 JSON 双向转换工具，支持格式化、压缩和语法错误提示。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/number-chinese',
+      name: 'number-chinese',
+      component: () => import('../views/tools/NumberToChinese.vue'),
+      meta: {
+        title: '数字大小写转换 - 中文大写金额/小写/人民币格式',
+        description: '在线数字大小写转换工具，支持中文大写金额、中文小写读法和人民币格式。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/zip-plate-area',
+      name: 'zip-plate-area',
+      component: () => import('../views/tools/ZipPlateAreaQuery.vue'),
+      meta: {
+        title: '邮编/车牌/区号查询 - 离线行政区划查询工具',
+        description: '在线查询邮编、车牌归属地、电话区号，纯前端静态数据，无需联网。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/garbage-classification',
+      name: 'garbage-classification',
+      component: () => import('../views/tools/GarbageClassification.vue'),
+      meta: {
+        title: '垃圾分类查询 - 常见垃圾分类与投放提示',
+        description: '在线垃圾分类查询工具，输入常见垃圾名称即可查看所属分类和投放说明。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

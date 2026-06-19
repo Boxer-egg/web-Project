@@ -13,7 +13,13 @@ import * as dateLogic from '../../src/logic/date.js'
 import * as passwordLogic from '../../src/logic/password.js'
 import * as bmiLogic from '../../src/logic/bmi.js'
 import { marked } from 'marked'
+import yaml from 'js-yaml'
 import QRCode from 'qrcode'
+import { evaluate as calcEvaluate } from '../../src/logic/calculator'
+import { generateBatch as randomGenerateBatch } from '../../src/logic/random'
+import { convert as numberToChinese } from '../../src/logic/numberChinese'
+import { search as zipPlateAreaSearch } from '../../src/data/zipPlateArea'
+import { search as garbageSearch } from '../../src/data/garbageData'
 
 /** Normalize a boolean-ish query param. */
 function boolParam(val, defaultValue = false) {
@@ -387,6 +393,70 @@ const handlers = {
     const height = parseFloat(p.height)
     if (isNaN(weight) || isNaN(height)) throw new Error('缺少有效 weight 和 height 参数')
     return bmiLogic.calculate(weight, height)
+  },
+
+  calculator: (p) => {
+    const expr = p.expr || ''
+    if (!expr) throw new Error('缺少 expr 参数')
+    return { expr, result: calcEvaluate(expr) }
+  },
+
+  random: (p) => {
+    const type = (p.type || 'int').toLowerCase()
+    const opts = {
+      min: parseFloat(p.min) || 1,
+      max: parseFloat(p.max) || 100,
+      count: intParam(p.count, 5, 1, 100),
+      unique: boolParam(p.unique, false),
+      length: intParam(p.length, 8, 1, 128),
+      prefix: p.prefix || '',
+      suffix: p.suffix || ''
+    }
+    return { type, ...opts, results: randomGenerateBatch(type, opts) }
+  },
+
+  yaml_json: (p) => {
+    const input = p.input || ''
+    const direction = (p.direction || 'yaml2json').toLowerCase()
+    const compact = boolParam(p.compact, false)
+    if (!input) throw new Error('缺少 input 参数')
+    if (direction === 'yaml2json') {
+      const doc = yaml.load(input)
+      return { direction, output: compact ? JSON.stringify(doc) : JSON.stringify(doc, null, 2) }
+    }
+    const data = JSON.parse(input)
+    return { direction, output: yaml.dump(data, { indent: 2, flowLevel: compact ? 0 : -1, noRefs: true }) }
+  },
+
+  number_chinese: (p) => {
+    const number = p.number || ''
+    const mode = (p.mode || 'upper').toLowerCase()
+    if (!number) throw new Error('缺少 number 参数')
+    return { number, mode, output: numberToChinese(number, mode) }
+  },
+
+  led_marquee: (p) => {
+    return {
+      text: p.text || '加油',
+      speed: intParam(p.speed, 5, 1, 10),
+      color: p.color || '#ff0000',
+      bg: p.bg || '#000000',
+      size: intParam(p.size, 120, 12, 800),
+      direction: (p.direction || 'left').toLowerCase()
+    }
+  },
+
+  zip_plate_area: (p) => {
+    const type = (p.type || 'zip').toLowerCase()
+    const q = p.q || ''
+    if (!q) throw new Error('缺少 q 参数')
+    return { type, q, results: zipPlateAreaSearch(type, q) }
+  },
+
+  garbage: (p) => {
+    const q = p.q || ''
+    if (!q) throw new Error('缺少 q 参数')
+    return { q, results: garbageSearch(q) }
   }
 }
 

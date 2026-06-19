@@ -17,13 +17,22 @@ onUnmounted(() => {
   if (copyTimer) clearTimeout(copyTimer)
 })
 
+const apiPath = computed(() => route.meta?.apiPath || '')
+
+const relevantParams = computed(() =>
+  props.params.filter(p => (apiPath.value ? p.name !== 'auto' : true))
+)
+
 const exampleUrl = computed(() => {
   const base = window.location.origin
-  const path = route.path
-  const query = props.params
+  const path = apiPath.value || route.path
+  const query = relevantParams.value
     .filter(p => p.example)
     .map(p => `${p.name}=${encodeURIComponent(p.example)}`)
     .join('&')
+  if (apiPath.value) {
+    return query ? `${base}${path}?${query}` : `${base}${path}`
+  }
   return query ? `${base}${path}?${query}&auto=1` : `${base}${path}?auto=1`
 })
 
@@ -71,7 +80,7 @@ function isCopied(key) {
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">示例调用链接：</div>
         <pre class="code-block">{{ exampleUrl }}</pre>
       </div>
-      <div v-if="params.length" style="margin-bottom:12px">
+      <div v-if="relevantParams.length" style="margin-bottom:12px">
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">参数说明：</div>
         <table style="width:100%;font-size:12px;border-collapse:collapse">
           <thead>
@@ -82,7 +91,7 @@ function isCopied(key) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="p in params" :key="p.name" style="border-bottom:1px solid var(--border)">
+            <tr v-for="p in relevantParams" :key="p.name" style="border-bottom:1px solid var(--border)">
               <td style="padding:4px;color:var(--accent);font-family:monospace">{{ p.name }}</td>
               <td style="padding:4px">{{ p.desc }}</td>
               <td style="padding:4px">{{ p.required ? '是' : '否' }}</td>
@@ -90,7 +99,7 @@ function isCopied(key) {
           </tbody>
         </table>
       </div>
-      <div style="margin-bottom:12px">
+      <div v-if="apiPath" style="margin-bottom:12px">
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">命令行调用示例：</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div>

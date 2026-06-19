@@ -22,7 +22,8 @@ const router = createRouter({
       component: () => import('../views/tools/JsonFormatter.vue'),
       meta: {
         title: 'JSON 格式化 - 在线压缩、转义、美化工具',
-        description: '在线 JSON 格式化工具，支持格式化、压缩、转义和去转义。粘贴 JSON 即可自动美化，支持 AI 自动化调用。'
+        description: '在线 JSON 格式化工具，支持格式化、压缩、转义和去转义。粘贴 JSON 即可自动美化，支持 AI 自动化调用。',
+        apiPath: '/api/json-format'
       }
     },
     {
@@ -31,7 +32,8 @@ const router = createRouter({
       component: () => import('../views/tools/Base64Converter.vue'),
       meta: {
         title: 'Base64 编解码 - 在线文本与文件转换工具',
-        description: '在线 Base64 编解码工具，支持文本与 Base64 相互转换，支持文件上传转换为 Base64 DataURL。'
+        description: '在线 Base64 编解码工具，支持文本与 Base64 相互转换，支持文件上传转换为 Base64 DataURL。',
+        apiPath: '/api/base64'
       }
     },
     {
@@ -58,7 +60,8 @@ const router = createRouter({
       component: () => import('../views/tools/TimestampConverter.vue'),
       meta: {
         title: '时间戳转换 - Unix 时间戳与日期互转工具',
-        description: '在线时间戳转换工具，支持 Unix 时间戳（秒/毫秒）与日期互转，输出 ISO、本地、友好格式。'
+        description: '在线时间戳转换工具，支持 Unix 时间戳（秒/毫秒）与日期互转，输出 ISO、本地、友好格式。',
+        apiPath: '/api/timestamp'
       }
     },
     {
@@ -94,7 +97,8 @@ const router = createRouter({
       component: () => import('../views/tools/CodeFormatter.vue'),
       meta: {
         title: '代码格式化 - JS / CSS / HTML / JSON 美化工具',
-        description: '在线代码格式化工具，支持 JavaScript、CSS、HTML、JSON 的美化与压缩，自动统计字符变化。'
+        description: '在线代码格式化工具，支持 JavaScript、CSS、HTML、JSON 的美化与压缩，自动统计字符变化。',
+        apiPath: '/api/code-format'
       }
     },
     {
@@ -112,7 +116,8 @@ const router = createRouter({
       component: () => import('../views/tools/JwtDecoder.vue'),
       meta: {
         title: 'JWT 解码器 - Token 解析与过期检测工具',
-        description: '在线 JWT 解码器，解析 JWT Token 的 Header、Payload 和 Signature，自动检测 Token 是否过期。'
+        description: '在线 JWT 解码器，解析 JWT Token 的 Header、Payload 和 Signature，自动检测 Token 是否过期。',
+        apiPath: '/api/jwt-decode'
       }
     },
     {
@@ -130,7 +135,8 @@ const router = createRouter({
       component: () => import('../views/tools/HashCalculator.vue'),
       meta: {
         title: 'Hash 计算器 - MD5 / SHA1 / SHA256 / SHA512 在线计算',
-        description: '在线 Hash 计算器，支持 MD5、SHA1、SHA256、SHA512 算法，支持文本和文件 Hash 计算。'
+        description: '在线 Hash 计算器，支持 MD5、SHA1、SHA256、SHA512 算法，支持文本和文件 Hash 计算。',
+        apiPath: '/api/hash'
       }
     },
     {
@@ -139,7 +145,8 @@ const router = createRouter({
       component: () => import('../views/tools/HtmlEntity.vue'),
       meta: {
         title: 'HTML 实体编解码 - 特殊字符转换工具',
-        description: '在线 HTML 实体编解码工具，支持命名实体、十进制、十六进制编码，以及实体解码。'
+        description: '在线 HTML 实体编解码工具，支持命名实体、十进制、十六进制编码，以及实体解码。',
+        apiPath: '/api/html-entity'
       }
     },
     {
@@ -157,7 +164,8 @@ const router = createRouter({
       component: () => import('../views/tools/NumberConverter.vue'),
       meta: {
         title: '进制转换器 - 二/八/十/十六进制在线互转',
-        description: '在线进制转换工具，支持二进制、八进制、十进制、十六进制、三十六进制互转，自动检测前缀。'
+        description: '在线进制转换工具，支持二进制、八进制、十进制、十六进制、三十六进制互转，自动检测前缀。',
+        apiPath: '/api/number-convert'
       }
     },
     {

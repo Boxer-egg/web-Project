@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 
 const props = defineProps({
@@ -11,11 +11,27 @@ const emit = defineEmits(['close'])
 const route = useRoute()
 const collapsed = ref(false)
 const expandedGroups = ref({})
+const search = ref('')
 const STORAGE_KEY = 'sidebar-groups-expanded'
 
 // Close sidebar on route change on mobile
 watch(() => route.path, () => {
   emit('close')
+})
+
+/** Return groups whose tools match the current search query. */
+const filteredGroups = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  return groups
+    .map(group => {
+      if (!group.title) return group
+      if (!q) return group
+      const matchedTools = group.tools.filter(tool =>
+        tool.name.toLowerCase().includes(q)
+      )
+      return { ...group, tools: matchedTools }
+    })
+    .filter(group => !group.title || group.tools.length > 0 || !q)
 })
 
 const groups = [
@@ -26,39 +42,69 @@ const groups = [
     ]
   },
   {
-    title: '开发者工具',
+    title: '开发工具',
     tools: [
       { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋' },
       { path: '/tools/base64', name: 'Base64 编解码', icon: '🔐' },
       { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗' },
       { path: '/tools/regex', name: '正则测试', icon: '🔍' },
-      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰' },
-      { path: '/tools/color', name: '颜色转换器', icon: '🎨' },
-      { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝' },
-      { path: '/tools/text-diff', name: '文本差异对比', icon: '📊' },
       { path: '/tools/code-formatter', name: '代码格式化', icon: '💻' },
-      { path: '/tools/password', name: '密码生成器', icon: '🔑' },
       { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜' },
       { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔' },
       { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣' },
       { path: '/tools/html-entity', name: 'HTML 实体', icon: '🔤' },
-      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰' },
       { path: '/tools/number-converter', name: '进制转换', icon: '🔢' },
       { path: '/tools/json-csv', name: 'JSON↔CSV', icon: '📑' },
-      { path: '/tools/qrcode', name: '二维码', icon: '▣' },
       { path: '/tools/css-unit', name: 'CSS单位', icon: '📐' },
-      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝' },
+      { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝' },
+      { path: '/tools/text-diff', name: '文本差异对比', icon: '📊' },
+    ]
+  },
+  {
+    title: '文本处理',
+    tools: [
+      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰' },
       { path: '/tools/word-counter', name: '字数统计', icon: '📝' },
-      { path: '/tools/unit-converter', name: '单位换算', icon: '📐' },
-      { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️' },
       { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️' },
+      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝' },
+    ]
+  },
+  {
+    title: '转换计算',
+    tools: [
+      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰' },
+      { path: '/tools/color', name: '颜色转换器', icon: '🎨' },
+      { path: '/tools/unit-converter', name: '单位换算', icon: '📐' },
       { path: '/tools/date-calculator', name: '日期计算', icon: '📅' },
+    ]
+  },
+  {
+    title: '图像分享',
+    tools: [
+      { path: '/tools/qrcode', name: '二维码', icon: '▣' },
+    ]
+  },
+  {
+    title: '安全工具',
+    tools: [
+      { path: '/tools/password', name: '密码生成器', icon: '🔑' },
+    ]
+  },
+  {
+    title: '效率生活',
+    tools: [
       { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅' },
       { path: '/tools/timer', name: '专业计时器', icon: '⏱️' },
     ]
   },
   {
-    title: '交通学习',
+    title: '健康生活',
+    tools: [
+      { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️' },
+    ]
+  },
+  {
+    title: '驾考学习',
     tools: [
       { path: '/driving/license-study', name: '科目一学习', icon: '📚' },
       { path: '/driving/quiz', name: '驾考刷题', icon: '🚗' },
@@ -133,14 +179,22 @@ watch(() => route.path, expandActiveGroup)
     <div class="sidebar-header">
       <RouterLink to="/" class="logo">
         <span class="logo-icon">🧰</span>
-        <span v-if="!collapsed" class="logo-text">开发者工具箱</span>
+        <span v-if="!collapsed" class="logo-text">在线工具箱</span>
       </RouterLink>
       <button class="toggle-btn" @click="collapsed = !collapsed">
         {{ collapsed ? '→' : '←' }}
       </button>
     </div>
+    <div v-if="!collapsed" class="search-box">
+      <input
+        v-model="search"
+        class="search-input"
+        type="text"
+        placeholder="搜索工具，如 BMI、番茄钟…"
+      >
+    </div>
     <nav class="nav">
-      <template v-for="group in groups" :key="group.title || 'home'">
+      <template v-for="group in filteredGroups" :key="group.title || 'home'">
         <div class="nav-group">
           <!-- Collapsed sidebar: show tool icons only, no group headers. -->
           <template v-if="collapsed">
@@ -161,14 +215,14 @@ watch(() => route.path, expandActiveGroup)
             <button
               v-if="group.title"
               class="nav-group-header"
-              :class="{ expanded: isExpanded(group.title) }"
+              :class="{ expanded: isExpanded(group.title) || search.trim() }"
               @click="toggleGroup(group.title)"
             >
               <span>{{ group.title }}</span>
               <span class="group-arrow">▸</span>
             </button>
             <div
-              v-show="!group.title || isExpanded(group.title)"
+              v-show="!group.title || isExpanded(group.title) || search.trim()"
               class="nav-group-tools"
             >
               <RouterLink
@@ -241,6 +295,27 @@ watch(() => route.path, expandActiveGroup)
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 12px;
+}
+.search-box {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.search-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus {
+  border-color: var(--accent);
+}
+.search-input::placeholder {
+  color: var(--text-muted);
 }
 .nav {
   flex: 1;

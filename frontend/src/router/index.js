@@ -12,8 +12,8 @@ const router = createRouter({
       name: 'home',
       component: Home,
       meta: {
-        title: '开发者工具箱 - 20+ 纯前端在线工具',
-        description: '提供 JSON 格式化、Base64 编解码、正则测试、时间戳转换等 20+ 款纯前端在线工具。无需后端，数据仅在浏览器本地处理。'
+        title: '在线工具箱 - 20+ 款纯前端实用工具',
+        description: '提供开发、文本、转换、效率、健康、驾考等 20+ 款纯前端实用工具。无需后端，数据仅在浏览器本地处理。'
       }
     },
     {
@@ -300,8 +300,8 @@ const router = createRouter({
       name: 'not-found',
       component: Home,
       meta: {
-        title: '页面未找到 - 开发者工具箱',
-        description: '页面不存在，返回开发者工具箱首页浏览 20+ 款在线工具。'
+        title: '页面未找到 - 在线工具箱',
+        description: '页面不存在，返回在线工具箱首页浏览 20+ 款在线工具。'
       }
     },
   ],

@@ -10,7 +10,7 @@ const props = defineProps({
 
 const route = useRoute()
 const show = ref(false)
-const copied = ref(false)
+const copiedKey = ref('')
 let copyTimer = null
 
 onUnmounted(() => {
@@ -27,23 +27,29 @@ const exampleUrl = computed(() => {
   return query ? `${base}${path}?${query}&auto=1` : `${base}${path}?auto=1`
 })
 
-async function copyUrl() {
+const curlCommand = computed(() => `curl -sL "${exampleUrl.value}"`)
+const wgetCommand = computed(() => `wget -qO- "${exampleUrl.value}"`)
+
+async function copy(key, text) {
   try {
-    await navigator.clipboard.writeText(exampleUrl.value)
-    copied.value = true
+    await navigator.clipboard.writeText(text)
+    copiedKey.value = key
     if (copyTimer) clearTimeout(copyTimer)
-    copyTimer = setTimeout(() => copied.value = false, 2000)
+    copyTimer = setTimeout(() => copiedKey.value = '', 2000)
   } catch {}
+}
+
+async function copyUrl() {
+  await copy('url', exampleUrl.value)
 }
 
 async function copyDesc() {
   const text = `${props.title}：${props.desc}\n调用方式：${exampleUrl.value}`
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = true
-    if (copyTimer) clearTimeout(copyTimer)
-    copyTimer = setTimeout(() => copied.value = false, 2000)
-  } catch {}
+  await copy('desc', text)
+}
+
+function isCopied(key) {
+  return copiedKey.value === key
 }
 </script>
 
@@ -63,9 +69,7 @@ async function copyDesc() {
       </p>
       <div style="margin-bottom:12px">
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">示例调用链接：</div>
-        <code style="display:block;font-size:12px;background:var(--bg-primary);padding:8px;border-radius:var(--radius);word-break:break-all;border:1px solid var(--border)">
-          {{ exampleUrl }}
-        </code>
+        <pre class="code-block">{{ exampleUrl }}</pre>
       </div>
       <div v-if="params.length" style="margin-bottom:12px">
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">参数说明：</div>
@@ -86,9 +90,23 @@ async function copyDesc() {
           </tbody>
         </table>
       </div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">命令行调用示例：</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div>
+            <pre class="code-block">{{ curlCommand }}</pre>
+            <button class="btn btn-sm" style="margin-top:4px" @click="copy('curl', curlCommand)">{{ isCopied('curl') ? '已复制' : '复制 curl' }}</button>
+          </div>
+          <div>
+            <pre class="code-block">{{ wgetCommand }}</pre>
+            <button class="btn btn-sm" style="margin-top:4px" @click="copy('wget', wgetCommand)">{{ isCopied('wget') ? '已复制' : '复制 wget' }}</button>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex;gap:8px">
-        <button class="btn btn-sm" @click="copyUrl">{{ copied ? '已复制' : '复制链接' }}</button>
-        <button class="btn btn-sm btn-secondary" @click="copyDesc">复制说明</button>
+        <button class="btn btn-sm" @click="copyUrl">{{ isCopied('url') ? '已复制' : '复制链接' }}</button>
+        <button class="btn btn-sm btn-secondary" @click="copyDesc">{{ isCopied('desc') ? '已复制' : '复制说明' }}</button>
       </div>
     </div>
   </div>
@@ -123,6 +141,21 @@ async function copyDesc() {
   max-width: calc(100vw - 40px);
   z-index: 100;
   padding: 16px;
+}
+.code-block {
+  display: block;
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: var(--text-primary);
+  line-height: 1.5;
 }
 @media (max-width: 768px) {
   .ai-panel {

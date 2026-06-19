@@ -35,7 +35,7 @@ onMounted(() => {
       <header class="topbar">
         <div class="topbar-left">
           <button class="menu-btn" @click="toggleSidebar">☰</button>
-          <h2 class="page-title">{{ route.meta?.title || '开发者工具箱' }}</h2>
+          <h2 class="page-title">{{ route.meta?.title || '在线工具箱' }}</h2>
         </div>
         <button class="theme-btn" @click="toggleTheme" :title="isDark ? '切换浅色' : '切换深色'">
           <span v-if="isDark">☀️</span>

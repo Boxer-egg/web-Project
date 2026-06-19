@@ -28,24 +28,123 @@ const tools = [
   { path: '/tools/unit-converter', name: '单位换算', icon: '📐', desc: '长度、重量、温度、面积、体积互转', category: '转换' },
   { path: '/tools/bmi', name: 'BMI 计算器', icon: '⚖️', desc: '身体质量指数计算与健康分类', category: '健康' },
   { path: '/tools/chinese-converter', name: '简繁体转换', icon: '🈷️', desc: '简体中文与繁体中文互相转换', category: '文本' },
-  { path: '/tools/date-calculator', name: '日期计算器', icon: '📅', desc: '日期间隔计算与日期加减', category: '效率' },
+  { path: '/tools/date-calculator', name: '日期计算器', icon: '📅', desc: '日期间隔计算与日期加减', category: '转换' },
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', desc: '专注计时器，自定义专注与休息时长', category: '效率' },
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️', desc: '倒计时/正计时/时钟，节目单串联，舞台全屏', category: '效率' },
   { path: '/driving/license-study', name: '科目一学习', icon: '📚', desc: '系统学习 C1/C2 科目一理论知识', category: '驾考' },
   { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', desc: '科目一顺序/随机/模拟考试练习', category: '驾考' },
   { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', desc: '分类浏览交通标志与说明', category: '驾考' },
+  { path: '/driving/jk', name: '科目四顺序练习', icon: '🚌', desc: '驾校一点通 2026 科目四题库', category: '驾考' },
 ]
+
+const categories = [
+  {
+    key: 'dev',
+    name: '开发工具',
+    icon: '💻',
+    desc: 'JSON、编码、正则、Hash、JWT 等常用开发辅助',
+    paths: [
+      '/tools/json-formatter',
+      '/tools/base64',
+      '/tools/url-encoder',
+      '/tools/regex',
+      '/tools/code-formatter',
+      '/tools/jwt-decoder',
+      '/tools/uuid-generator',
+      '/tools/hash-calculator',
+      '/tools/html-entity',
+      '/tools/number-converter',
+      '/tools/json-csv',
+      '/tools/css-unit',
+      '/tools/markdown',
+      '/tools/text-diff',
+    ]
+  },
+  {
+    key: 'text',
+    name: '文本处理',
+    icon: '📝',
+    desc: '文本清洗、统计、简繁转换、假文生成',
+    paths: [
+      '/tools/text-toolbox',
+      '/tools/word-counter',
+      '/tools/chinese-converter',
+      '/tools/lorem-ipsum',
+    ]
+  },
+  {
+    key: 'convert',
+    name: '转换计算',
+    icon: '🔢',
+    desc: '时间戳、颜色、单位、进制、日期换算',
+    paths: [
+      '/tools/timestamp',
+      '/tools/color',
+      '/tools/unit-converter',
+      '/tools/date-calculator',
+    ]
+  },
+  {
+    key: 'image',
+    name: '图像分享',
+    icon: '🖼️',
+    desc: '二维码生成与图像相关工具',
+    paths: ['/tools/qrcode']
+  },
+  {
+    key: 'security',
+    name: '安全工具',
+    icon: '🔐',
+    desc: '密码生成等安全相关工具',
+    paths: ['/tools/password']
+  },
+  {
+    key: 'productivity',
+    name: '效率生活',
+    icon: '⏱️',
+    desc: '番茄钟、计时器，提升专注与效率',
+    paths: ['/tools/pomodoro', '/tools/timer']
+  },
+  {
+    key: 'health',
+    name: '健康生活',
+    icon: '⚖️',
+    desc: 'BMI 计算与健康相关工具',
+    paths: ['/tools/bmi']
+  },
+  {
+    key: 'driving',
+    name: '驾考学习',
+    icon: '🚗',
+    desc: '科目一学习、刷题、交通标志、科目四题库',
+    paths: [
+      '/driving/license-study',
+      '/driving/quiz',
+      '/driving/traffic-signs',
+      '/driving/jk',
+    ]
+  }
+]
+
+function toolsFor(paths) {
+  return tools.filter(t => paths.includes(t.path))
+}
 
 function goToTool(path) {
   router.push(path)
+}
+
+function goToCategory(path) {
+  const firstTool = toolsFor(categories.find(c => c.key === path)?.paths || [])[0]
+  if (firstTool) router.push(firstTool.path)
 }
 </script>
 
 <template>
   <main class="home">
     <section class="hero">
-      <h1>开发者工具箱</h1>
-      <p class="hero-subtitle">20+ 款纯前端在线开发工具，无需后端，数据仅在浏览器本地处理</p>
+      <h1>在线工具箱</h1>
+      <p class="hero-subtitle">20+ 款纯前端实用工具，无需后端，数据仅在浏览器本地处理</p>
       <p class="hero-desc">
         所有工具均在浏览器中运行，无需上传数据到服务器。
         支持 AI 自动化调用，通过 URL 参数即可触发工具执行。
@@ -53,19 +152,32 @@ function goToTool(path) {
     </section>
 
     <section class="tools-section" aria-label="工具列表">
-      <h2 class="section-title">全部工具</h2>
-      <div class="tool-grid">
-        <article
-          v-for="tool in tools"
-          :key="tool.path"
-          class="tool-card"
-          @click="goToTool(tool.path)"
-        >
-          <span class="tool-icon" aria-hidden="true">{{ tool.icon }}</span>
-          <h3>{{ tool.name }}</h3>
-          <p>{{ tool.desc }}</p>
-          <span class="tool-category">{{ tool.category }}</span>
-        </article>
+      <div
+        v-for="category in categories"
+        :key="category.key"
+        class="category-section"
+      >
+        <div class="category-card" @click="goToCategory(category.key)">
+          <span class="category-icon" aria-hidden="true">{{ category.icon }}</span>
+          <div class="category-info">
+            <h2 class="category-name">{{ category.name }}</h2>
+            <p class="category-desc">{{ category.desc }}</p>
+          </div>
+          <span class="category-count">{{ toolsFor(category.paths).length }} 个工具</span>
+        </div>
+
+        <div class="tool-grid">
+          <article
+            v-for="tool in toolsFor(category.paths)"
+            :key="tool.path"
+            class="tool-card"
+            @click="goToTool(tool.path)"
+          >
+            <span class="tool-icon" aria-hidden="true">{{ tool.icon }}</span>
+            <h3>{{ tool.name }}</h3>
+            <p>{{ tool.desc }}</p>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -73,8 +185,8 @@ function goToTool(path) {
       <h2 class="section-title">常见问题</h2>
       <div class="faq-list">
         <details class="faq-item">
-          <summary>开发者工具箱是什么？</summary>
-          <p>开发者工具箱是一个纯前端的在线工具集合网站，提供 20 多款开发者常用的工具，如 JSON 格式化、Base64 编解码、正则表达式测试、时间戳转换等。所有工具都在浏览器本地运行，无需后端服务器。</p>
+          <summary>在线工具箱是什么？</summary>
+          <p>在线工具箱是一个纯前端的在线工具集合网站，提供 20 多款实用工具，如 JSON 格式化、Base64 编解码、正则表达式测试、二维码生成、BMI 计算、番茄钟、驾考学习等。所有工具都在浏览器本地运行，无需后端服务器。</p>
         </details>
         <details class="faq-item">
           <summary>使用这些工具需要注册或登录吗？</summary>
@@ -82,7 +194,7 @@ function goToTool(path) {
         </details>
         <details class="faq-item">
           <summary>我的数据会被上传到服务器吗？</summary>
-          <p>不会。开发者工具箱是纯前端应用，所有数据处理都在您的浏览器本地完成。代码不会将任何数据发送到远程服务器，您可以放心处理敏感信息。</p>
+          <p>不会。在线工具箱是纯前端应用，所有数据处理都在您的浏览器本地完成。代码不会将任何数据发送到远程服务器，您可以放心处理敏感信息。</p>
         </details>
         <details class="faq-item">
           <summary>支持 AI 自动化调用吗？</summary>
@@ -134,24 +246,69 @@ function goToTool(path) {
   margin: 0 auto;
   line-height: 1.6;
 }
-.section-title {
-  font-size: 20px;
+.tools-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.category-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.category-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+.category-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+.category-info {
+  flex: 1;
+  min-width: 0;
+}
+.category-name {
+  font-size: 18px;
+  margin-bottom: 4px;
   color: var(--text-primary);
-  margin: 32px 0 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
+}
+.category-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.category-count {
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--bg-tertiary);
+  padding: 4px 10px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 .tool-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
-  padding: 20px 0;
+  padding-left: 8px;
 }
 .tool-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 18px;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: var(--shadow);
@@ -162,12 +319,12 @@ function goToTool(path) {
   border-color: var(--accent);
 }
 .tool-icon {
-  font-size: 32px;
+  font-size: 28px;
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 .tool-card h3 {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 6px;
   color: var(--text-primary);
 }
@@ -175,20 +332,19 @@ function goToTool(path) {
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.4;
-  margin-bottom: 8px;
-}
-.tool-category {
-  font-size: 11px;
-  color: var(--accent);
-  background: var(--bg-tertiary);
-  padding: 2px 8px;
-  border-radius: 12px;
-  display: inline-block;
+  margin: 0;
 }
 
 .faq-section {
-  margin-top: 40px;
+  margin-top: 48px;
   padding-bottom: 40px;
+}
+.section-title {
+  font-size: 20px;
+  color: var(--text-primary);
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
 }
 .faq-list {
   display: flex;
@@ -241,9 +397,26 @@ function goToTool(path) {
   .hero-subtitle {
     font-size: 15px;
   }
+  .category-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  .category-icon {
+    font-size: 26px;
+  }
+  .category-name {
+    font-size: 16px;
+  }
+  .category-desc {
+    font-size: 13px;
+  }
+  .category-count {
+    display: none;
+  }
   .tool-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 10px;
+    padding-left: 0;
   }
   .tool-card {
     padding: 14px;

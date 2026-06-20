@@ -104,6 +104,7 @@ const groups = [
       { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', keywords: ['fanqie', 'pomodoro', 'timer', 'zhong', 'jishi'] },
       { path: '/tools/timer', name: '专业计时器', icon: '⏱️', keywords: ['jishi', 'timer', 'stopwatch', 'countdown', 'daojishi'] },
       { path: '/tools/led-marquee', name: '手持 LED 弹幕', icon: '📱', keywords: ['shouchi', 'led', 'danmu', 'marquee', 'dengpai'] },
+      { path: '/tools/relationship', name: '亲戚关系', icon: '👨‍👩‍👧‍👦', keywords: ['qinqi', 'relationship', 'qishu', 'chenghu', 'jiacheng'] },
     ]
   },
   {
@@ -111,6 +112,7 @@ const groups = [
     tools: [
       { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️', keywords: ['bmi', 'shengao', 'tizhong', 'body', 'mass', 'index', 'jisuan'] },
       { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', keywords: ['laji', 'garbage', 'fenlei', 'recycle', 'huanbao'] },
+      { path: '/tools/blood-type', name: '血型遗传', icon: '🩸', keywords: ['xuexing', 'blood', 'yichuan', 'inheritance', 'abo', 'rh'] },
     ]
   },
   {

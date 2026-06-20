@@ -20,6 +20,8 @@ import { generateBatch as randomGenerateBatch } from '../../src/logic/random'
 import { convert as numberToChinese } from '../../src/logic/numberChinese'
 import { search as zipPlateAreaSearch } from '../../src/data/zipPlateArea'
 import { search as garbageSearch } from '../../src/data/garbageData'
+import { calculateInheritance as calculateBloodType } from '../../src/logic/bloodType'
+import { calculateRelationship } from '../../src/logic/relationship'
 
 /** Normalize a boolean-ish query param. */
 function boolParam(val, defaultValue = false) {
@@ -488,6 +490,41 @@ const handlers = {
       expiryDate: d.toISOString().slice(0, 10),
       daysRemaining
     }
+  },
+
+  blood_type: (p) => {
+    const parent1 = p.parent1 || ''
+    const parent2 = p.parent2 || ''
+    if (!parent1) throw new Error('缺少 parent1 参数')
+    if (!parent2) throw new Error('缺少 parent2 参数')
+    const data = calculateBloodType(parent1, parent2)
+    return {
+      parent1: data.parent1,
+      parent2: data.parent2,
+      includeRh: data.includeRh,
+      abo: data.abo,
+      rh: data.rh,
+      full: data.full,
+      explanation: data.explanation
+    }
+  },
+
+  relationship: (p) => {
+    const mode = (p.mode || 'query').toLowerCase()
+    const sex = parseInt(p.sex, 10) === 0 ? 0 : 1
+    const reverse = String(p.reverse || '').toLowerCase() === 'true' || p.reverse === '1'
+    const region = (p.region || 'default').toLowerCase()
+
+    if (mode === 'pair') {
+      const a = p.a || p.text || ''
+      const b = p.b || p.target || ''
+      if (!a || !b) throw new Error('pair 模式需要 a/text 和 b/target 参数')
+      return calculateRelationship(a, mode, sex, false, region, b)
+    }
+
+    const input = mode === 'query' ? (p.chain || '') : (p.title || '')
+    if (!input) throw new Error(`缺少 ${mode === 'query' ? 'chain' : 'title'} 参数`)
+    return calculateRelationship(input, mode, sex, reverse, region)
   }
 }
 

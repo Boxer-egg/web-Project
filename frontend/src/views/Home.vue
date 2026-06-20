@@ -33,12 +33,14 @@ const tools = [
   { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', desc: '专注计时器，自定义专注与休息时长', category: '效率' },
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️', desc: '倒计时/正计时/时钟，节目单串联，舞台全屏', category: '效率' },
   { path: '/tools/led-marquee', name: '手持 LED 弹幕', icon: '📱', desc: '全屏滚动文字灯牌，自定义颜色速度方向', category: '效率' },
+  { path: '/tools/relationship', name: '亲戚关系', icon: '👨‍👩‍👧‍👦', desc: '关系链查称谓、称谓反查关系链', category: '效率' },
   { path: '/tools/calculator', name: '计算器', icon: '🧮', desc: '安全表达式计算，支持键盘与历史记录', category: '转换' },
   { path: '/tools/random-generator', name: '随机生成器', icon: '🎲', desc: '随机整数、小数、字符串、UUID、颜色', category: '安全' },
   { path: '/tools/yaml-json', name: 'YAML ↔ JSON', icon: '🔄', desc: 'YAML 与 JSON 双向转换，支持紧凑输出', category: '开发' },
   { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', desc: '中文大写金额、小写读法、人民币格式', category: '文本' },
   { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', desc: '离线查询邮编、车牌归属地、电话区号', category: '转换' },
   { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', desc: '常见生活垃圾所属分类与投放提示', category: '健康' },
+  { path: '/tools/blood-type', name: '血型遗传', icon: '🩸', desc: '根据父母血型推算子女可能血型及概率', category: '健康' },
   { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', desc: '根据生产日期和保质期计算过期日期', category: '转换' },
   { path: '/driving/license-study', name: '科目一学习', icon: '📚', desc: '系统学习 C1/C2 科目一理论知识', category: '驾考' },
   { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', desc: '科目一顺序/随机/模拟考试练习', category: '驾考' },
@@ -117,14 +119,14 @@ const categories = [
     name: '效率生活',
     icon: '⏱️',
     desc: '番茄钟、计时器，提升专注与效率',
-    paths: ['/tools/pomodoro', '/tools/timer', '/tools/led-marquee']
+    paths: ['/tools/pomodoro', '/tools/timer', '/tools/led-marquee', '/tools/relationship']
   },
   {
     key: 'health',
     name: '健康生活',
     icon: '⚖️',
     desc: 'BMI 计算与健康相关工具',
-    paths: ['/tools/bmi', '/tools/garbage-classification']
+    paths: ['/tools/bmi', '/tools/garbage-classification', '/tools/blood-type']
   },
   {
     key: 'driving',

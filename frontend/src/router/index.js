@@ -409,6 +409,26 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/blood-type',
+      name: 'blood-type',
+      component: () => import('../views/tools/BloodTypeInheritance.vue'),
+      meta: {
+        title: '血型遗传规律 - 父母血型推算子女血型概率',
+        description: '在线血型遗传规律计算器，根据父母 ABO 与 Rh 血型推算子女可能出现的血型及概率。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/relationship',
+      name: 'relationship',
+      component: () => import('../views/tools/RelationshipCalculator.vue'),
+      meta: {
+        title: '亲戚关系计算 - 关系链与称谓互查',
+        description: '在线亲戚关系计算器，支持关系链查称谓与称谓反查关系链。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

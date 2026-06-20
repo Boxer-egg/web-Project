@@ -457,6 +457,37 @@ const handlers = {
     const q = p.q || ''
     if (!q) throw new Error('缺少 q 参数')
     return { q, results: garbageSearch(q) }
+  },
+
+  shelf_life: (p) => {
+    const date = p.date || ''
+    const value = parseFloat(p.value)
+    const unit = (p.unit || 'day').toLowerCase()
+    if (!date) throw new Error('缺少 date 参数')
+    if (!Number.isFinite(value) || value <= 0) throw new Error('缺少有效 value 参数')
+    if (!['day', 'month', 'year'].includes(unit)) throw new Error('unit 必须是 day/month/year')
+
+    const start = new Date(date)
+    if (Number.isNaN(start.getTime())) throw new Error('date 格式无效')
+
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate())
+    const v = Math.floor(value)
+    if (unit === 'day') d.setDate(d.getDate() + v)
+    else if (unit === 'month') d.setMonth(d.getMonth() + v)
+    else if (unit === 'year') d.setFullYear(d.getFullYear() + v)
+
+    const today = new Date()
+    const msPerDay = 24 * 60 * 60 * 1000
+    const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const daysRemaining = Math.round((d - startToday) / msPerDay)
+
+    return {
+      productionDate: date,
+      value,
+      unit,
+      expiryDate: d.toISOString().slice(0, 10),
+      daysRemaining
+    }
   }
 }
 

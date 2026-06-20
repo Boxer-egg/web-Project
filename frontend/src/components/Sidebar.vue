@@ -81,6 +81,7 @@ const groups = [
       { path: '/tools/date-calculator', name: '日期计算', icon: '📅', keywords: ['riqi', 'date', 'jisuan', 'days', 'tianshu'] },
       { path: '/tools/calculator', name: '计算器', icon: '🧮', keywords: ['jisuanqi', 'calculator', 'compute', 'math'] },
       { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', keywords: ['youbian', 'chepai', 'quhao', 'zip', 'plate', 'area', 'postal'] },
+      { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', keywords: ['baozhiqi', 'shelf', 'life', 'guoqi', 'expiry', 'date'] },
     ]
   },
   {

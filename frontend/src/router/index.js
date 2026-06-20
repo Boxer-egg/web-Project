@@ -399,6 +399,16 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/shelf-life',
+      name: 'shelf-life',
+      component: () => import('../views/tools/ShelfLifeCalculator.vue'),
+      meta: {
+        title: '保质期计算 - 生产日期与过期日期换算工具',
+        description: '在线保质期计算器，根据生产日期和保质期长度计算过期日期与剩余天数，支持天/月/年单位。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

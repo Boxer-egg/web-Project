@@ -429,6 +429,56 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/pinyin',
+      name: 'pinyin',
+      component: () => import('../views/tools/PinyinConverter.vue'),
+      meta: {
+        title: '文字转拼音 - 在线拼音转换工具',
+        description: '在线文字转拼音工具，支持带声调、无声调、首字母三种模式，支持分词和保留非中文字符。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/hanzi-info',
+      name: 'hanzi-info',
+      component: () => import('../views/tools/HanziInfo.vue'),
+      meta: {
+        title: '汉字信息 - 拼音/笔画/部首/结构/释义',
+        description: '在线查询单个汉字的拼音、笔画数、部首、结构和释义。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/martian-text',
+      name: 'martian-text',
+      component: () => import('../views/tools/MartianText.vue'),
+      meta: {
+        title: '火星文翻译器 - 中文与火星文互转',
+        description: '在线火星文翻译器，支持普通中文与火星文互相转换。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/hello-world',
+      name: 'hello-world',
+      component: () => import('../views/tools/HelloWorldSnippets.vue'),
+      meta: {
+        title: 'Hello World - 各编程语言代码片段',
+        description: '常见编程语言的 Hello World 代码片段，支持一键复制。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/text-art',
+      name: 'text-art',
+      component: () => import('../views/tools/TextArtSteganography.vue'),
+      meta: {
+        title: '文本颜艺/文字隐写 - 颜文字装饰与零宽隐写',
+        description: '在线文本颜艺装饰和零宽字符文字隐写工具。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

@@ -70,6 +70,10 @@ const groups = [
       { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️', keywords: ['jianfan', 'chinese', 'convert', 'simplified', 'traditional', 'fantizhongwen'] },
       { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝', keywords: ['jiawen', 'lorem', 'ipsum', 'dummy', 'placeholder', 'shengcheng'] },
       { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', keywords: ['shuzi', 'number', 'chinese', 'daxie', 'jine', 'renminbi', 'convert'] },
+      { path: '/tools/pinyin', name: '文字转拼音', icon: '🔤', keywords: ['pinyin', 'wenzi', 'zhuanpin', 'fayin', 'yinjie'] },
+      { path: '/tools/hanzi-info', name: '汉字信息', icon: '📖', keywords: ['hanzi', 'bushou', 'pianpang', 'bihua', 'pinyin', 'fayin'] },
+      { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', keywords: ['huoxingwen', 'martian', 'fanzhuan', 'wenzi'] },
+      { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', keywords: ['wenben', 'text', 'yanyi', 'kaomoji', 'yincang', 'yinxie'] },
     ]
   },
   {
@@ -105,6 +109,7 @@ const groups = [
       { path: '/tools/timer', name: '专业计时器', icon: '⏱️', keywords: ['jishi', 'timer', 'stopwatch', 'countdown', 'daojishi'] },
       { path: '/tools/led-marquee', name: '手持 LED 弹幕', icon: '📱', keywords: ['shouchi', 'led', 'danmu', 'marquee', 'dengpai'] },
       { path: '/tools/relationship', name: '亲戚关系', icon: '👨‍👩‍👧‍👦', keywords: ['qinqi', 'relationship', 'qishu', 'chenghu', 'jiacheng'] },
+      { path: '/tools/hello-world', name: 'Hello World', icon: '👋', keywords: ['hello', 'world', 'chengxu', 'yuyan', 'daima', 'fuzhi'] },
     ]
   },
   {

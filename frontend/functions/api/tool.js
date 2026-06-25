@@ -22,6 +22,11 @@ import { search as zipPlateAreaSearch } from '../../src/data/zipPlateArea'
 import { search as garbageSearch } from '../../src/data/garbageData'
 import { calculateInheritance as calculateBloodType } from '../../src/logic/bloodType'
 import { calculateRelationship } from '../../src/logic/relationship'
+import { convertToPinyin } from '../../src/logic/pinyin'
+import { lookupHanzi } from '../../src/logic/hanziInfo'
+import { toMartian, toNormal } from '../../src/logic/martianText'
+import { findLanguage } from '../../src/logic/helloWorld'
+import { decorateText, hideSecret, extractSecret } from '../../src/logic/textArtSteganography'
 
 /** Normalize a boolean-ish query param. */
 function boolParam(val, defaultValue = false) {
@@ -525,6 +530,56 @@ const handlers = {
     const input = mode === 'query' ? (p.chain || '') : (p.title || '')
     if (!input) throw new Error(`缺少 ${mode === 'query' ? 'chain' : 'title'} 参数`)
     return calculateRelationship(input, mode, sex, reverse, region)
+  },
+
+  pinyin: (p) => {
+    const text = p.text || ''
+    if (!text) throw new Error('缺少 text 参数')
+    const tone = (p.tone || 'tone').toLowerCase()
+    const segment = boolParam(p.split, false)
+    const preserve = boolParam(p.preserve, true)
+    return convertToPinyin(text, { tone, segment, preserveNonChinese: preserve })
+  },
+
+  hanzi_info: (p) => {
+    const char = p.char || ''
+    const info = lookupHanzi(char)
+    if (!info) throw new Error('请输入单个汉字，或该汉字暂无本地数据')
+    return info
+  },
+
+  martian_text: (p) => {
+    const text = p.text || ''
+    if (!text) throw new Error('缺少 text 参数')
+    const direction = (p.direction || 'toMartian').toLowerCase()
+    const output = direction === 'tonormal' ? toNormal(text) : toMartian(text)
+    return { direction, output }
+  },
+
+  hello_world: (p) => {
+    const lang = findLanguage(p.lang || 'javascript')
+    if (!lang) throw new Error('不支持的语言')
+    return { lang: lang.key, name: lang.name, description: lang.description, code: lang.code }
+  },
+
+  text_art: (p) => {
+    const mode = (p.mode || 'decorate').toLowerCase()
+    if (mode === 'decorate') {
+      const text = p.text || ''
+      if (!text) throw new Error('缺少 text 参数')
+      return { mode, output: decorateText(text) }
+    }
+    if (mode === 'hide') {
+      const text = p.text || ''
+      const secret = p.secret || ''
+      if (!text || !secret) throw new Error('hide 模式需要 text 和 secret 参数')
+      return { mode, output: hideSecret(text, secret) }
+    }
+    const hidden = p.hidden || ''
+    if (!hidden) throw new Error('extract 模式需要 hidden 参数')
+    const output = extractSecret(hidden)
+    if (output === null) throw new Error('未检测到隐藏信息')
+    return { mode, output }
   }
 }
 

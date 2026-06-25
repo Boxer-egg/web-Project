@@ -34,10 +34,15 @@ const tools = [
   { path: '/tools/timer', name: '专业计时器', icon: '⏱️', desc: '倒计时/正计时/时钟，节目单串联，舞台全屏', category: '效率' },
   { path: '/tools/led-marquee', name: '手持 LED 弹幕', icon: '📱', desc: '全屏滚动文字灯牌，自定义颜色速度方向', category: '效率' },
   { path: '/tools/relationship', name: '亲戚关系', icon: '👨‍👩‍👧‍👦', desc: '关系链查称谓、称谓反查关系链', category: '效率' },
+  { path: '/tools/hello-world', name: 'Hello World', icon: '👋', desc: '各编程语言 Hello World 代码片段', category: '效率' },
   { path: '/tools/calculator', name: '计算器', icon: '🧮', desc: '安全表达式计算，支持键盘与历史记录', category: '转换' },
   { path: '/tools/random-generator', name: '随机生成器', icon: '🎲', desc: '随机整数、小数、字符串、UUID、颜色', category: '安全' },
   { path: '/tools/yaml-json', name: 'YAML ↔ JSON', icon: '🔄', desc: 'YAML 与 JSON 双向转换，支持紧凑输出', category: '开发' },
   { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', desc: '中文大写金额、小写读法、人民币格式', category: '文本' },
+  { path: '/tools/pinyin', name: '文字转拼音', icon: '🔤', desc: '中文转拼音，支持声调/首字母/分词', category: '文本' },
+  { path: '/tools/hanzi-info', name: '汉字信息', icon: '📖', desc: '查询汉字的拼音、笔画、部首和释义', category: '文本' },
+  { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', desc: '中文与火星文互相转换', category: '文本' },
+  { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', desc: '颜文字装饰与零宽字符文字隐写', category: '文本' },
   { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', desc: '离线查询邮编、车牌归属地、电话区号', category: '转换' },
   { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', desc: '常见生活垃圾所属分类与投放提示', category: '健康' },
   { path: '/tools/blood-type', name: '血型遗传', icon: '🩸', desc: '根据父母血型推算子女可能血型及概率', category: '健康' },
@@ -76,13 +81,17 @@ const categories = [
     key: 'text',
     name: '文本处理',
     icon: '📝',
-    desc: '文本清洗、统计、简繁转换、假文生成',
+    desc: '文本清洗、统计、简繁转换、假文生成、拼音、火星文',
     paths: [
       '/tools/text-toolbox',
       '/tools/word-counter',
       '/tools/chinese-converter',
       '/tools/lorem-ipsum',
       '/tools/number-chinese',
+      '/tools/pinyin',
+      '/tools/hanzi-info',
+      '/tools/martian-text',
+      '/tools/text-art',
     ]
   },
   {
@@ -118,8 +127,8 @@ const categories = [
     key: 'productivity',
     name: '效率生活',
     icon: '⏱️',
-    desc: '番茄钟、计时器，提升专注与效率',
-    paths: ['/tools/pomodoro', '/tools/timer', '/tools/led-marquee', '/tools/relationship']
+    desc: '番茄钟、计时器、亲戚关系、Hello World',
+    paths: ['/tools/pomodoro', '/tools/timer', '/tools/led-marquee', '/tools/relationship', '/tools/hello-world']
   },
   {
     key: 'health',

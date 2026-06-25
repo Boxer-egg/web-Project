@@ -9,6 +9,7 @@ const tone = useStorage('pinyin-tone', 'tone')
 const segment = useStorage('pinyin-segment', false)
 const preserve = useStorage('pinyin-preserve', true)
 const stats = ref({ chineseCount: 0, nonChineseCount: 0 })
+const input = ref('')
 
 function processor(val) {
   const result = convertToPinyin(val, {
@@ -24,7 +25,6 @@ function processor(val) {
 }
 
 const {
-  input,
   output,
   error,
   autoMode,
@@ -42,6 +42,7 @@ const {
     segment: { ref: segment, transform: v => v === '1' },
     preserve: { ref: preserve, transform: v => v === '1' }
   },
+  customInput: input,
   example: '你好，世界！重庆欢迎您。'
 })
 

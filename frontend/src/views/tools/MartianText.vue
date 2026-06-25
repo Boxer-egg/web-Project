@@ -6,13 +6,13 @@ import { toMartian, toNormal, DIRECTIONS } from '../../logic/martianText'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const direction = useStorage('martian-direction', 'toMartian')
+const input = ref('')
 
 function processor(val) {
   return direction.value === 'toMartian' ? toMartian(val) : toNormal(val)
 }
 
 const {
-  input,
   output,
   error,
   autoMode,
@@ -28,6 +28,7 @@ const {
     text: { ref: input },
     direction: { ref: direction }
   },
+  customInput: input,
   example: '我爱你，世界！'
 })
 

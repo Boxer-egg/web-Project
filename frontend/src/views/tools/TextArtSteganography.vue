@@ -54,7 +54,9 @@ const {
     secret: { ref: secret },
     hidden: { ref: hiddenInput }
   },
-  example: ''
+  example: '',
+  customInput: carrier,
+  requireInput: false
 })
 
 watch([mode, templateIndex], () => {

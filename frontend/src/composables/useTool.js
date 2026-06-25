@@ -12,8 +12,9 @@ import { useToast } from './useToast'
  * @param {string} [options.example] - Optional example input.
  * @param {Ref} [options.customInput] - Optional custom input ref.
  * @param {number} [options.debounce] - Debounce time for storage and processing (ms).
+ * @param {boolean} [options.requireInput=true] - Whether processor requires non-empty input.
  */
-export function useTool({ storageKey, processor, paramMapping = {}, example, customInput, debounce = 300 }) {
+export function useTool({ storageKey, processor, paramMapping = {}, example, customInput, debounce = 300, requireInput = true }) {
   // We use a local ref for immediate UI updates, and useStorage for persistence
   const storageInput = useStorage(`${storageKey}-input`, '')
   const input = customInput || ref(storageInput.value)
@@ -48,7 +49,7 @@ export function useTool({ storageKey, processor, paramMapping = {}, example, cus
   }, debounce)
 
   async function process() {
-    if (!input.value || !input.value.trim()) {
+    if (requireInput && (!input.value || !input.value.trim())) {
       output.value = ''
       error.value = ''
       return

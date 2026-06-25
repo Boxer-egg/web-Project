@@ -74,7 +74,8 @@ const {
   paramMapping: {
     lang: { ref: selectedKey }
   },
-  example: ''
+  example: '',
+  requireInput: false
 })
 
 const highlightedCode = computed(() => {

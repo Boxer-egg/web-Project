@@ -19,9 +19,11 @@ const {
   output,
   error,
   autoMode,
+  copyText,
   clearAll,
   loadExample,
-  process
+  process,
+  copy
 } = useTool({
   storageKey: 'hanzi',
   processor,
@@ -34,9 +36,10 @@ watch(input, (val) => {
   charInput.value = val
 })
 
-const toneMarks = computed(() => {
-  if (!result.value) return ''
-  return '•'.repeat(result.value.tone)
+const toneMark = computed(() => {
+  if (!result.value || !result.value.tone) return ''
+  const marks = ['', 'ˉ', 'ˊ', 'ˇ', 'ˋ']
+  return marks[result.value.tone] || ''
 })
 </script>
 
@@ -68,11 +71,12 @@ const toneMarks = computed(() => {
         <button class="btn" @click="process">查询</button>
         <button class="btn btn-secondary" @click="clearAll">清空</button>
         <button class="btn btn-secondary" @click="loadExample">示例</button>
+        <button class="btn btn-secondary" @click="copy">{{ copyText }}</button>
         <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
           自动 {{ autoMode ? 'ON' : 'OFF' }}
         </button>
       </div>
-      <p class="hint">本地收录 {{ getHanziCount() }} 个常用汉字；输入一个字即可查询拼音、部首、结构和释义。</p>
+      <p class="hint">本地收录 {{ getHanziCount() }} 个常用汉字；未收录的字会使用 pinyin-pro 给出拼音参考。</p>
     </div>
 
     <div v-if="result" class="result-card card">
@@ -80,23 +84,23 @@ const toneMarks = computed(() => {
       <div class="info-grid">
         <div class="info-item">
           <span class="label">拼音</span>
-          <span class="value">{{ result.pinyin }} {{ toneMarks }}</span>
+          <span class="value">{{ result.pinyin }} {{ toneMark }}</span>
         </div>
         <div class="info-item">
           <span class="label">声调</span>
-          <span class="value">第 {{ result.tone }} 声</span>
+          <span class="value">第 {{ result.tone }} 声 {{ toneMark }}</span>
         </div>
         <div class="info-item">
           <span class="label">笔画</span>
-          <span class="value">{{ result.strokes }} 画</span>
+          <span class="value">{{ result.strokes != null ? `${result.strokes} 画` : '—' }}</span>
         </div>
         <div class="info-item">
           <span class="label">部首</span>
-          <span class="value">{{ result.radical }}</span>
+          <span class="value">{{ result.radical || '—' }}</span>
         </div>
         <div class="info-item">
           <span class="label">结构</span>
-          <span class="value">{{ result.structure }}</span>
+          <span class="value">{{ result.structure || '—' }}</span>
         </div>
       </div>
       <div class="meanings">
@@ -104,6 +108,9 @@ const toneMarks = computed(() => {
         <ul>
           <li v-for="(m, i) in result.meanings" :key="i">{{ m }}</li>
         </ul>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-sm" @click="copy">{{ copyText }}</button>
       </div>
     </div>
 
@@ -182,6 +189,11 @@ const toneMarks = computed(() => {
   padding-left: 18px;
   color: var(--text-secondary);
   line-height: 1.8;
+}
+.result-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 .error-msg {
   color: var(--error);

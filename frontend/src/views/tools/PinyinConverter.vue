@@ -39,7 +39,7 @@ const {
   paramMapping: {
     text: { ref: input },
     tone: { ref: tone },
-    split: { ref: segment, transform: v => v === '1' },
+    segment: { ref: segment, transform: v => v === '1' },
     preserve: { ref: preserve, transform: v => v === '1' }
   },
   example: '你好，世界！重庆欢迎您。'
@@ -61,7 +61,7 @@ watch([tone, segment, preserve], () => {
         :params="[
           { name: 'text', desc: '要转换的文本', required: true, example: '你好世界' },
           { name: 'tone', desc: '声调模式：tone / none / first', required: false, example: 'tone' },
-          { name: 'split', desc: '是否按词分词（填 1）', required: false, example: '1' },
+          { name: 'segment', desc: '是否按词分词（填 1）', required: false, example: '1' },
           { name: 'preserve', desc: '是否保留非中文字符（填 1）', required: false, example: '1' },
           { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
         ]"

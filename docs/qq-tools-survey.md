@@ -235,12 +235,12 @@
 - **页面参数**：
   - `text`：要转换的文本，例如 `?text=你好世界`
   - `tone`：声调模式，`tone`（带声调，默认）、`none`（无声调）、`first`（首字母）
-  - `split`：是否在多音字分词后按词输出，`1` 为是
+  - `segment`：是否在多音字分词后按词输出，`1` 为是
   - `preserve`：是否保留非中文字符，`1` 为保留（默认）
 - **使用示例**：
   - `?text=你好世界&tone=none` → `ni hao shi jie`
   - `?text=中华人民共和国&tone=first` → `zhrmghg`
-  - `?text=重庆&tone=tone&split=1` → `chóng qìng`
+  - `?text=重庆&tone=tone&segment=1` → `chóng qìng`
 - **纯前端可行性**：可行。引入 `pinyin-pro` 等开源库在浏览器本地完成分词与拼音映射；数据打包后体积较大，可通过异步 chunk 加载。
 
 #### 13. 汉字标准发音 / 偏旁（HanziInfo）

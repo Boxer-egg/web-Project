@@ -1,7 +1,10 @@
 /**
  * Hanzi information lookup: pronunciation, strokes, radical, structure and meaning.
  * Data covers common Chinese characters used in daily reading.
+ * Falls back to pinyin-pro for characters not in the local database.
  */
+
+import { pinyin } from 'pinyin-pro'
 
 const HANZI_DATA = {
   一: { pinyin: 'yī', tone: 1, strokes: 1, radical: '一', structure: '独体', meanings: ['数词，最小的正整数', '表示同一', '表示满、全'] },
@@ -140,8 +143,23 @@ export function lookupHanzi(char) {
   const input = String(char || '').trim()
   if (!/^[^\x00-\x7F]$/.test(input)) return null
   const data = HANZI_DATA[input]
-  if (!data) return null
-  return { char: input, ...data }
+  if (data) return { char: input, ...data }
+
+  // Fallback: use pinyin-pro to provide at least pronunciation and tone.
+  const pySymbol = pinyin(input, { toneType: 'symbol', type: 'string' })
+  const pyNum = pinyin(input, { toneType: 'num', type: 'string' })
+  const toneMatch = pyNum.match(/\d/)
+  const tone = toneMatch ? Number(toneMatch[0]) : 0
+
+  return {
+    char: input,
+    pinyin: pySymbol,
+    tone,
+    strokes: null,
+    radical: null,
+    structure: null,
+    meanings: ['该字暂无本地释义，仅提供拼音参考。']
+  }
 }
 
 /**

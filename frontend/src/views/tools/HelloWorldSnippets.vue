@@ -1,9 +1,57 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
+import hljs from 'highlight.js/lib/core'
+import javascript from 'highlight.js/lib/languages/javascript'
+import typescript from 'highlight.js/lib/languages/typescript'
+import python from 'highlight.js/lib/languages/python'
+import c from 'highlight.js/lib/languages/c'
+import cpp from 'highlight.js/lib/languages/cpp'
+import csharp from 'highlight.js/lib/languages/csharp'
+import java from 'highlight.js/lib/languages/java'
+import go from 'highlight.js/lib/languages/go'
+import rust from 'highlight.js/lib/languages/rust'
+import ruby from 'highlight.js/lib/languages/ruby'
+import php from 'highlight.js/lib/languages/php'
+import swift from 'highlight.js/lib/languages/swift'
+import kotlin from 'highlight.js/lib/languages/kotlin'
+import bash from 'highlight.js/lib/languages/bash'
+import xml from 'highlight.js/lib/languages/xml'
+import css from 'highlight.js/lib/languages/css'
+import sql from 'highlight.js/lib/languages/sql'
+import lua from 'highlight.js/lib/languages/lua'
+import perl from 'highlight.js/lib/languages/perl'
+import r from 'highlight.js/lib/languages/r'
+import matlab from 'highlight.js/lib/languages/matlab'
+import 'highlight.js/styles/atom-one-dark.css'
 import { useTool } from '../../composables/useTool'
 import { LANGUAGES, findLanguage } from '../../logic/helloWorld'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+const HLJS_LANGUAGES = [
+  ['javascript', javascript],
+  ['typescript', typescript],
+  ['python', python],
+  ['c', c],
+  ['cpp', cpp],
+  ['csharp', csharp],
+  ['java', java],
+  ['go', go],
+  ['rust', rust],
+  ['ruby', ruby],
+  ['php', php],
+  ['swift', swift],
+  ['kotlin', kotlin],
+  ['bash', bash],
+  ['html', xml],
+  ['css', css],
+  ['sql', sql],
+  ['lua', lua],
+  ['perl', perl],
+  ['r', r],
+  ['matlab', matlab]
+]
+HLJS_LANGUAGES.forEach(([name, langModule]) => hljs.registerLanguage(name, langModule))
 
 const selectedKey = useStorage('hello-lang', 'javascript')
 const lang = computed(() => findLanguage(selectedKey.value) || LANGUAGES[0])
@@ -29,6 +77,16 @@ const {
   example: ''
 })
 
+const highlightedCode = computed(() => {
+  if (!output.value || !lang.value) return ''
+  try {
+    const result = hljs.highlight(output.value, { language: lang.value.key, ignoreIllegals: true })
+    return result.value
+  } catch {
+    return hljs.highlightAuto(output.value).value
+  }
+})
+
 watch(selectedKey, () => {
   if (autoMode.value) process()
 })
@@ -42,6 +100,10 @@ function runCopy() {
   if (!output.value) return
   copy()
 }
+
+const sortedLanguages = computed(() => {
+  return [...LANGUAGES].sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+})
 </script>
 
 <template>
@@ -63,7 +125,7 @@ function runCopy() {
       <div class="config-row">
         <label class="select-label">选择语言：
           <select v-model="selectedKey" class="input">
-            <option v-for="l in LANGUAGES" :key="l.key" :value="l.key">{{ l.name }}</option>
+            <option v-for="l in sortedLanguages" :key="l.key" :value="l.key">{{ l.name }}</option>
           </select>
         </label>
       </div>
@@ -83,9 +145,9 @@ function runCopy() {
       <p>{{ lang.description }}</p>
     </div>
 
-    <div class="tool-panel">
+    <div class="tool-panel code-panel">
       <h3>代码片段</h3>
-      <textarea v-model="output" class="textarea code-area" placeholder="选择语言后生成代码..." rows="16" readonly></textarea>
+      <pre class="code-block"><code v-html="highlightedCode"></code></pre>
       <button class="btn btn-sm" @click="runCopy" style="align-self: flex-start">{{ copyText }}</button>
     </div>
 
@@ -136,6 +198,29 @@ function runCopy() {
 .code-area {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 14px;
+}
+.code-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.code-block {
+  margin: 0;
+  padding: 16px;
+  border-radius: var(--radius);
+  background: #282c34;
+  color: #abb2bf;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 120px;
+  border: 1px solid var(--border);
+}
+.code-block code {
+  font-family: inherit;
+  background: transparent;
+  padding: 0;
 }
 .error-msg {
   color: var(--error);

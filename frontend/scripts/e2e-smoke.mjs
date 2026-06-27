@@ -89,6 +89,24 @@ const cases = [
     expected: '你好呀',
     getOutput: (page) => page.locator('.tool-section .tool-panel').nth(1).locator('textarea').inputValue(),
     assert: (output, expected) => output.includes(expected) && output.length > expected.length
+  },
+  {
+    name: 'css-minifier',
+    path: '/tools/css-minifier?css=body%20%7B%20margin%3A%200%3B%20%7D&auto=1',
+    expected: 'body{margin:0}',
+    getOutput: (page) => page.locator('.tool-section .tool-panel').nth(1).locator('textarea').inputValue()
+  },
+  {
+    name: 'cron',
+    path: '/tools/cron?expr=0%200%20*%20*%20*&auto=1',
+    expected: '最近执行时间',
+    getOutput: (page) => page.locator('.next-list').textContent()
+  },
+  {
+    name: 'svg-editor',
+    path: '/tools/svg-editor?svg=%3Csvg%20width%3D%22200%22%20height%3D%22200%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22blue%22%2F%3E%3C%2Fsvg%3E&auto=1',
+    expected: '<svg',
+    getOutput: (page) => page.locator('.code-area').inputValue()
   }
 ]
 

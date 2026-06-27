@@ -27,6 +27,8 @@ import { lookupHanzi } from '../../src/logic/hanziInfo'
 import { toMartian, toNormal } from '../../src/logic/martianText'
 import { findLanguage } from '../../src/logic/helloWorld'
 import { decorateText, hideSecret, extractSecret } from '../../src/logic/textArtSteganography'
+import { minifyCss } from '../../src/logic/cssMinifier.js'
+import { parseCron, getNextExecutions, generateCron } from '../../src/logic/cron.js'
 
 /** Normalize a boolean-ish query param. */
 function boolParam(val, defaultValue = false) {
@@ -580,6 +582,44 @@ const handlers = {
     const output = extractSecret(hidden)
     if (output === null) throw new Error('未检测到隐藏信息')
     return { mode, output }
+  },
+
+  css_minifier: (p) => {
+    const css = p.css || ''
+    if (!css) throw new Error('缺少 css 参数')
+    const options = {
+      minifyColor: boolParam(p.minify_color, false),
+      minifyZero: boolParam(p.minify_zero, false),
+      mergeDuplicates: boolParam(p.merge_duplicates, false),
+      removeEmpty: boolParam(p.remove_empty, false),
+      removeQuotes: boolParam(p.remove_quotes, false),
+    }
+    const result = minifyCss(css, options)
+    return {
+      originalLength: result.originalLength,
+      minifiedLength: result.minifiedLength,
+      savedPercent: result.savedPercent,
+      output: result.css
+    }
+  },
+
+  cron: (p) => {
+    const mode = (p.mode || 'parse').toLowerCase()
+    const dialect = (p.dialect || 'unix').toLowerCase()
+    if (mode === 'generate') {
+      const result = generateCron({
+        freq: p.freq || 'day',
+        interval: parseInt(p.interval, 10) || 1,
+        at: p.at || ''
+      })
+      return { mode, dialect, expr: result.expr, description: result.description }
+    }
+    const expr = p.expr || ''
+    if (!expr) throw new Error('缺少 expr 参数')
+    const parsed = parseCron(expr, dialect)
+    if (!parsed.valid) throw new Error(parsed.error)
+    const next = getNextExecutions(expr, dialect, 5)
+    return { mode, dialect, expr, description: parsed.description, next }
   }
 }
 

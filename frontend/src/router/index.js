@@ -479,6 +479,36 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/svg-editor',
+      name: 'svg-editor',
+      component: () => import('../views/tools/SvgEditor.vue'),
+      meta: {
+        title: 'SVG 编辑器 - 在线 SVG 代码编辑与预览工具',
+        description: '在线 SVG 编辑器，支持代码编辑、实时预览、插入基础图形、格式化和压缩，支持 AI 自动化调用。',
+        apiPath: '/api/svg-editor'
+      }
+    },
+    {
+      path: '/tools/cron',
+      name: 'cron',
+      component: () => import('../views/tools/CronTool.vue'),
+      meta: {
+        title: 'Cron 表达式解析 - 在线 Cron 生成与验证工具',
+        description: '在线 Cron 表达式解析工具，支持 UNIX、Quartz、Spring 方言，支持生成 Cron 表达式和查看最近执行时间，支持 AI 自动化调用。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/css-minifier',
+      name: 'css-minifier',
+      component: () => import('../views/tools/CssMinifier.vue'),
+      meta: {
+        title: 'CSS 压缩 - 在线 CSS 代码压缩与优化工具',
+        description: '在线 CSS 压缩工具，支持删除注释空白、简化颜色值、简化零值单位、移除空规则等优化选项，支持 AI 自动化调用。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

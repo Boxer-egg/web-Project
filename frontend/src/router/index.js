@@ -429,6 +429,86 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/pinyin',
+      name: 'pinyin',
+      component: () => import('../views/tools/PinyinConverter.vue'),
+      meta: {
+        title: '文字转拼音 - 在线拼音转换工具',
+        description: '在线文字转拼音工具，支持带声调、无声调、首字母三种模式，支持分词和保留非中文字符。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/hanzi-info',
+      name: 'hanzi-info',
+      component: () => import('../views/tools/HanziInfo.vue'),
+      meta: {
+        title: '汉字信息 - 拼音/笔画/部首/结构/释义',
+        description: '在线查询单个汉字的拼音、笔画数、部首、结构和释义。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/martian-text',
+      name: 'martian-text',
+      component: () => import('../views/tools/MartianText.vue'),
+      meta: {
+        title: '火星文翻译器 - 中文与火星文互转',
+        description: '在线火星文翻译器，支持普通中文与火星文互相转换。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/hello-world',
+      name: 'hello-world',
+      component: () => import('../views/tools/HelloWorldSnippets.vue'),
+      meta: {
+        title: 'Hello World - 各编程语言代码片段',
+        description: '常见编程语言的 Hello World 代码片段，支持一键复制。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/text-art',
+      name: 'text-art',
+      component: () => import('../views/tools/TextArtSteganography.vue'),
+      meta: {
+        title: '文本颜艺/文字隐写 - 颜文字装饰与零宽隐写',
+        description: '在线文本颜艺装饰和零宽字符文字隐写工具。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/svg-editor',
+      name: 'svg-editor',
+      component: () => import('../views/tools/SvgEditor.vue'),
+      meta: {
+        title: 'SVG 编辑器 - 在线 SVG 代码编辑与预览工具',
+        description: '在线 SVG 编辑器，支持代码编辑、实时预览、插入基础图形、格式化和压缩，支持 AI 自动化调用。',
+        apiPath: '/api/svg-editor'
+      }
+    },
+    {
+      path: '/tools/cron',
+      name: 'cron',
+      component: () => import('../views/tools/CronTool.vue'),
+      meta: {
+        title: 'Cron 表达式解析 - 在线 Cron 生成与验证工具',
+        description: '在线 Cron 表达式解析工具，支持 UNIX、Quartz、Spring 方言，支持生成 Cron 表达式和查看最近执行时间，支持 AI 自动化调用。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
+      path: '/tools/css-minifier',
+      name: 'css-minifier',
+      component: () => import('../views/tools/CssMinifier.vue'),
+      meta: {
+        title: 'CSS 压缩 - 在线 CSS 代码压缩与优化工具',
+        description: '在线 CSS 压缩工具，支持删除注释空白、简化颜色值、简化零值单位、移除空规则等优化选项，支持 AI 自动化调用。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

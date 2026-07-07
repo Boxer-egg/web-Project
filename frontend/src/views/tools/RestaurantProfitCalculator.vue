@@ -222,6 +222,13 @@ function scrollToSection(id) {
 
 /** 下载测算结果图片 */
 function downloadResultsAsImage() {
+  if (!businessName.value) {
+    const name = window.prompt('请填写商圈名称（可直接留空跳过）')
+    if (name !== null) {
+      businessName.value = name.trim()
+    }
+  }
+
   const width = 480
   const padding = 20
   const labelWidth = 170

@@ -29,10 +29,11 @@ const seats = useStorage('rpf-seats', 0)
 const tables = useStorage('rpf-tables', 0)
 const customMonths = useStorage('rpf-custom-months', 12)
 const targetDailyOrders = useStorage('rpf-target-daily-orders', 0)
+const businessName = useStorage('rpf-business-name', '')
 
 /** 移动端折叠状态 */
 const inputCollapsed = useStorage('rpf-input-collapsed', false)
-const formulaCollapsed = useStorage('rpf-formula-collapsed', true)
+const formulaCollapsed = ref(true)
 
 const selectedDistrict = computed(() =>
   DISTRICT_TYPES.find(d => d.key === districtType.value) || DISTRICT_TYPES[0]
@@ -159,15 +160,29 @@ function clearAll() {
   tables.value = 0
   customMonths.value = 12
   targetDailyOrders.value = 0
+  businessName.value = ''
+}
+
+function scrollToSection(id) {
+  const content = document.querySelector('.content')
+  const el = document.getElementById(id)
+  if (!content || !el) return
+  const contentRect = content.getBoundingClientRect()
+  const elRect = el.getBoundingClientRect()
+  const offset = 52
+  const top = content.scrollTop + elRect.top - contentRect.top - offset
+  content.scrollTo({ top, behavior: 'smooth' })
 }
 
 /** 下载测算结果图片 */
 function downloadResultsAsImage() {
-  const width = 640
-  const padding = 24
-  const lineHeight = 28
-  const headerHeight = 80
-  const sectionGap = 20
+  const width = 480
+  const padding = 20
+  const labelWidth = 170
+  const valueX = padding + labelWidth
+  const lineHeight = 26
+  const headerHeight = 70
+  const sectionGap = 16
   const rows = [
     ['商区类型', selectedDistrict.value.name],
     ['有效营业月数', `${operatingMonths.value} 个月`],
@@ -175,42 +190,45 @@ function downloadResultsAsImage() {
     ['座位数 / 桌数', `${seats.value || 0} / ${tables.value || 0}`],
     ['平均客单价', `${avgTicket.value || 0} 元`],
     ['毛利率', `${((grossMargin.value || 0) * 100).toFixed(0)}%`],
-    ['年房租', `${fmtMoney(annualRent)} 元`],
-    ['建店成本', `${fmtMoney(buildCost)} 元`],
-    ['每月有效房租', `${fmtMoney(effectiveMonthlyRent)} 元（实际 ${fmtMoney(actualMonthlyRent)}）`],
-    ['月固定成本', `${fmtMoney(monthlyFixedCost)} 元`],
-    ['日固定成本', `${fmtMoney(dailyFixedCost)} 元`],
-    ['日盈亏平衡营业额', `${fmtMoney(dailyBreakEvenRevenue)} 元`],
-    ['月平衡营业额', `${fmtMoney(monthlyBreakEvenRevenue)} 元`],
-    ['保本日单数', `${fmtNumber(dailyBreakEvenOrders, 1)} 单`],
-    ['翻台率', `${fmtNumber(turnoverRate, 2)}`],
+    ['年房租', `${fmtMoney(annualRent.value)} 元`],
+    ['建店成本', `${fmtMoney(buildCost.value)} 元`],
+    ['每月有效房租', `${fmtMoney(effectiveMonthlyRent.value)} 元（实际 ${fmtMoney(actualMonthlyRent.value)}）`],
+    ['月固定成本', `${fmtMoney(monthlyFixedCost.value)} 元`],
+    ['日固定成本', `${fmtMoney(dailyFixedCost.value)} 元`],
+    ['日盈亏平衡营业额', `${fmtMoney(dailyBreakEvenRevenue.value)} 元`],
+    ['月平衡营业额', `${fmtMoney(monthlyBreakEvenRevenue.value)} 元`],
+    ['保本日单数', `${fmtNumber(dailyBreakEvenOrders.value, 1)} 单`],
+    ['翻台率', `${fmtNumber(turnoverRate.value, 2)}`],
     ['目标日单数', `${targetDailyOrders.value || 0} 单`],
-    ['目标月净利润', `${fmtMoney(targetMonthlyNetProfit)} 元`],
-    ['回本周期', paybackMonths.value === Infinity ? '无法回本' : `${fmtNumber(paybackMonths, 1)} 个月`],
+    ['目标月净利润', `${fmtMoney(targetMonthlyNetProfit.value)} 元`],
+    ['回本周期', paybackMonths.value === Infinity ? '无法回本' : `${fmtNumber(paybackMonths.value, 1)} 个月`],
   ]
   const contentHeight = rows.length * lineHeight + sectionGap * 4 + headerHeight
   const height = contentHeight + padding * 2
 
   const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
+  canvas.width = width * 2
+  canvas.height = 1600
+  canvas.style.width = `${width}px`
   const ctx = canvas.getContext('2d')
   if (!ctx) return
+  ctx.scale(2, 2)
 
   // Background
   ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, width, height)
+  ctx.fillRect(0, 0, width, 1600)
 
   // Header
   ctx.fillStyle = '#f59e0b'
   ctx.fillRect(0, 0, width, headerHeight)
   ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 24px sans-serif'
+  ctx.font = 'bold 20px sans-serif'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText('🍜 餐饮盈利测算', width / 2, headerHeight / 2 - 8)
-  ctx.font = '12px sans-serif'
-  ctx.fillText(`生成时间：${new Date().toLocaleString('zh-CN')}`, width / 2, headerHeight / 2 + 18)
+  const headerTitle = businessName.value ? `🍜 ${businessName.value}` : '🍜 餐饮盈利测算'
+  ctx.fillText(headerTitle, width / 2, headerHeight / 2 - 10)
+  ctx.font = '11px sans-serif'
+  ctx.fillText(`生成时间：${new Date().toLocaleString('zh-CN')}`, width / 2, headerHeight / 2 + 16)
 
   // Content
   ctx.textAlign = 'left'
@@ -223,48 +241,46 @@ function downloadResultsAsImage() {
     ctx.fillStyle = '#111827'
     ctx.font = 'bold 15px sans-serif'
     ctx.fillText(title, padding, y)
-    y += 26
+    y += 24
     ctx.fillStyle = '#e5e7eb'
-    ctx.fillRect(padding, y - 6, width - padding * 2, 1)
+    ctx.fillRect(padding, y - 5, width - padding * 2, 1)
     ctx.fillStyle = '#374151'
     ctx.font = '14px sans-serif'
   }
 
-  drawSectionTitle('基础信息')
-  for (let i = 0; i < 6; i++) {
-    const [label, value] = rows[i]
+  function drawRow(label, value, options = {}) {
     ctx.fillStyle = '#6b7280'
     ctx.fillText(label, padding, y)
-    ctx.fillStyle = '#111827'
-    ctx.textAlign = 'right'
-    ctx.fillText(value, width - padding, y)
-    ctx.textAlign = 'left'
+    ctx.fillStyle = options.accent ? '#d97706' : '#111827'
+    ctx.font = options.bold ? 'bold 14px sans-serif' : '14px sans-serif'
+    ctx.fillText(value, valueX, y)
+    ctx.font = '14px sans-serif'
     y += lineHeight
+  }
+
+  drawSectionTitle('基础信息')
+  for (let i = 0; i < 6; i++) {
+    drawRow(rows[i][0], rows[i][1])
   }
 
   y += sectionGap
   drawSectionTitle('成本与盈亏')
   for (let i = 6; i < 15; i++) {
-    const [label, value] = rows[i]
-    ctx.fillStyle = '#6b7280'
-    ctx.fillText(label, padding, y)
-    ctx.fillStyle = i === 12 ? '#d97706' : '#111827'
-    ctx.textAlign = 'right'
-    ctx.fillText(value, width - padding, y)
-    ctx.textAlign = 'left'
-    y += lineHeight
+    drawRow(rows[i][0], rows[i][1], { accent: i === 12, bold: i === 12 })
   }
 
   y += sectionGap
   drawSectionTitle('目标经营')
   for (let i = 15; i < rows.length; i++) {
-    const [label, value] = rows[i]
     ctx.fillStyle = '#6b7280'
-    ctx.fillText(label, padding, y)
-    ctx.fillStyle = i === 16 ? (targetMonthlyNetProfit.value >= 0 ? '#16a34a' : '#dc2626') : '#111827'
-    ctx.textAlign = 'right'
-    ctx.fillText(value, width - padding, y)
-    ctx.textAlign = 'left'
+    ctx.fillText(rows[i][0], padding, y)
+    const color = i === 16
+      ? (targetMonthlyNetProfit.value >= 0 ? '#16a34a' : '#dc2626')
+      : '#111827'
+    ctx.fillStyle = color
+    ctx.font = i === 16 ? 'bold 14px sans-serif' : '14px sans-serif'
+    ctx.fillText(rows[i][1], valueX, y)
+    ctx.font = '14px sans-serif'
     y += lineHeight
   }
 
@@ -274,9 +290,18 @@ function downloadResultsAsImage() {
   ctx.font = '11px sans-serif'
   ctx.textAlign = 'center'
   ctx.fillText('由 在线工具箱 生成，数据仅供参考', width / 2, y)
+  y += 12
+
+  const finalHeight = y + padding
+  const exportCanvas = document.createElement('canvas')
+  exportCanvas.width = width * 2
+  exportCanvas.height = finalHeight * 2
+  const ectx = exportCanvas.getContext('2d')
+  if (!ectx) return
+  ectx.drawImage(canvas, 0, 0, width * 2, finalHeight * 2, 0, 0, width * 2, finalHeight * 2)
 
   const link = document.createElement('a')
-  link.href = canvas.toDataURL('image/png')
+  link.href = exportCanvas.toDataURL('image/png')
   link.download = `餐饮盈利测算-${new Date().toISOString().slice(0, 10)}.png`
   link.click()
 }
@@ -297,22 +322,23 @@ function downloadResultsAsImage() {
 
     <div class="calculator-layout">
       <!-- 左侧输入 -->
-      <div v-show="!inputCollapsed" class="card input-panel">
+      <div v-show="!inputCollapsed" id="profit-input" class="card input-panel">
         <div class="section-title">基础信息</div>
-        <div class="form-row district-row">
-          <label>商区类型</label>
-          <div class="district-inputs">
-            <select v-model="districtType" class="select district-select">
-              <option v-for="d in DISTRICT_TYPES" :key="d.key" :value="d.key">{{ d.key === 'custom' ? d.name : `${d.name}（${d.months}个月）` }}</option>
-            </select>
-            <input v-if="districtType === 'custom'" v-model.number="customMonths" type="number" min="1" max="12" class="input input-months">
-            <span v-if="districtType === 'custom'" class="input-unit">个月</span>
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>商区类型</label>
+            <div class="district-inputs">
+              <select v-model="districtType" class="select district-select">
+                <option v-for="d in DISTRICT_TYPES" :key="d.key" :value="d.key">{{ d.key === 'custom' ? d.name : `${d.name}（${d.months}个月）` }}</option>
+              </select>
+              <input v-if="districtType === 'custom'" v-model.number="customMonths" type="number" min="1" max="12" class="input input-months">
+              <span v-if="districtType === 'custom'" class="input-unit">个月</span>
+            </div>
           </div>
-        </div>
-
-        <div class="form-row">
-          <label>面积（平）</label>
-          <input v-model.number="area" type="number" class="input">
+          <div class="form-col">
+            <label>面积（平）</label>
+            <input v-model.number="area" type="number" class="input">
+          </div>
         </div>
 
         <div class="section-title">开店成本</div>
@@ -346,13 +372,15 @@ function downloadResultsAsImage() {
         </div>
 
         <div class="section-title">经营成本</div>
-        <div class="form-row">
-          <label>每月人工（元）</label>
-          <input v-model.number="monthlyLabor" type="number" class="input">
-        </div>
-        <div class="form-row">
-          <label>水/电/杂费（元/月）</label>
-          <input v-model.number="monthlyUtilities" type="number" class="input">
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>每月人工（元）</label>
+            <input v-model.number="monthlyLabor" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>水/电/杂费（元/月）</label>
+            <input v-model.number="monthlyUtilities" type="number" class="input">
+          </div>
         </div>
         <div class="form-row">
           <label>毛利率</label>
@@ -360,21 +388,29 @@ function downloadResultsAsImage() {
         </div>
 
         <div class="section-title">营业参数</div>
-        <div class="form-row">
-          <label>平均客单价（元）</label>
-          <input v-model.number="avgTicket" type="number" class="input">
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>桌数</label>
+            <input v-model.number="tables" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>座位数</label>
+            <input v-model.number="seats" type="number" class="input">
+          </div>
+        </div>
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>平均客单价（元）</label>
+            <input v-model.number="avgTicket" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>目标日单数</label>
+            <input v-model.number="targetDailyOrders" type="number" class="input">
+          </div>
         </div>
         <div class="form-row">
-          <label>座位数</label>
-          <input v-model.number="seats" type="number" class="input">
-        </div>
-        <div class="form-row">
-          <label>桌数</label>
-          <input v-model.number="tables" type="number" class="input">
-        </div>
-        <div class="form-row">
-          <label>目标日单数</label>
-          <input v-model.number="targetDailyOrders" type="number" class="input">
+          <label>商圈名称（选填）</label>
+          <input v-model="businessName" type="text" class="input" placeholder="例如：一中店">
         </div>
 
         <div class="form-actions">
@@ -385,7 +421,7 @@ function downloadResultsAsImage() {
 
       <!-- 右侧结果 -->
       <div class="result-panel">
-        <div class="card result-card">
+        <div id="core-results" class="card result-card">
           <div class="section-title">核心结果</div>
           <div class="metric-grid">
             <div class="metric">
@@ -423,7 +459,7 @@ function downloadResultsAsImage() {
           </div>
         </div>
 
-        <div class="card result-card">
+        <div id="target-results" class="card result-card">
           <div class="section-title">目标经营测算（日单数 {{ targetDailyOrders }} 单）</div>
           <div class="metric-grid">
             <div class="metric">
@@ -466,20 +502,84 @@ function downloadResultsAsImage() {
               <li><strong>回本周期</strong> = 建店成本 ÷ 目标月净利润</li>
             </ul>
           </div>
-          <div style="margin-top: 16px">
-            <button class="btn" @click="downloadResultsAsImage">下载测算结果图片</button>
-          </div>
+        </div>
+
+        <div class="download-bar">
+          <button class="btn" @click="downloadResultsAsImage">下载测算结果图片</button>
         </div>
       </div>
     </div>
+
+    <nav class="bottom-nav">
+      <button @click="scrollToSection('profit-input')">录入数据</button>
+      <button @click="scrollToSection('core-results')">核心结果</button>
+      <button @click="scrollToSection('target-results')">目标测算</button>
+    </nav>
   </div>
 </template>
 
 <style scoped>
 .mobile-toggle-bar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
+  display: none;
+}
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-toggle-bar {
+    display: flex;
+    position: fixed;
+    top: calc(var(--header-height) + 8px);
+    right: 12px;
+    z-index: 30;
+  }
+  .mobile-toggle-bar .btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+  .calculator-layout {
+    margin-top: 44px;
+  }
+  .restaurant-profit {
+    padding-bottom: 80px;
+  }
+  #profit-input,
+  #core-results,
+  #target-results {
+    scroll-margin-top: 52px;
+  }
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 8px;
+    z-index: 30;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 12px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  }
+  .bottom-nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+    padding: 8px 4px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .bottom-nav button:active,
+  .bottom-nav button:focus-visible {
+    color: var(--accent);
+  }
 }
 
 .formula-title {
@@ -538,6 +638,16 @@ function downloadResultsAsImage() {
   font-size: 13px;
   color: var(--text-secondary);
 }
+.form-row.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .district-row {
   margin-bottom: 6px;
 }
@@ -582,6 +692,9 @@ function downloadResultsAsImage() {
   margin-top: 20px;
   display: flex;
   gap: 10px;
+}
+.download-bar {
+  margin-top: 16px;
 }
 
 .result-panel {

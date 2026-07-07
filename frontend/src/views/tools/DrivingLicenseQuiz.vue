@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStorage } from '@vueuse/core'
+import { matchMnemonics } from '../../logic/drivingMnemonics'
 
 const route = useRoute()
 
@@ -45,6 +46,14 @@ const stats = computed(() => {
 
 const currentQuestion = computed(() => sessionQuestions.value[currentIndex.value] || null)
 
+/** 当前题匹配到的口诀（仅答错时显示） */
+const currentMnemonics = computed(() => {
+  const q = currentQuestion.value
+  if (!q || !showExplain.value) return []
+  if (isCorrect(q.id)) return []
+  return matchMnemonics(q).slice(0, 2)
+})
+
 /** 分数 */
 const score = computed(() => {
   if (!sessionQuestions.value.length) return 0
@@ -60,7 +69,7 @@ async function loadBank() {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch('/data/driving-license-c1.json')
+    const res = await fetch('/data/driving-license-c4.json')
     if (!res.ok) throw new Error('题库加载失败')
     bank.value = await res.json()
   } catch (e) {
@@ -157,6 +166,7 @@ function selectOption(index) {
   } else {
     answers.value[qid] = [index]
     showExplain.value = true
+    addToWrongBookIfWrong(qid)
   }
 }
 
@@ -169,6 +179,7 @@ function confirmMultiple() {
   }
   error.value = ''
   showExplain.value = true
+  addToWrongBookIfWrong(currentQuestion.value.id)
 }
 
 /** 当前题是否已锁定（单选/判断选中后，或多选提交后） */
@@ -193,6 +204,15 @@ function recordWrongAnswers() {
   const set = new Set(wrongIds.value)
   wrong.forEach(id => set.add(id))
   wrongIds.value = Array.from(set)
+}
+
+/** 如果某题答错，立即加入错题本 */
+function addToWrongBookIfWrong(qid) {
+  if (!qid) return
+  if (isCorrect(qid)) return
+  if (!wrongIds.value.includes(qid)) {
+    wrongIds.value = [...wrongIds.value, qid]
+  }
 }
 
 /** 保存历史 */
@@ -225,6 +245,35 @@ function removeWrong(id) {
 function clearWrong() {
   if (!confirm('确定清空所有错题？')) return
   wrongIds.value = []
+}
+
+/** 导出错题本 */
+function exportWrongBook() {
+  const data = wrongQuestions.value.map(q => ({
+    id: q.id,
+    type: q.type,
+    question: q.question,
+    options: q.options,
+    answer: q.answer,
+    explain: q.explain,
+    picture: q.picture,
+    chapter: q.chapter,
+  }))
+  const payload = {
+    meta: {
+      title: '科目四错题本',
+      exportedAt: new Date().toISOString(),
+      total: data.length,
+    },
+    questions: data,
+  }
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `wrong-book-${new Date().toISOString().slice(0, 10)}.json`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 /** 查看解析 */
@@ -319,7 +368,7 @@ onUnmounted(stopTimer)
 <template>
   <div class="tool-page driving-quiz">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h1>🚗 驾考刷题</h1>
+      <h1>🚗 科目四刷题</h1>
     </div>
 
     <!-- 加载中 -->
@@ -441,7 +490,15 @@ onUnmounted(stopTimer)
 
         <div v-if="showExplain || (currentQuestion?.type !== 'multiple' && isAnswered(currentQuestion?.id))" class="explain-box">
           <strong>正确答案：</strong>{{ currentQuestion.answer.map(i => optionLabel(i)).join('、') }}<br>
-          <strong>解析：</strong>{{ currentQuestion.explain }}
+          <strong>解析：</strong>{{ currentQuestion.explain || '暂无解析' }}
+        </div>
+
+        <div v-if="currentMnemonics.length" class="mnemonic-box">
+          <strong>💡 记忆口诀</strong>
+          <div v-for="(m, i) in currentMnemonics" :key="i" class="mnemonic-item">
+            <div class="mnemonic-title">{{ m.title }}</div>
+            <pre class="mnemonic-content">{{ m.content }}</pre>
+          </div>
         </div>
       </div>
 
@@ -509,7 +566,10 @@ onUnmounted(stopTimer)
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
           <h3 style="font-size:16px">错题本（{{ wrongQuestions.length }} 题）</h3>
-          <button class="btn btn-secondary btn-sm" @click="clearWrong">清空错题</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" @click="exportWrongBook" :disabled="!wrongQuestions.length">导出 JSON</button>
+            <button class="btn btn-secondary btn-sm" @click="clearWrong">清空错题</button>
+          </div>
         </div>
         <div v-if="!wrongQuestions.length" style="color:var(--text-muted);text-align:center;padding:40px">
           暂无错题，继续加油！
@@ -718,6 +778,31 @@ onUnmounted(stopTimer)
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-secondary);
+}
+
+.mnemonic-box {
+  margin-top: 12px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--warning) 10%, var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, var(--warning) 30%, var(--border));
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.mnemonic-item {
+  margin-top: 10px;
+}
+.mnemonic-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.mnemonic-content {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 13px;
 }
 
 .question-grid {

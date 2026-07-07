@@ -349,6 +349,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/restaurant-profit',
+      name: 'restaurant-profit',
+      component: () => import('../views/tools/RestaurantProfitCalculator.vue'),
+      meta: {
+        title: '餐饮盈利计算器',
+        description: '餐饮店盈利测算工具，支持商区类型、营业月数、建店成本、固定成本和毛利率计算盈亏平衡点、保本单数、翻台率和回本周期。'
+      }
+    },
+    {
       path: '/tools/random-generator',
       name: 'random-generator',
       component: () => import('../views/tools/RandomGenerator.vue'),

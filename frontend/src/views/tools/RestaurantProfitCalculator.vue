@@ -401,29 +401,33 @@ function downloadResultsAsImage() {
           <div class="payment-options">
             <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'year' }" @click="rentPaymentMode = 'year'">年付</button>
             <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'half' }" @click="rentPaymentMode = 'half'">半年付</button>
-            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'quarter' }" @click="rentPaymentMode = 'quarter'">3个月1付</button>
-            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'twoMonth' }" @click="rentPaymentMode = 'twoMonth'">2个月1付</button>
-            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'month' }" @click="rentPaymentMode = 'month'">1个月1付</button>
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'quarter' }" @click="rentPaymentMode = 'quarter'">3个月</button>
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'twoMonth' }" @click="rentPaymentMode = 'twoMonth'">2个月</button>
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'month' }" @click="rentPaymentMode = 'month'">1个月</button>
           </div>
           <div v-if="Number(annualRent || 0) > 0" class="payment-hint">
             每次支付：{{ fmtMoney(rentPaymentAmount) }} 元
           </div>
         </div>
-        <div class="form-row">
-          <label>押金（元）</label>
-          <input v-model.number="deposit" type="number" class="input">
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>押金（元）</label>
+            <input v-model.number="deposit" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>转让费/中介费（元）</label>
+            <input v-model.number="transferFee" type="number" class="input">
+          </div>
         </div>
-        <div class="form-row">
-          <label>转让费/中介费（元）</label>
-          <input v-model.number="transferFee" type="number" class="input">
-        </div>
-        <div class="form-row">
-          <label>加盟/技术学习费（元）</label>
-          <input v-model.number="franchiseFee" type="number" class="input">
-        </div>
-        <div class="form-row">
-          <label>装修+广告（元）</label>
-          <input v-model.number="decorationAd" type="number" class="input">
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>加盟/技术学习费（元）</label>
+            <input v-model.number="franchiseFee" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>装修+广告（元）</label>
+            <input v-model.number="decorationAd" type="number" class="input">
+          </div>
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 
 /** 商区类型配置 */
@@ -30,6 +30,7 @@ const tables = useStorage('rpf-tables', 0)
 const customMonths = useStorage('rpf-custom-months', 12)
 const targetDailyOrders = useStorage('rpf-target-daily-orders', 0)
 const businessName = useStorage('rpf-business-name', '')
+const rentPaymentMode = useStorage('rpf-rent-payment-mode', 'year')
 
 /** 移动端折叠状态 */
 const inputCollapsed = useStorage('rpf-input-collapsed', false)
@@ -50,6 +51,20 @@ const actualMonthlyRent = computed(() => Number(annualRent.value || 0) / 12)
 const effectiveMonthlyRent = computed(() => {
   const months = operatingMonths.value || 12
   return Number(annualRent.value || 0) / months
+})
+
+/** 房租每次支付金额 */
+const rentPaymentAmount = computed(() => {
+  const rent = Number(annualRent.value || 0)
+  if (!rent) return 0
+  switch (rentPaymentMode.value) {
+    case 'half': return rent / 2
+    case 'quarter': return rent / 4
+    case 'twoMonth': return rent / 6
+    case 'month': return rent / 12
+    case 'year':
+    default: return rent
+  }
 })
 
 /** 建店成本 */
@@ -161,17 +176,48 @@ function clearAll() {
   customMonths.value = 12
   targetDailyOrders.value = 0
   businessName.value = ''
+  rentPaymentMode.value = 'year'
 }
 
+/** 找到元素所在的实际滚动容器 */
+function getScrollContainer(el) {
+  let node = el.parentElement
+  while (node && node !== document.body) {
+    const style = window.getComputedStyle(node)
+    const overflow = style.overflowY
+    if ((overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay') && node.scrollHeight > node.clientHeight) {
+      return node
+    }
+    node = node.parentElement
+  }
+  return document.scrollingElement || document.documentElement
+}
+
+/** 平滑滚动到指定区块，点击“录入数据”时自动展开输入面板 */
 function scrollToSection(id) {
-  const content = document.querySelector('.content')
   const el = document.getElementById(id)
-  if (!content || !el) return
-  const contentRect = content.getBoundingClientRect()
-  const elRect = el.getBoundingClientRect()
-  const offset = 52
-  const top = content.scrollTop + elRect.top - contentRect.top - offset
-  content.scrollTo({ top, behavior: 'smooth' })
+  if (!el) return
+
+  const doScroll = () => {
+    const container = getScrollContainer(el)
+    const offset = 52
+    let top
+    if (container === document.documentElement || container === document.body || container === document.scrollingElement) {
+      top = el.getBoundingClientRect().top + window.scrollY - offset
+    } else {
+      const cRect = container.getBoundingClientRect()
+      const elRect = el.getBoundingClientRect()
+      top = container.scrollTop + elRect.top - cRect.top - offset
+    }
+    container.scrollTop = top
+  }
+
+  if (id === 'profit-input' && inputCollapsed.value) {
+    inputCollapsed.value = false
+    nextTick(doScroll)
+  } else {
+    doScroll()
+  }
 }
 
 /** 下载测算结果图片 */
@@ -345,6 +391,16 @@ function downloadResultsAsImage() {
         <div class="form-row">
           <label>年房租（元）</label>
           <input v-model.number="annualRent" type="number" class="input">
+          <div class="payment-options">
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'year' }" @click="rentPaymentMode = 'year'">年付</button>
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'half' }" @click="rentPaymentMode = 'half'">半年付</button>
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'quarter' }" @click="rentPaymentMode = 'quarter'">3个月1付</button>
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'twoMonth' }" @click="rentPaymentMode = 'twoMonth'">2个月1付</button>
+            <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'month' }" @click="rentPaymentMode = 'month'">1个月1付</button>
+          </div>
+          <div v-if="Number(annualRent || 0) > 0" class="payment-hint">
+            每次支付：{{ fmtMoney(rentPaymentAmount) }} 元
+          </div>
         </div>
         <div class="form-row">
           <label>押金（元）</label>
@@ -362,13 +418,15 @@ function downloadResultsAsImage() {
           <label>装修+广告（元）</label>
           <input v-model.number="decorationAd" type="number" class="input">
         </div>
-        <div class="form-row">
-          <label>设备（元）</label>
-          <input v-model.number="equipment" type="number" class="input">
-        </div>
-        <div class="form-row">
-          <label>首批物料（元）</label>
-          <input v-model.number="firstBatchMaterial" type="number" class="input">
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>设备（元）</label>
+            <input v-model.number="equipment" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>首批物料（元）</label>
+            <input v-model.number="firstBatchMaterial" type="number" class="input">
+          </div>
         </div>
 
         <div class="section-title">经营成本</div>
@@ -485,8 +543,8 @@ function downloadResultsAsImage() {
           </div>
         </div>
 
-        <div class="card result-card">
-          <div class="section-title formula-title" @click="formulaCollapsed = !formulaCollapsed">
+        <div class="card result-card" :class="{ 'formula-collapsed': formulaCollapsed }">
+          <div class="section-title formula-title" :class="{ 'collapsed': formulaCollapsed }" @click="formulaCollapsed = !formulaCollapsed">
             公式说明
             <span class="toggle-icon">{{ formulaCollapsed ? '▶' : '▼' }}</span>
           </div>
@@ -593,6 +651,13 @@ function downloadResultsAsImage() {
   font-size: 12px;
   color: var(--text-secondary);
 }
+.formula-title.collapsed {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.result-card.formula-collapsed {
+  padding-bottom: 8px;
+}
 
 .restaurant-profit {
   max-width: 1200px;
@@ -695,6 +760,31 @@ function downloadResultsAsImage() {
 }
 .download-bar {
   margin-top: 16px;
+}
+.payment-options {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.payment-option {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.payment-option.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.payment-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .result-panel {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import {
   resolveMonthlyFixedCost,
@@ -33,6 +33,27 @@ const effectiveMonthlyFixedCost = computed(() =>
     yearlyFixedCost: yearlyFixedCost.value,
   })
 )
+
+/** 月/年固定成本联动：改一方时自动换算另一方 */
+const isUpdatingFixedCost = ref(false)
+
+watch(monthlyFixedCost, (val) => {
+  if (isUpdatingFixedCost.value) return
+  isUpdatingFixedCost.value = true
+  yearlyFixedCost.value = Number(val || 0) * 12
+  nextTick(() => {
+    isUpdatingFixedCost.value = false
+  })
+})
+
+watch(yearlyFixedCost, (val) => {
+  if (isUpdatingFixedCost.value) return
+  isUpdatingFixedCost.value = true
+  monthlyFixedCost.value = Number(val || 0) / 12
+  nextTick(() => {
+    isUpdatingFixedCost.value = false
+  })
+})
 
 const result = computed(() => {
   const common = {

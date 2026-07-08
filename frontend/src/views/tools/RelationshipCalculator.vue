@@ -741,15 +741,29 @@ watch([sex, region, reverse], () => {
   }
   .tab-btn {
     flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 4px 10px;
     padding: 12px;
+    min-width: auto;
   }
   .tab-icon {
     font-size: 20px;
+    flex-shrink: 0;
   }
   .tab-text {
-    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .tab-desc {
+    width: 100%;
+    font-size: 12px;
+    opacity: 0.8;
+    text-align: left;
+    padding-left: 30px;
+    box-sizing: border-box;
   }
   .options-bar {
     flex-direction: column;

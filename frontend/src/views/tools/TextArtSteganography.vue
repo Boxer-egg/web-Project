@@ -211,6 +211,30 @@ function pasteHidden() {
     </template>
 
     <div v-if="error" class="error-msg">❌ {{ error }}</div>
+
+    <div class="card help-card">
+      <h3>💡 使用说明</h3>
+      <template v-if="mode === 'decorate'">
+        <p>在上方输入普通文本，选择喜欢的颜文字模板，即可把文字装饰成可爱风格。结果可直接复制到聊天、社交平台使用。</p>
+      </template>
+      <template v-else-if="mode === 'hide'">
+        <p>
+          <strong>文字隐写</strong>会把“秘密信息”嵌入到“载体文本”中，生成一段看起来和原文几乎一样的文本。
+          嵌入使用的是零宽字符（肉眼不可见、不占宽度），所以这段文本复制粘贴后仍能保留隐藏内容。
+        </p>
+        <ul>
+          <li><strong>载体文本</strong>：别人看到的公开内容，建议不要太短。</li>
+          <li><strong>秘密信息</strong>：你想悄悄传递的内容。</li>
+          <li>生成后复制“携带隐藏信息的文本”发给对方即可。</li>
+        </ul>
+      </template>
+      <template v-else-if="mode === 'extract'">
+        <p>
+          把别人发给你的、携带零宽字符的文本粘贴到左侧输入框，点击“提取”，就能把里面隐藏的信息还原出来。
+          如果文本里检测到了零宽字符，下方会提示“检测到零宽字符”。
+        </p>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -248,6 +272,32 @@ function pasteHidden() {
   margin-top: 8px;
   font-size: 13px;
   color: var(--accent);
+}
+.help-card {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-secondary);
+}
+.help-card h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.help-card p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.help-card ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.help-card li {
+  margin-bottom: 4px;
 }
 .error-msg {
   color: var(--error);

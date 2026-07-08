@@ -99,6 +99,9 @@ onMounted(() => {
           <div style="display:flex;gap:6px">
             <button v-for="l in ['L','M','Q','H']" :key="l" class="btn btn-sm" :class="{ 'btn-secondary': level !== l }" @click="level=l">{{ l }}</button>
           </div>
+          <p style="margin:6px 0 0;font-size:12px;color:var(--text-muted);line-height:1.5">
+            L≈7%（低）、M≈15%（中）、Q≈25%（较高）、H≈30%（高）。级别越高，二维码被遮挡或污损后仍能识别的概率越大，但码点会更密集。
+          </p>
         </div>
         <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
           <div>

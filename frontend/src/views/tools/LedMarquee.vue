@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { getUrlParams, applyParams } from '../../utils/urlParams'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
@@ -16,6 +16,9 @@ const direction = useStorage('led-direction', 'left')
 
 const isFullscreen = ref(false)
 const fullscreenEl = ref(null)
+
+/** 移动端自动启用竖屏大字模式 */
+const isMobile = ref(false)
 
 // ============================================================
 // Computed
@@ -66,6 +69,12 @@ function onKeydown(e) {
 onMounted(() => {
   document.addEventListener('fullscreenchange', onFullscreenChange)
   window.addEventListener('keydown', onKeydown)
+
+  // 移动端默认使用竖屏大字模式
+  isMobile.value = window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 768
+  if (isMobile.value && (direction.value === 'left' || direction.value === 'right')) {
+    direction.value = 'up'
+  }
 
   const params = getUrlParams()
   applyParams(params, {
@@ -140,16 +149,30 @@ onUnmounted(() => {
         <div class="input-group">
           <label>滚动方向</label>
           <div class="direction-btns">
-            <button
-              v-for="d in ['left', 'right', 'up', 'down']"
-              :key="d"
-              class="btn btn-sm"
-              :class="{ 'btn-secondary': direction !== d }"
-              @click="direction = d"
-            >
-              {{ d === 'left' ? '← 向左' : d === 'right' ? '→ 向右' : d === 'up' ? '↑ 向上' : '↓ 向下' }}
-            </button>
+            <template v-if="isMobile">
+              <button
+                v-for="d in ['up', 'down']"
+                :key="d"
+                class="btn btn-sm"
+                :class="{ 'btn-secondary': direction !== d }"
+                @click="direction = d"
+              >
+                {{ d === 'up' ? '↑ 向上' : '↓ 向下' }}
+              </button>
+            </template>
+            <template v-else>
+              <button
+                v-for="d in ['left', 'right', 'up', 'down']"
+                :key="d"
+                class="btn btn-sm"
+                :class="{ 'btn-secondary': direction !== d }"
+                @click="direction = d"
+              >
+                {{ d === 'left' ? '← 向左' : d === 'right' ? '→ 向右' : d === 'up' ? '↑ 向上' : '↓ 向下' }}
+              </button>
+            </template>
           </div>
+          <p v-if="isMobile" style="margin:6px 0 0;font-size:12px;color:var(--text-muted)">移动端已自动切换为竖屏大字模式。</p>
         </div>
 
         <div class="tool-actions">
@@ -166,7 +189,7 @@ onUnmounted(() => {
             color: textColor,
             fontSize: fontSize + 'px',
             flexDirection: isVertical ? 'column' : 'row',
-            alignItems: isVertical ? 'flex-start' : 'center',
+            alignItems: 'center',
             justifyContent: isVertical ? 'center' : 'flex-start',
             overflow: 'hidden',
           }"
@@ -179,7 +202,7 @@ onUnmounted(() => {
               animationTimingFunction: 'linear',
               animationIterationCount: 'infinite',
               whiteSpace: isVertical ? 'normal' : 'nowrap',
-              writingMode: isVertical ? 'horizontal-tb' : 'horizontal-tb',
+              writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
             }"
           >
             {{ text || ' ' }}
@@ -198,7 +221,7 @@ onUnmounted(() => {
         fontSize: fontSize + 'px',
         display: isFullscreen ? 'flex' : 'none',
         flexDirection: isVertical ? 'column' : 'row',
-        alignItems: isVertical ? 'flex-start' : 'center',
+        alignItems: 'center',
         justifyContent: isVertical ? 'center' : 'flex-start',
       }"
       @click="exitFullscreen"
@@ -211,6 +234,7 @@ onUnmounted(() => {
           animationTimingFunction: 'linear',
           animationIterationCount: 'infinite',
           whiteSpace: isVertical ? 'normal' : 'nowrap',
+          writingMode: isVertical ? 'vertical-rl' : 'horizontal-tb',
         }"
       >
         {{ text || ' ' }}

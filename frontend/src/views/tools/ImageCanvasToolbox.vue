@@ -1,12 +1,12 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, shallowRef } from 'vue'
 import { useStorage } from '@vueuse/core'
 import JSZip from 'jszip'
 
 // ============================================================
 // State
 // ============================================================
-const originalImage = ref(null) // Image object
+const originalImage = shallowRef(null) // Image object
 const originalFileName = ref('')
 const originalFileType = ref('')
 
@@ -49,21 +49,35 @@ const POSITIONS = [
 // ============================================================
 const hasImage = computed(() => !!originalImage.value)
 
-const processedCanvas = computed(() => {
-  if (!originalImage.value || !canvasRef.value) return null
+const processedDataUrl = computed(() => {
+  if (!originalImage.value || !canvasRef.value) return ''
+  const mime = formatToMime(outputFormat.value)
+  return canvasRef.value.toDataURL(mime, Math.max(0, Math.min(1, Number(quality.value) || 0.8)))
+})
+
+const outputExt = computed(() => {
+  if (outputFormat.value === 'jpeg') return 'jpg'
+  return outputFormat.value
+})
+
+// ============================================================
+// Canvas rendering
+// ============================================================
+function renderCanvas() {
+  if (!originalImage.value || !canvasRef.value) return
   const canvas = canvasRef.value
   const ctx = canvas.getContext('2d')
-  if (!ctx) return null
+  if (!ctx) return
 
   let w = originalImage.value.naturalWidth
   let h = originalImage.value.naturalHeight
 
-  // Resize
+  // Resize (fit within maxWidth/maxHeight, supports both downscale and upscale)
   if (isResize.value && maxWidth.value > 0 && maxHeight.value > 0) {
-    const ratio = Math.min(maxWidth.value / w, maxHeight.value / h, 1)
-    if (ratio < 1) {
-      w = Math.round(w * ratio)
-      h = Math.round(h * ratio)
+    const ratio = Math.min(maxWidth.value / w, maxHeight.value / h)
+    if (ratio > 0 && ratio !== 1) {
+      w = Math.max(1, Math.round(w * ratio))
+      h = Math.max(1, Math.round(h * ratio))
     }
   }
 
@@ -91,20 +105,32 @@ const processedCanvas = computed(() => {
   if (isWatermark.value && watermarkText.value) {
     drawWatermark(ctx, w, h)
   }
+}
 
-  return canvas
-})
-
-const processedDataUrl = computed(() => {
-  if (!processedCanvas.value) return ''
-  const mime = formatToMime(outputFormat.value)
-  return processedCanvas.value.toDataURL(mime, Math.max(0, Math.min(1, Number(quality.value) || 0.8)))
-})
-
-const outputExt = computed(() => {
-  if (outputFormat.value === 'jpeg') return 'jpg'
-  return outputFormat.value
-})
+watch(
+  [
+    originalImage,
+    canvasRef,
+    isResize,
+    maxWidth,
+    maxHeight,
+    isPixelate,
+    pixelateSize,
+    isGrayscale,
+    isBlackWhite,
+    isWatermark,
+    watermarkText,
+    watermarkPosition,
+    watermarkColor,
+    watermarkSize,
+    outputFormat,
+    quality,
+  ],
+  () => {
+    nextTick(renderCanvas)
+  },
+  { deep: true }
+)
 
 // ============================================================
 // Helpers

@@ -44,6 +44,8 @@ const tools = [
   { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', desc: '中文与火星文互相转换', category: '文本' },
   { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', desc: '颜文字装饰与零宽字符文字隐写', category: '文本' },
   { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', desc: '离线查询邮编、车牌归属地、电话区号', category: '转换' },
+  { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', desc: '开店成本、盈亏平衡、回本周期测算', category: '商业' },
+  { path: '/tools/restaurant-profit-reverse', name: '餐饮反向调研', icon: '🕵️‍♂️', desc: '通过单一数据反推竞品营收与翻台率', category: '商业' },
   { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', desc: '常见生活垃圾所属分类与投放提示', category: '健康' },
   { path: '/tools/blood-type', name: '血型遗传', icon: '🩸', desc: '根据父母血型推算子女可能血型及概率', category: '健康' },
   { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', desc: '根据生产日期和保质期计算过期日期', category: '转换' },
@@ -147,6 +149,16 @@ const categories = [
       '/driving/quiz',
       '/driving/traffic-signs',
       '/driving/jk',
+    ]
+  },
+  {
+    key: 'business',
+    name: '商业测算',
+    icon: '📊',
+    desc: '餐饮盈利测算与竞品反向调研工具',
+    paths: [
+      '/tools/restaurant-profit',
+      '/tools/restaurant-profit-reverse',
     ]
   }
 ]

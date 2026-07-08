@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 
 /** 商区类型配置 */
@@ -21,7 +21,8 @@ const franchiseFee = useStorage('rpf-franchise-fee', 0)
 const decorationAd = useStorage('rpf-decoration-ad', 0)
 const equipment = useStorage('rpf-equipment', 0)
 const firstBatchMaterial = useStorage('rpf-first-batch-material', 0)
-const monthlyLabor = useStorage('rpf-monthly-labor', 0)
+const laborAvgSalary = useStorage('rpf-labor-avg-salary', 0)
+const laborHeadcount = useStorage('rpf-labor-headcount', 0)
 const monthlyUtilities = useStorage('rpf-monthly-utilities', 0)
 const grossMargin = useStorage('rpf-gross-margin', 0)
 const avgTicket = useStorage('rpf-avg-ticket', 0)
@@ -34,7 +35,200 @@ const rentPaymentMode = useStorage('rpf-rent-payment-mode', 'year')
 
 /** 移动端折叠状态 */
 const inputCollapsed = useStorage('rpf-input-collapsed', false)
-const formulaCollapsed = ref(true)
+
+/** 每月人工 = 平均工资 × 人数 */
+const monthlyLabor = computed(() => Number(laborAvgSalary.value || 0) * Number(laborHeadcount.value || 0))
+
+/** 撤消/重做状态 */
+const history = ref([])
+const historyIndex = ref(-1)
+const isUndoing = ref(false)
+
+const snapshotableRefs = {
+  districtType,
+  area,
+  annualRent,
+  deposit,
+  transferFee,
+  franchiseFee,
+  decorationAd,
+  equipment,
+  firstBatchMaterial,
+  laborAvgSalary,
+  laborHeadcount,
+  monthlyUtilities,
+  grossMargin,
+  avgTicket,
+  seats,
+  tables,
+  customMonths,
+  targetDailyOrders,
+  businessName,
+  rentPaymentMode,
+}
+
+function getSnapshot() {
+  const snapshot = {}
+  for (const [key, r] of Object.entries(snapshotableRefs)) {
+    snapshot[key] = r.value
+  }
+  return snapshot
+}
+
+function applySnapshot(snapshot) {
+  isUndoing.value = true
+  for (const [key, value] of Object.entries(snapshot)) {
+    if (snapshotableRefs[key]) {
+      snapshotableRefs[key].value = value
+    }
+  }
+  nextTick(() => {
+    isUndoing.value = false
+  })
+}
+
+function pushHistory() {
+  if (isUndoing.value) return
+  const snapshot = getSnapshot()
+  // 如果和当前状态一致，不重复入栈
+  if (historyIndex.value >= 0) {
+    const current = history.value[historyIndex.value]
+    if (JSON.stringify(current) === JSON.stringify(snapshot)) return
+  }
+  // 撤销到中间状态后，丢弃后面的历史
+  if (historyIndex.value < history.value.length - 1) {
+    history.value = history.value.slice(0, historyIndex.value + 1)
+  }
+  history.value.push(snapshot)
+  historyIndex.value = history.value.length - 1
+  // 限制历史长度
+  if (history.value.length > 50) {
+    history.value.shift()
+    historyIndex.value--
+  }
+}
+
+function undo() {
+  if (historyIndex.value > 0) {
+    historyIndex.value--
+    applySnapshot(history.value[historyIndex.value])
+  }
+}
+
+function redo() {
+  if (historyIndex.value < history.value.length - 1) {
+    historyIndex.value++
+    applySnapshot(history.value[historyIndex.value])
+  }
+}
+
+const canUndo = computed(() => historyIndex.value > 0)
+const canRedo = computed(() => historyIndex.value < history.value.length - 1)
+
+// 监听输入变化，自动保存历史
+watch(
+  () => getSnapshot(),
+  () => pushHistory(),
+  { deep: true, flush: 'post' }
+)
+
+// 初始化历史
+history.value.push(getSnapshot())
+historyIndex.value = 0
+
+/** 明细弹窗状态 */
+const detailPopup = ref({
+  visible: false,
+  title: '',
+  rows: [],
+})
+
+function showDetailPopup(title, rows) {
+  detailPopup.value = { visible: true, title, rows }
+}
+
+function closeDetailPopup() {
+  detailPopup.value.visible = false
+}
+
+/** 带明细的字段配置 */
+const detailFields = computed(() => ({
+  buildCost: {
+    title: '建店成本明细',
+    rows: [
+      ['押金', fmtMoney(deposit.value), '元'],
+      ['转让费/中介费', fmtMoney(transferFee.value), '元'],
+      ['加盟/技术学习费', fmtMoney(franchiseFee.value), '元'],
+      ['装修+广告', fmtMoney(decorationAd.value), '元'],
+      ['设备', fmtMoney(equipment.value), '元'],
+      ['首批物料', fmtMoney(firstBatchMaterial.value), '元'],
+      ['合计', fmtMoney(buildCost.value), '元'],
+    ],
+  },
+  monthlyFixedCost: {
+    title: '月固定成本明细',
+    rows: [
+      ['每月有效房租', fmtMoney(effectiveMonthlyRent.value), '元'],
+      ['每月人工', fmtMoney(monthlyLabor.value), '元'],
+      ['水/电/杂费', fmtMoney(monthlyUtilities.value), '元'],
+      ['合计', fmtMoney(monthlyFixedCost.value), '元'],
+    ],
+  },
+  dailyFixedCost: {
+    title: '日固定成本明细',
+    rows: [
+      ['月固定成本', fmtMoney(monthlyFixedCost.value), '元'],
+      ['÷ 30 天', '', ''],
+      ['日固定成本', fmtMoney(dailyFixedCost.value), '元'],
+    ],
+  },
+  dailyBreakEvenRevenue: {
+    title: '日盈亏平衡营业额明细',
+    rows: [
+      ['日固定成本', fmtMoney(dailyFixedCost.value), '元'],
+      ['÷ 毛利率', fmtPercent(grossMargin.value), ''],
+      ['日盈亏平衡营业额', fmtMoney(dailyBreakEvenRevenue.value), '元'],
+    ],
+  },
+  dailyBreakEvenOrders: {
+    title: '保本日单数明细',
+    rows: [
+      ['日盈亏平衡营业额', fmtMoney(dailyBreakEvenRevenue.value), '元'],
+      ['÷ 平均客单价', fmtMoney(avgTicket.value), '元'],
+      ['保本日单数', fmtNumber(dailyBreakEvenOrders.value, 1), '单'],
+    ],
+  },
+  turnoverRate: {
+    title: '翻台率明细',
+    rows: [
+      ['保本日单数', fmtNumber(dailyBreakEvenOrders.value, 1), '单'],
+      ['÷ 座位数', fmtNumber(seats.value, 0), '个'],
+      ['翻台率', fmtNumber(turnoverRate.value, 2), ''],
+    ],
+  },
+  targetMonthlyNetProfit: {
+    title: '目标月净利润明细',
+    rows: [
+      ['目标日单数', fmtNumber(targetDailyOrders.value, 0), '单'],
+      ['× 平均客单价', fmtMoney(avgTicket.value), '元'],
+      ['= 目标日营收', fmtMoney(targetDailyRevenue.value), '元'],
+      ['× 30 天', '30', '天'],
+      ['= 目标月营收', fmtMoney(targetMonthlyRevenue.value), '元'],
+      ['× 毛利率', fmtPercent(grossMargin.value), ''],
+      ['= 目标月毛利', fmtMoney(targetMonthlyGrossProfit.value), '元'],
+      ['- 月固定成本', fmtMoney(monthlyFixedCost.value), '元'],
+      ['= 目标月净利润', fmtMoney(targetMonthlyNetProfit.value), '元'],
+    ],
+  },
+  paybackMonths: {
+    title: '回本周期明细',
+    rows: [
+      ['建店成本', fmtMoney(buildCost.value), '元'],
+      ['÷ 目标月净利润', fmtMoney(targetMonthlyNetProfit.value), '元'],
+      ['回本周期', paybackMonths.value === Infinity ? '无法回本' : fmtNumber(paybackMonths.value, 1), '个月'],
+    ],
+  },
+}))
 
 const selectedDistrict = computed(() =>
   DISTRICT_TYPES.find(d => d.key === districtType.value) || DISTRICT_TYPES[0]
@@ -146,7 +340,8 @@ function loadExample() {
   decorationAd.value = 15000
   equipment.value = 3000
   firstBatchMaterial.value = 5000
-  monthlyLabor.value = 5400
+  laborAvgSalary.value = 2700
+  laborHeadcount.value = 2
   monthlyUtilities.value = 1500
   grossMargin.value = 0.5
   avgTicket.value = 17
@@ -167,7 +362,8 @@ function clearAll() {
   decorationAd.value = 0
   equipment.value = 0
   firstBatchMaterial.value = 0
-  monthlyLabor.value = 0
+  laborAvgSalary.value = 0
+  laborHeadcount.value = 0
   monthlyUtilities.value = 0
   grossMargin.value = 0
   avgTicket.value = 0
@@ -355,7 +551,8 @@ function downloadResultsAsImage() {
 
   const link = document.createElement('a')
   link.href = exportCanvas.toDataURL('image/png')
-  link.download = `餐饮盈利测算-${new Date().toISOString().slice(0, 10)}.png`
+  const filenameBase = businessName.value ? businessName.value : '餐饮盈利测算'
+  link.download = `${filenameBase}-${new Date().toISOString().slice(0, 10)}.png`
   link.click()
 }
 </script>
@@ -365,6 +562,11 @@ function downloadResultsAsImage() {
     <div class="tool-header">
       <h1>🍜 餐饮盈利计算器</h1>
       <p class="tool-desc">输入开店成本和经营参数，自动计算盈亏平衡点、保本单数、翻台率和回本周期。</p>
+
+      <div class="history-bar">
+        <button class="btn btn-sm" :disabled="!canUndo" @click="undo">↩ 撤消</button>
+        <button class="btn btn-sm" :disabled="!canRedo" @click="redo">↪ 重做</button>
+      </div>
     </div>
 
     <div class="mobile-toggle-bar">
@@ -421,16 +623,6 @@ function downloadResultsAsImage() {
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">
-            <label>加盟/技术学习费（元）</label>
-            <input v-model.number="franchiseFee" type="number" class="input">
-          </div>
-          <div class="form-col">
-            <label>装修+广告（元）</label>
-            <input v-model.number="decorationAd" type="number" class="input">
-          </div>
-        </div>
-        <div class="form-row form-row-2col">
-          <div class="form-col">
             <label>设备（元）</label>
             <input v-model.number="equipment" type="number" class="input">
           </div>
@@ -439,25 +631,44 @@ function downloadResultsAsImage() {
             <input v-model.number="firstBatchMaterial" type="number" class="input">
           </div>
         </div>
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>加盟/技术学习费（元）</label>
+            <input v-model.number="franchiseFee" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>装修+广告（元）</label>
+            <input v-model.number="decorationAd" type="number" class="input">
+          </div>
+        </div>
 
         <div class="section-title">经营成本</div>
         <div class="form-row form-row-2col">
           <div class="form-col">
-            <label>每月人工（元）</label>
-            <input v-model.number="monthlyLabor" type="number" class="input">
+            <label>平均工资（元）</label>
+            <input v-model.number="laborAvgSalary" type="number" class="input">
           </div>
+          <div class="form-col">
+            <label>人数</label>
+            <input v-model.number="laborHeadcount" type="number" class="input">
+          </div>
+        </div>
+        <div class="form-row form-row-2col">
           <div class="form-col">
             <label>水/电/杂费（元/月）</label>
             <input v-model.number="monthlyUtilities" type="number" class="input">
           </div>
+          <div class="form-col">
+            <label>毛利率</label>
+            <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input">
+          </div>
         </div>
-        <div class="form-row">
-          <label>毛利率</label>
-          <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input">
+        <div class="labor-hint">
+          每月人工 = {{ fmtMoney(laborAvgSalary) }} × {{ laborHeadcount || 0 }} = {{ fmtMoney(monthlyLabor) }} 元
         </div>
 
         <div class="section-title">营业参数</div>
-        <div class="form-row form-row-2col">
+        <div class="form-row form-row-3col">
           <div class="form-col">
             <label>桌数</label>
             <input v-model.number="tables" type="number" class="input">
@@ -466,15 +677,21 @@ function downloadResultsAsImage() {
             <label>座位数</label>
             <input v-model.number="seats" type="number" class="input">
           </div>
-        </div>
-        <div class="form-row form-row-2col">
           <div class="form-col">
             <label>平均客单价（元）</label>
             <input v-model.number="avgTicket" type="number" class="input">
           </div>
+        </div>
+        <div class="form-row form-row-2col">
           <div class="form-col">
             <label>目标日单数</label>
             <input v-model.number="targetDailyOrders" type="number" class="input">
+          </div>
+          <div class="form-col">
+            <label>目标月净利润（元）</label>
+            <div class="computed-value" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }">
+              {{ fmtMoney(targetMonthlyNetProfit) }}
+            </div>
           </div>
         </div>
         <div class="form-row">
@@ -493,7 +710,7 @@ function downloadResultsAsImage() {
         <div id="core-results" class="card result-card">
           <div class="section-title">核心结果</div>
           <div class="metric-grid">
-            <div class="metric">
+            <div class="metric clickable" @click="showDetailPopup(detailFields.buildCost.title, detailFields.buildCost.rows)">
               <div class="metric-value">{{ fmtMoney(buildCost) }}</div>
               <div class="metric-label">建店成本（元）</div>
             </div>
@@ -501,15 +718,15 @@ function downloadResultsAsImage() {
               <div class="metric-value">{{ fmtMoney(effectiveMonthlyRent) }}</div>
               <div class="metric-label">每月有效房租（实际 {{ fmtMoney(actualMonthlyRent) }}）</div>
             </div>
-            <div class="metric">
+            <div class="metric clickable" @click="showDetailPopup(detailFields.monthlyFixedCost.title, detailFields.monthlyFixedCost.rows)">
               <div class="metric-value">{{ fmtMoney(monthlyFixedCost) }}</div>
               <div class="metric-label">月固定成本（元）</div>
             </div>
-            <div class="metric">
+            <div class="metric clickable" @click="showDetailPopup(detailFields.dailyFixedCost.title, detailFields.dailyFixedCost.rows)">
               <div class="metric-value">{{ fmtMoney(dailyFixedCost) }}</div>
               <div class="metric-label">日固定成本（元）</div>
             </div>
-            <div class="metric highlight">
+            <div class="metric highlight clickable" @click="showDetailPopup(detailFields.dailyBreakEvenRevenue.title, detailFields.dailyBreakEvenRevenue.rows)">
               <div class="metric-value">{{ fmtMoney(dailyBreakEvenRevenue) }}</div>
               <div class="metric-label">日盈亏平衡营业额（元）</div>
             </div>
@@ -517,11 +734,11 @@ function downloadResultsAsImage() {
               <div class="metric-value">{{ fmtMoney(monthlyBreakEvenRevenue) }}</div>
               <div class="metric-label">月平衡营业额（元）</div>
             </div>
-            <div class="metric highlight">
+            <div class="metric highlight clickable" @click="showDetailPopup(detailFields.dailyBreakEvenOrders.title, detailFields.dailyBreakEvenOrders.rows)">
               <div class="metric-value">{{ fmtNumber(dailyBreakEvenOrders, 1) }}</div>
               <div class="metric-label">保本日单数（单）</div>
             </div>
-            <div class="metric highlight">
+            <div class="metric highlight clickable" @click="showDetailPopup(detailFields.turnoverRate.title, detailFields.turnoverRate.rows)">
               <div class="metric-value">{{ fmtNumber(turnoverRate, 2) }}</div>
               <div class="metric-label">翻台率（单/座位）</div>
             </div>
@@ -543,33 +760,14 @@ function downloadResultsAsImage() {
               <div class="metric-value">{{ fmtMoney(targetMonthlyGrossProfit) }}</div>
               <div class="metric-label">目标月毛利（元）</div>
             </div>
-            <div class="metric" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }">
+            <div class="metric clickable" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.rows)">
               <div class="metric-value">{{ fmtMoney(targetMonthlyNetProfit) }}</div>
               <div class="metric-label">目标月净利润（元）</div>
             </div>
-            <div class="metric">
+            <div class="metric clickable" @click="showDetailPopup(detailFields.paybackMonths.title, detailFields.paybackMonths.rows)">
               <div class="metric-value">{{ paybackMonths === Infinity ? '无法回本' : fmtNumber(paybackMonths, 1) }}</div>
               <div class="metric-label">回本周期（月）</div>
             </div>
-          </div>
-        </div>
-
-        <div class="card result-card" :class="{ 'formula-collapsed': formulaCollapsed }">
-          <div class="section-title formula-title" :class="{ 'collapsed': formulaCollapsed }" @click="formulaCollapsed = !formulaCollapsed">
-            公式说明
-            <span class="toggle-icon">{{ formulaCollapsed ? '▶' : '▼' }}</span>
-          </div>
-          <div v-show="!formulaCollapsed">
-            <ul class="formula-list">
-              <li><strong>每月有效房租</strong> = 年房租 ÷ 有效营业月数</li>
-              <li><strong>建店成本</strong> = 押金 + 转让费 + 加盟费 + 装修广告 + 设备 + 首批物料</li>
-              <li><strong>月固定成本</strong> = 每月有效房租 + 人工 + 水电杂费</li>
-              <li><strong>日固定成本</strong> = 月固定成本 ÷ 30</li>
-              <li><strong>日盈亏平衡营业额</strong> = 日固定成本 ÷ 毛利率</li>
-              <li><strong>保本日单数</strong> = 日盈亏平衡营业额 ÷ 平均客单价</li>
-              <li><strong>翻台率</strong> = 保本日单数 ÷ 座位数</li>
-              <li><strong>回本周期</strong> = 建店成本 ÷ 目标月净利润</li>
-            </ul>
           </div>
         </div>
 
@@ -578,6 +776,28 @@ function downloadResultsAsImage() {
         </div>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="detailPopup.visible" class="detail-popup-overlay" @click.self="closeDetailPopup">
+        <div class="detail-popup">
+          <div class="detail-popup-header">
+            <h3>{{ detailPopup.title }}</h3>
+            <button class="detail-popup-close" @click="closeDetailPopup">×</button>
+          </div>
+          <div class="detail-popup-body">
+            <div
+              v-for="(row, idx) in detailPopup.rows"
+              :key="idx"
+              class="detail-row"
+              :class="{ 'detail-row-total': idx === detailPopup.rows.length - 1 }"
+            >
+              <span class="detail-label">{{ row[0] }}</span>
+              <span class="detail-value">{{ row[1] }} <span class="detail-unit">{{ row[2] }}</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <nav class="bottom-nav">
       <button @click="scrollToSection('profit-input')">录入数据</button>
@@ -593,6 +813,311 @@ function downloadResultsAsImage() {
 }
 .bottom-nav {
   display: none;
+}
+
+.restaurant-profit {
+  max-width: 1200px;
+}
+.tool-desc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 4px;
+  margin-bottom: 16px;
+}
+.history-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.history-bar .btn-sm {
+  font-size: 13px;
+  padding: 5px 10px;
+}
+.history-bar .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+}
+
+/* 隐藏 number 输入框的上下箭头 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.input-panel {
+  padding: 20px;
+  height: fit-content;
+}
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 20px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.section-title:first-child {
+  margin-top: 0;
+}
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.form-row label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.form-row.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.form-row.form-row-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.computed-value {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+.district-row {
+  margin-bottom: 6px;
+}
+.district-inputs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.district-select {
+  flex: 1;
+}
+.input-months {
+  width: 70px;
+  flex-shrink: 0;
+}
+.input-unit {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.district-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: -6px 0 10px;
+  line-height: 1.5;
+}
+.input,
+.select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+.download-bar {
+  margin-top: 16px;
+}
+.payment-options {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.payment-option {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.payment-option.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.payment-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.labor-hint {
+  margin-top: -6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 8px 10px;
+  border-radius: var(--radius);
+}
+
+.result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.result-card {
+  padding: 20px;
+}
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+.metric {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+}
+.metric.clickable {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.metric.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.metric.clickable::after {
+  content: 'ℹ';
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1;
+}
+.metric.highlight {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+}
+.metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.metric-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.text-success .metric-value {
+  color: var(--success);
+}
+.text-error .metric-value {
+  color: var(--error);
+}
+
+/* 详情弹窗 */
+.detail-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+.detail-popup {
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 380px;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.detail-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-popup-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+.detail-popup-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1;
+}
+.detail-popup-body {
+  padding: 12px 16px;
+  overflow-y: auto;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px dashed var(--border);
+}
+.detail-row:last-child {
+  border-bottom: none;
+}
+.detail-row-total {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+}
+.detail-label {
+  color: var(--text-secondary);
+}
+.detail-value {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: right;
+}
+.detail-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 @media (max-width: 900px) {
@@ -612,6 +1137,7 @@ function downloadResultsAsImage() {
     padding: 6px 12px;
   }
   .calculator-layout {
+    grid-template-columns: 1fr;
     margin-top: 44px;
   }
   .restaurant-profit {
@@ -649,202 +1175,34 @@ function downloadResultsAsImage() {
   .bottom-nav button:focus-visible {
     color: var(--accent);
   }
-}
-
-.formula-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-}
-.toggle-icon {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.formula-title.collapsed {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-.result-card.formula-collapsed {
-  padding-bottom: 8px;
-}
-
-.restaurant-profit {
-  max-width: 1200px;
-}
-.tool-desc {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-top: 4px;
-}
-.calculator-layout {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 20px;
-}
-@media (max-width: 900px) {
-  .calculator-layout {
-    grid-template-columns: 1fr;
+  .metric-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .metric {
+    padding: 12px 8px;
+  }
+  .metric-value {
+    font-size: 18px;
+  }
+  .metric-label {
+    font-size: 11px;
+  }
+  .form-row.form-row-3col {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .form-row.form-row-3col .form-col label {
+    font-size: 12px;
+  }
+  .form-row.form-row-3col .input {
+    padding: 8px 6px;
   }
 }
 
-.input-panel {
-  padding: 20px;
-  height: fit-content;
-}
-.section-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 20px 0 12px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.section-title:first-child {
-  margin-top: 0;
-}
-.form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-.form-row label {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.form-row.form-row-2col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.form-col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.district-row {
-  margin-bottom: 6px;
-}
-.district-inputs {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.district-select {
-  flex: 1;
-}
-.input-months {
-  width: 70px;
-  flex-shrink: 0;
-}
-.input-unit {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.district-note {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 0 0 10px;
-  line-height: 1.5;
-}
-.input,
-.select {
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 14px;
-}
-.district-note {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: -6px 0 10px;
-  line-height: 1.5;
-}
-.form-actions {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
-}
-.download-bar {
-  margin-top: 16px;
-}
-.payment-options {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-.payment-option {
-  padding: 4px 10px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.payment-option.active {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-.payment-hint {
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.result-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.result-card {
-  padding: 20px;
-}
-.metric-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-}
-.metric {
-  background: var(--bg-secondary);
-  border-radius: var(--radius);
-  padding: 14px;
-  text-align: center;
-}
-.metric.highlight {
-  background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
-  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
-}
-.metric-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-.metric-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-.text-success .metric-value {
-  color: var(--success);
-}
-.text-error .metric-value {
-  color: var(--error);
-}
-.formula-list {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 13px;
-  line-height: 1.8;
-  color: var(--text-secondary);
-}
-.formula-list strong {
-  color: var(--text-primary);
+@media (max-width: 360px) {
+  .form-row.form-row-3col {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -143,7 +143,7 @@ function findActiveGroupTitle() {
   for (const group of groups) {
     if (!group.title) continue
     const active = group.tools.some(tool =>
-      tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path)
+      route.path === tool.path
     )
     if (active) return group.title
   }
@@ -235,7 +235,7 @@ watch(() => route.path, expandActiveGroup)
               :key="tool.path"
               :to="tool.path"
               class="nav-item"
-              :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
+              :class="{ active: route.path === tool.path }"
               :title="tool.name"
             >
               <span class="nav-icon">{{ tool.icon }}</span>
@@ -262,7 +262,7 @@ watch(() => route.path, expandActiveGroup)
                 :key="tool.path"
                 :to="tool.path"
                 class="nav-item"
-                :class="{ active: tool.path === '/' ? route.path === '/' : route.path.startsWith(tool.path) }"
+                :class="{ active: route.path === tool.path }"
               >
                 <span class="nav-icon">{{ tool.icon }}</span>
                 <span class="nav-text">{{ tool.name }}</span>

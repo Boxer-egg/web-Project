@@ -2,6 +2,14 @@
 
 ## 执行守则
 
+### 网络与代理
+
+- **所有外网命令（git push、wrangler、npm install 等）必须走代理**：
+  ```
+  HTTP_PROXY=http://127.0.0.1:7897 HTTPS_PROXY=http://127.0.0.1:7897 <命令>
+  ```
+- 不用代理时外网必超时，直接带上，别再试一遍再想起
+
 ### Git 提交规范
 
 - **永远不要加入**：`Co-Authored-By: Claude` 或任何类似的 AI 署名到 commit message 中

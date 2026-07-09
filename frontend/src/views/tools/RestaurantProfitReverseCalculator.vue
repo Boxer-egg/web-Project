@@ -142,7 +142,6 @@ const MISSING_FIELDS = [
   { key: 'rent', label: '月租金或年租金', check: () => !Number(monthlyRent.value) && !Number(yearlyRent.value) },
   { key: 'utilityFixedCost', label: '水电杂费', check: () => !Number(utilityFixedCost.value) },
   { key: 'laborFixedCost', label: '人工固定成本', check: () => !Number(laborFixedCost.value) },
-  { key: 'seats', label: '座位数', check: () => !Number(seats.value) },
 ]
 
 const missingFields = computed(() =>
@@ -383,7 +382,7 @@ function downloadResultsAsImage() {
         </div>
         <div class="form-row">
           <label>{{ selectedMode.name }}（{{ selectedMode.unit }}）</label>
-          <input v-model.number="observedValue" type="number" min="0" class="input" :placeholder="selectedMode.placeholder">
+          <input v-model.lazy.number="observedValue" type="number" min="0" class="input" :placeholder="selectedMode.placeholder">
           <span v-if="missingFields.includes('observedValue')" class="field-warning">请填写{{ selectedMode.name }}，否则无法反推</span>
         </div>
 
@@ -432,7 +431,6 @@ function downloadResultsAsImage() {
             <div class="form-col">
               <label>座位数</label>
               <input v-model.number="seats" type="number" min="0" class="input" placeholder="用于算翻台率">
-              <span v-if="missingFields.includes('seats')" class="field-warning">请填写座位数，否则翻台率无意义</span>
             </div>
             <div class="form-col">
               <label>每月营业天数</label>

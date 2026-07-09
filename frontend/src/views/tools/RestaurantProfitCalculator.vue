@@ -315,7 +315,6 @@ const REQUIRED_FIELDS = [
   { key: 'targetDailyOrders', label: '目标日单数' },
   { key: 'annualRent', label: '年房租' },
   { key: 'laborAvgSalary', label: '平均工资' },
-  { key: 'seats', label: '座位数' },
 ]
 
 /** 返回未填写的关键字段 key 列表 */
@@ -714,7 +713,6 @@ function downloadResultsAsImage() {
           <div class="form-col">
             <label>座位数</label>
             <input v-model.number="seats" type="number" class="input">
-            <span v-if="missingRequiredFields.includes('seats')" class="field-warning">请填写座位数，否则翻台率无意义</span>
           </div>
           <div class="form-col">
             <label>平均客单价（元）</label>

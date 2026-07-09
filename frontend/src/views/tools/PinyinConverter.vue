@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useTool } from '../../composables/useTool'
-import { convertToPinyin, TONE_MODES } from '../../logic/pinyin'
+import { convertToPinyin, convertToPinyinPairs, TONE_MODES } from '../../logic/pinyin'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const tone = useStorage('pinyin-tone', 'tone')
@@ -44,6 +44,20 @@ const {
   },
   customInput: input,
   example: '你好，世界！重庆欢迎您。'
+})
+
+const pairs = computed(() => {
+  if (!input.value) return []
+  const result = convertToPinyinPairs(input.value, {
+    tone: tone.value,
+    segment: segment.value,
+    preserveNonChinese: preserve.value
+  })
+  stats.value = {
+    chineseCount: result.chineseCount,
+    nonChineseCount: result.nonChineseCount
+  }
+  return result.pairs
 })
 
 watch([tone, segment, preserve], () => {
@@ -105,6 +119,19 @@ watch([tone, segment, preserve], () => {
       </div>
     </div>
 
+    <div v-if="pairs.length" class="card pinyin-pairs-card">
+      <h3>字音对照</h3>
+      <div class="pinyin-pairs">
+        <template v-for="(pair, index) in pairs" :key="index">
+          <div v-if="pair.char === '\n'" class="line-break"></div>
+          <div v-else class="pinyin-pair" :class="{ 'non-zh': !pair.isZh }">
+            <div class="pinyin-text">{{ pair.pinyin || ' ' }}</div>
+            <div class="char-text">{{ pair.char }}</div>
+          </div>
+        </template>
+      </div>
+    </div>
+
     <div v-if="input" class="card stats-bar">
       中文字符：{{ stats.chineseCount }} 个｜非中文字符：{{ stats.nonChineseCount }} 个
     </div>
@@ -143,6 +170,46 @@ watch([tone, segment, preserve], () => {
   padding: 10px 16px;
   font-size: 13px;
   color: var(--text-secondary);
+}
+.pinyin-pairs-card {
+  margin-top: 20px;
+  padding: 16px;
+}
+.pinyin-pairs-card h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+.pinyin-pairs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 4px;
+  line-height: 1.4;
+}
+.pinyin-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 1.2em;
+  padding: 2px 4px;
+  border-radius: var(--radius);
+}
+.pinyin-pair.non-zh {
+  opacity: 0.7;
+}
+.pinyin-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-height: 1.4em;
+  white-space: nowrap;
+}
+.char-text {
+  font-size: 18px;
+  color: var(--text-primary);
+}
+.line-break {
+  flex-basis: 100%;
+  height: 0;
 }
 .error-msg {
   color: var(--error);

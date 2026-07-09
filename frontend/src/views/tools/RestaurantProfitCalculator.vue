@@ -308,6 +308,35 @@ const targetMonthlyRevenue = computed(() => targetDailyRevenue.value * 30)
 const targetMonthlyGrossProfit = computed(() => targetMonthlyRevenue.value * (Number(grossMargin.value) || 0))
 const targetMonthlyNetProfit = computed(() => targetMonthlyGrossProfit.value - monthlyFixedCost.value)
 
+/** 关键必填字段校验 */
+const REQUIRED_FIELDS = [
+  { key: 'grossMargin', label: '毛利率' },
+  { key: 'avgTicket', label: '平均客单价' },
+  { key: 'targetDailyOrders', label: '目标日单数' },
+  { key: 'annualRent', label: '年房租' },
+  { key: 'laborAvgSalary', label: '平均工资' },
+  { key: 'seats', label: '座位数' },
+]
+
+/** 返回未填写的关键字段 key 列表 */
+const missingRequiredFields = computed(() => {
+  const missing = []
+  for (const field of REQUIRED_FIELDS) {
+    const value = snapshotableRefs[field.key]?.value
+    if (!Number(value)) missing.push(field.key)
+  }
+  return missing
+})
+
+const hasMissingRequiredFields = computed(() => missingRequiredFields.value.length > 0)
+
+/** 未填写字段的友好标签 */
+const missingRequiredLabels = computed(() =>
+  REQUIRED_FIELDS
+    .filter(f => missingRequiredFields.value.includes(f.key))
+    .map(f => f.label)
+)
+
 /** 回本周期（月）= 建店成本 / 目标月净利润 */
 const paybackMonths = computed(() => {
   const profit = targetMonthlyNetProfit.value
@@ -416,13 +445,19 @@ function scrollToSection(id) {
   }
 }
 
+function getSiteDomain() {
+  try {
+    return window.location.hostname || 'vvzzv.com'
+  } catch {
+    return 'vvzzv.com'
+  }
+}
+
 /** 下载测算结果图片 */
 function downloadResultsAsImage() {
-  if (!businessName.value) {
-    const name = window.prompt('请填写商圈名称（可直接留空跳过）')
-    if (name !== null) {
-      businessName.value = name.trim()
-    }
+  const name = window.prompt('请填写商圈名称（可直接留空跳过）', businessName.value)
+  if (name !== null) {
+    businessName.value = name.trim()
   }
 
   const width = 480
@@ -538,7 +573,7 @@ function downloadResultsAsImage() {
   ctx.fillStyle = '#9ca3af'
   ctx.font = '11px sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('由 在线工具箱 生成，数据仅供参考', width / 2, y)
+  ctx.fillText(`由 ${getSiteDomain()} 生成，数据仅供参考`, width / 2, y)
   y += 12
 
   const finalHeight = y + padding
@@ -600,6 +635,7 @@ function downloadResultsAsImage() {
         <div class="form-row">
           <label>年房租（元）</label>
           <input v-model.number="annualRent" type="number" class="input">
+          <span v-if="missingRequiredFields.includes('annualRent')" class="field-warning">请填写年房租，用于计算月固定成本</span>
           <div class="payment-options">
             <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'year' }" @click="rentPaymentMode = 'year'">年付</button>
             <button type="button" class="payment-option" :class="{ active: rentPaymentMode === 'half' }" @click="rentPaymentMode = 'half'">半年付</button>
@@ -647,6 +683,7 @@ function downloadResultsAsImage() {
           <div class="form-col">
             <label>平均工资（元）</label>
             <input v-model.number="laborAvgSalary" type="number" class="input">
+            <span v-if="missingRequiredFields.includes('laborAvgSalary')" class="field-warning">请填写平均工资，用于计算每月人工成本</span>
           </div>
           <div class="form-col">
             <label>人数</label>
@@ -661,6 +698,7 @@ function downloadResultsAsImage() {
           <div class="form-col">
             <label>毛利率</label>
             <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input">
+            <span v-if="missingRequiredFields.includes('grossMargin')" class="field-warning">请填写毛利率，否则无法计算盈亏平衡与净利润</span>
           </div>
         </div>
         <div class="labor-hint">
@@ -676,16 +714,19 @@ function downloadResultsAsImage() {
           <div class="form-col">
             <label>座位数</label>
             <input v-model.number="seats" type="number" class="input">
+            <span v-if="missingRequiredFields.includes('seats')" class="field-warning">请填写座位数，否则翻台率无意义</span>
           </div>
           <div class="form-col">
             <label>平均客单价（元）</label>
             <input v-model.number="avgTicket" type="number" class="input">
+            <span v-if="missingRequiredFields.includes('avgTicket')" class="field-warning">请填写平均客单价，否则无法计算营收与保本单数</span>
           </div>
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">
             <label>目标日单数</label>
             <input v-model.number="targetDailyOrders" type="number" class="input">
+            <span v-if="missingRequiredFields.includes('targetDailyOrders')" class="field-warning">请填写目标日单数，否则目标月净利润为负</span>
           </div>
           <div class="form-col">
             <label>目标月净利润（元）</label>
@@ -747,6 +788,9 @@ function downloadResultsAsImage() {
 
         <div id="target-results" class="card result-card">
           <div class="section-title">目标经营测算（日单数 {{ targetDailyOrders }} 单）</div>
+          <div v-if="hasMissingRequiredFields" class="result-warning">
+            当前还有 {{ missingRequiredFields.length }} 项关键参数未填写，目标净利润可能为负数或无法准确计算：{{ missingRequiredLabels.join('、') }}
+          </div>
           <div class="metric-grid">
             <div class="metric">
               <div class="metric-value">{{ fmtMoney(targetDailyRevenue) }}</div>
@@ -772,7 +816,7 @@ function downloadResultsAsImage() {
         </div>
 
         <div class="download-bar">
-          <button class="btn" @click="downloadResultsAsImage">下载测算结果图片</button>
+          <button class="btn" @click="downloadResultsAsImage">保存图片</button>
         </div>
       </div>
     </div>
@@ -1039,6 +1083,24 @@ input[type="number"] {
 }
 .text-error .metric-value {
   color: var(--error);
+}
+
+/* 必填项缺失提示 */
+.field-warning {
+  font-size: 12px;
+  color: var(--error);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+.result-warning {
+  font-size: 13px;
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--error) 20%, var(--border));
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  line-height: 1.5;
 }
 
 /* 详情弹窗 */

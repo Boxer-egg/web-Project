@@ -15,12 +15,43 @@ const MODES = [
 ]
 
 const mode = useStorage('rpr-mode', 'dailyRevenue')
-const observedValue = useStorage('rpr-observed-value', 0)
+const dailyRevenueValue = useStorage('rpr-daily-revenue', 0)
+const monthlyNetProfitValue = useStorage('rpr-monthly-net-profit', 0)
+const dailyCustomersValue = useStorage('rpr-daily-customers', 0)
+
+/** 当前模式对应的录入值（三模式独立存储） */
+const observedValue = computed({
+  get() {
+    switch (mode.value) {
+      case 'monthlyNetProfit':
+        return monthlyNetProfitValue.value
+      case 'dailyCustomers':
+        return dailyCustomersValue.value
+      case 'dailyRevenue':
+      default:
+        return dailyRevenueValue.value
+    }
+  },
+  set(val) {
+    switch (mode.value) {
+      case 'monthlyNetProfit':
+        monthlyNetProfitValue.value = val
+        break
+      case 'dailyCustomers':
+        dailyCustomersValue.value = val
+        break
+      case 'dailyRevenue':
+      default:
+        dailyRevenueValue.value = val
+    }
+  },
+})
 const avgTicket = useStorage('rpr-avg-ticket', 0)
 const grossMargin = useStorage('rpr-gross-margin', 0)
 const monthlyRent = useStorage('rpr-monthly-rent', 0)
 const yearlyRent = useStorage('rpr-yearly-rent', 0)
-const otherFixedCost = useStorage('rpr-other-fixed-cost', 0)
+const utilityFixedCost = useStorage('rpr-utility-fixed-cost', 0)
+const laborFixedCost = useStorage('rpr-labor-fixed-cost', 0)
 const seats = useStorage('rpr-seats', 0)
 const customerToOrderRatio = useStorage('rpr-customer-to-order-ratio', 1)
 const daysPerMonth = useStorage('rpr-days-per-month', 30)
@@ -36,7 +67,9 @@ const effectiveMonthlyRent = computed(() =>
 )
 
 const effectiveMonthlyFixedCost = computed(() =>
-  effectiveMonthlyRent.value + (Number(otherFixedCost.value) || 0)
+  effectiveMonthlyRent.value
+  + (Number(utilityFixedCost.value) || 0)
+  + (Number(laborFixedCost.value) || 0)
 )
 
 /** 月/年租金联动：改一方时自动换算另一方 */
@@ -68,11 +101,14 @@ function clampMin(ref, min = 0) {
   })
 }
 
-clampMin(observedValue)
+clampMin(dailyRevenueValue)
+clampMin(monthlyNetProfitValue)
+clampMin(dailyCustomersValue)
 clampMin(avgTicket)
 clampMin(monthlyRent)
 clampMin(yearlyRent)
-clampMin(otherFixedCost)
+clampMin(utilityFixedCost)
+clampMin(laborFixedCost)
 clampMin(seats)
 clampMin(daysPerMonth, 1)
 clampMin(customerToOrderRatio)
@@ -84,6 +120,42 @@ watch(grossMargin, (val) => {
     else if (n > 1) grossMargin.value = 1
   }
 })
+
+/** 当前模式对应的录入值引用 */
+function getCurrentObservedValueRef() {
+  switch (mode.value) {
+    case 'monthlyNetProfit':
+      return monthlyNetProfitValue
+    case 'dailyCustomers':
+      return dailyCustomersValue
+    case 'dailyRevenue':
+    default:
+      return dailyRevenueValue
+  }
+}
+
+/** 关键必填字段校验 */
+const MISSING_FIELDS = [
+  { key: 'observedValue', label: '调研数据', check: () => !Number(getCurrentObservedValueRef().value) },
+  { key: 'avgTicket', label: '平均客单价', check: () => !Number(avgTicket.value) },
+  { key: 'grossMargin', label: '毛利率', check: () => !Number(grossMargin.value) },
+  { key: 'rent', label: '月租金或年租金', check: () => !Number(monthlyRent.value) && !Number(yearlyRent.value) },
+  { key: 'utilityFixedCost', label: '水电杂费', check: () => !Number(utilityFixedCost.value) },
+  { key: 'laborFixedCost', label: '人工固定成本', check: () => !Number(laborFixedCost.value) },
+  { key: 'seats', label: '座位数', check: () => !Number(seats.value) },
+]
+
+const missingFields = computed(() =>
+  MISSING_FIELDS.filter(f => f.check()).map(f => f.key)
+)
+
+const hasMissingFields = computed(() => missingFields.value.length > 0)
+
+const missingFieldLabels = computed(() =>
+  MISSING_FIELDS
+    .filter(f => missingFields.value.includes(f.key))
+    .map(f => f.label)
+)
 
 const result = computed(() => {
   const common = {
@@ -117,12 +189,15 @@ function fmtNumber(n, digits = 2) {
 
 function loadExample() {
   mode.value = 'dailyRevenue'
-  observedValue.value = 2000
+  dailyRevenueValue.value = 2000
+  monthlyNetProfitValue.value = 8000
+  dailyCustomersValue.value = 80
   avgTicket.value = 20
   grossMargin.value = 0.6
   monthlyRent.value = 15000
   yearlyRent.value = 0
-  otherFixedCost.value = 3000
+  utilityFixedCost.value = 2000
+  laborFixedCost.value = 8000
   seats.value = 24
   customerToOrderRatio.value = 1
   daysPerMonth.value = 30
@@ -130,24 +205,33 @@ function loadExample() {
 
 function clearAll() {
   mode.value = 'dailyRevenue'
-  observedValue.value = 0
+  dailyRevenueValue.value = 0
+  monthlyNetProfitValue.value = 0
+  dailyCustomersValue.value = 0
   avgTicket.value = 0
   grossMargin.value = 0
   monthlyRent.value = 0
   yearlyRent.value = 0
-  otherFixedCost.value = 0
+  utilityFixedCost.value = 0
+  laborFixedCost.value = 0
   seats.value = 0
   customerToOrderRatio.value = 1
   daysPerMonth.value = 30
   businessName.value = ''
 }
 
+function getSiteDomain() {
+  try {
+    return window.location.hostname || 'vvzzv.com'
+  } catch {
+    return 'vvzzv.com'
+  }
+}
+
 function downloadResultsAsImage() {
-  if (!businessName.value) {
-    const name = window.prompt('请填写商圈名称（可直接留空跳过）')
-    if (name !== null) {
-      businessName.value = name.trim()
-    }
+  const name = window.prompt('请填写商圈名称（可直接留空跳过）', businessName.value)
+  if (name !== null) {
+    businessName.value = name.trim()
   }
 
   const width = 480
@@ -163,7 +247,8 @@ function downloadResultsAsImage() {
     ['平均客单价', `${fmtMoney(avgTicket.value)} 元`],
     ['毛利率', `${((grossMargin.value || 0) * 100).toFixed(0)}%`],
     ['月租金', `${fmtMoney(effectiveMonthlyRent.value)} 元`],
-    ['其他固定成本', `${fmtMoney(otherFixedCost.value)} 元`],
+    ['水电杂费', `${fmtMoney(utilityFixedCost.value)} 元`],
+    ['人工固定成本', `${fmtMoney(laborFixedCost.value)} 元`],
     ['总月固定成本', `${fmtMoney(effectiveMonthlyFixedCost.value)} 元`],
     ['座位数', `${seats.value || 0} 个`],
     ['日均单数', `${fmtNumber(result.value.dailyOrders, 1)} 单`],
@@ -240,11 +325,11 @@ function downloadResultsAsImage() {
   for (let i = 8; i < rows.length; i++) {
     ctx.fillStyle = '#6b7280'
     ctx.fillText(rows[i][0], padding, y)
-    const color = i === 11
+    const color = i === 12
       ? (result.value.monthlyNetProfit >= 0 ? '#16a34a' : '#dc2626')
       : '#111827'
     ctx.fillStyle = color
-    ctx.font = i === 11 ? 'bold 14px sans-serif' : '14px sans-serif'
+    ctx.font = i === 12 ? 'bold 14px sans-serif' : '14px sans-serif'
     ctx.fillText(rows[i][1], valueX, y)
     ctx.font = '14px sans-serif'
     y += lineHeight
@@ -254,7 +339,7 @@ function downloadResultsAsImage() {
   ctx.fillStyle = '#9ca3af'
   ctx.font = '11px sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('由 在线工具箱 生成，数据仅供参考', width / 2, y)
+  ctx.fillText(`由 ${getSiteDomain()} 生成，数据仅供参考`, width / 2, y)
   y += 12
 
   const finalHeight = y + padding
@@ -267,7 +352,8 @@ function downloadResultsAsImage() {
 
   const link = document.createElement('a')
   link.href = exportCanvas.toDataURL('image/png')
-  link.download = `餐饮反向调研-${new Date().toISOString().slice(0, 10)}.png`
+  const filenameBase = businessName.value ? businessName.value : '餐饮反向调研'
+  link.download = `${filenameBase}-${new Date().toISOString().slice(0, 10)}.png`
   link.click()
 }
 </script>
@@ -298,45 +384,64 @@ function downloadResultsAsImage() {
         <div class="form-row">
           <label>{{ selectedMode.name }}（{{ selectedMode.unit }}）</label>
           <input v-model.number="observedValue" type="number" min="0" class="input" :placeholder="selectedMode.placeholder">
+          <span v-if="missingFields.includes('observedValue')" class="field-warning">请填写{{ selectedMode.name }}，否则无法反推</span>
         </div>
 
         <div class="section-title">估算参数</div>
-        <div class="form-row form-row-2col">
-          <div class="form-col">
-            <label>平均客单价（元）</label>
-            <input v-model.number="avgTicket" type="number" min="0" class="input" placeholder="例如：20">
-          </div>
-          <div class="form-col">
-            <label>毛利率</label>
-            <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input" placeholder="0.6 表示 60%">
-          </div>
-        </div>
-        <div class="form-row form-row-2col">
-          <div class="form-col">
-            <label>月租金（元）</label>
-            <input v-model.number="monthlyRent" type="number" min="0" class="input" placeholder="例如：15000">
-          </div>
-          <div class="form-col">
-            <label>年租金（元）</label>
-            <input v-model.number="yearlyRent" type="number" min="0" class="input" placeholder="会自动换算成月租金">
+        <div class="param-group">
+          <div class="form-row form-row-2col">
+            <div class="form-col">
+              <label>平均客单价（元）</label>
+              <input v-model.number="avgTicket" type="number" min="0" class="input" placeholder="例如：20">
+              <span v-if="missingFields.includes('avgTicket')" class="field-warning">请填写平均客单价</span>
+            </div>
+            <div class="form-col">
+              <label>毛利率</label>
+              <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input" placeholder="0.6 表示 60%">
+              <span v-if="missingFields.includes('grossMargin')" class="field-warning">请填写毛利率</span>
+            </div>
           </div>
         </div>
-        <div class="form-row">
-          <label>其他固定成本（元/月，如水电杂费）</label>
-          <input v-model.number="otherFixedCost" type="number" min="0" class="input" placeholder="例如：3000">
-        </div>
-        <div class="form-row form-row-2col">
-          <div class="form-col">
-            <label>座位数</label>
-            <input v-model.number="seats" type="number" min="0" class="input" placeholder="用于算翻台率">
+        <div class="param-group cost-group">
+          <div class="form-row form-row-2col">
+            <div class="form-col">
+              <label>月租金（元）</label>
+              <input v-model.number="monthlyRent" type="number" min="0" class="input" placeholder="例如：15000">
+            </div>
+            <div class="form-col">
+              <label>年租金（元）</label>
+              <input v-model.number="yearlyRent" type="number" min="0" class="input" placeholder="会自动换算成月租金">
+            </div>
           </div>
-          <div class="form-col">
-            <label>每月营业天数</label>
-            <input v-model.number="daysPerMonth" type="number" min="0" max="31" class="input">
+          <span v-if="missingFields.includes('rent')" class="field-warning">请填写月租金或年租金，用于计算固定成本</span>
+          <div class="form-row form-row-2col">
+            <div class="form-col">
+              <label>水电杂费（元/月）</label>
+              <input v-model.number="utilityFixedCost" type="number" min="0" class="input" placeholder="例如：2000">
+              <span v-if="missingFields.includes('utilityFixedCost')" class="field-warning">请填写水电杂费</span>
+            </div>
+            <div class="form-col">
+              <label>人工固定成本（元/月）</label>
+              <input v-model.number="laborFixedCost" type="number" min="0" class="input" placeholder="例如：8000">
+              <span v-if="missingFields.includes('laborFixedCost')" class="field-warning">请填写人工固定成本</span>
+            </div>
+          </div>
+        </div>
+        <div class="param-group">
+          <div class="form-row form-row-2col">
+            <div class="form-col">
+              <label>座位数</label>
+              <input v-model.number="seats" type="number" min="0" class="input" placeholder="用于算翻台率">
+              <span v-if="missingFields.includes('seats')" class="field-warning">请填写座位数，否则翻台率无意义</span>
+            </div>
+            <div class="form-col">
+              <label>每月营业天数</label>
+              <input v-model.number="daysPerMonth" type="number" min="0" max="31" class="input">
+            </div>
           </div>
         </div>
         <div v-if="mode === 'dailyCustomers'" class="form-row">
-          <label>客户→订单转化率（默认 1 = 一人一单）</label>
+          <label>客户→订单转化率（默认 1 等于 一人一单）</label>
           <input v-model.number="customerToOrderRatio" type="number" step="0.01" min="0" max="2" class="input">
         </div>
         <div class="form-row">
@@ -354,6 +459,9 @@ function downloadResultsAsImage() {
       <div class="result-panel">
         <div id="reverse-results" class="card result-card">
           <div class="section-title">反推结果</div>
+          <div v-if="hasMissingFields" class="result-warning">
+            当前还有 {{ missingFields.length }} 项关键参数未填写，反推结果可能不准确：{{ missingFieldLabels.join('、') }}
+          </div>
           <div class="metric-grid">
             <div class="metric highlight">
               <div class="metric-value">{{ fmtNumber(result.dailyOrders, 1) }}</div>
@@ -384,7 +492,8 @@ function downloadResultsAsImage() {
             <li>平均客单价：{{ fmtMoney(avgTicket) }} 元</li>
             <li>毛利率：{{ ((grossMargin || 0) * 100).toFixed(0) }}%</li>
             <li>月租金：{{ fmtMoney(effectiveMonthlyRent) }} 元</li>
-            <li>其他固定成本：{{ fmtMoney(otherFixedCost) }} 元</li>
+            <li>水电杂费：{{ fmtMoney(utilityFixedCost) }} 元</li>
+            <li>人工固定成本：{{ fmtMoney(laborFixedCost) }} 元</li>
             <li>总月固定成本：{{ fmtMoney(effectiveMonthlyFixedCost) }} 元</li>
             <li v-if="mode === 'dailyCustomers'">客户→订单转化率：{{ customerToOrderRatio }}</li>
             <li>每月营业天数：{{ daysPerMonth }} 天</li>
@@ -392,7 +501,7 @@ function downloadResultsAsImage() {
         </div>
 
         <div class="download-bar">
-          <button class="btn" @click="downloadResultsAsImage">下载调研结果图片</button>
+          <button class="btn" @click="downloadResultsAsImage">保存图片</button>
         </div>
 
         <div class="card result-card">
@@ -412,6 +521,7 @@ function downloadResultsAsImage() {
   color: var(--text-secondary);
   font-size: 14px;
   margin-top: 4px;
+  margin-bottom: 16px;
 }
 .calculator-layout {
   display: grid;
@@ -438,6 +548,16 @@ function downloadResultsAsImage() {
 }
 .section-title:first-child {
   margin-top: 0;
+}
+.param-group {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.param-group .form-row:last-child {
+  margin-bottom: 0;
 }
 .form-row {
   display: flex;
@@ -544,9 +664,28 @@ function downloadResultsAsImage() {
   color: var(--text-secondary);
 }
 .hint-text {
-  margin: 0;
+  margin: 0 0 16px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--text-secondary);
+}
+.hint-text:last-child {
+  margin-bottom: 0;
+}
+.field-warning {
+  font-size: 12px;
+  color: var(--error);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+.result-warning {
+  font-size: 13px;
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--error) 20%, var(--border));
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  line-height: 1.5;
 }
 </style>

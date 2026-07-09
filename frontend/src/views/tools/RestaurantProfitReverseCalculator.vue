@@ -2,7 +2,7 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import { useStorage } from '@vueuse/core'
 import {
-  resolveMonthlyFixedCost,
+  resolveMonthlyRent,
   calcFromDailyRevenue,
   calcFromMonthlyNetProfit,
   calcFromDailyCustomers,
@@ -18,8 +18,9 @@ const mode = useStorage('rpr-mode', 'dailyRevenue')
 const observedValue = useStorage('rpr-observed-value', 0)
 const avgTicket = useStorage('rpr-avg-ticket', 0)
 const grossMargin = useStorage('rpr-gross-margin', 0)
-const monthlyFixedCost = useStorage('rpr-monthly-fixed-cost', 0)
-const yearlyFixedCost = useStorage('rpr-yearly-fixed-cost', 0)
+const monthlyRent = useStorage('rpr-monthly-rent', 0)
+const yearlyRent = useStorage('rpr-yearly-rent', 0)
+const otherFixedCost = useStorage('rpr-other-fixed-cost', 0)
 const seats = useStorage('rpr-seats', 0)
 const customerToOrderRatio = useStorage('rpr-customer-to-order-ratio', 1)
 const daysPerMonth = useStorage('rpr-days-per-month', 30)
@@ -27,32 +28,61 @@ const businessName = useStorage('rpr-business-name', '')
 
 const selectedMode = computed(() => MODES.find(m => m.key === mode.value) || MODES[0])
 
-const effectiveMonthlyFixedCost = computed(() =>
-  resolveMonthlyFixedCost({
-    monthlyFixedCost: monthlyFixedCost.value,
-    yearlyFixedCost: yearlyFixedCost.value,
+const effectiveMonthlyRent = computed(() =>
+  resolveMonthlyRent({
+    monthlyRent: monthlyRent.value,
+    yearlyRent: yearlyRent.value,
   })
 )
 
-/** 月/年固定成本联动：改一方时自动换算另一方 */
-const isUpdatingFixedCost = ref(false)
+const effectiveMonthlyFixedCost = computed(() =>
+  effectiveMonthlyRent.value + (Number(otherFixedCost.value) || 0)
+)
 
-watch(monthlyFixedCost, (val) => {
-  if (isUpdatingFixedCost.value) return
-  isUpdatingFixedCost.value = true
-  yearlyFixedCost.value = Number(val || 0) * 12
+/** 月/年租金联动：改一方时自动换算另一方 */
+const isUpdatingRent = ref(false)
+
+watch(monthlyRent, (val) => {
+  if (isUpdatingRent.value) return
+  isUpdatingRent.value = true
+  yearlyRent.value = Number(val || 0) * 12
   nextTick(() => {
-    isUpdatingFixedCost.value = false
+    isUpdatingRent.value = false
   })
 })
 
-watch(yearlyFixedCost, (val) => {
-  if (isUpdatingFixedCost.value) return
-  isUpdatingFixedCost.value = true
-  monthlyFixedCost.value = Number(val || 0) / 12
+watch(yearlyRent, (val) => {
+  if (isUpdatingRent.value) return
+  isUpdatingRent.value = true
+  monthlyRent.value = Number(val || 0) / 12
   nextTick(() => {
-    isUpdatingFixedCost.value = false
+    isUpdatingRent.value = false
   })
+})
+
+/** 将输入值限制在最小值以上 */
+function clampMin(ref, min = 0) {
+  watch(ref, (val) => {
+    const n = Number(val)
+    if (Number.isFinite(n) && n < min) ref.value = min
+  })
+}
+
+clampMin(observedValue)
+clampMin(avgTicket)
+clampMin(monthlyRent)
+clampMin(yearlyRent)
+clampMin(otherFixedCost)
+clampMin(seats)
+clampMin(daysPerMonth, 1)
+clampMin(customerToOrderRatio)
+
+watch(grossMargin, (val) => {
+  const n = Number(val)
+  if (Number.isFinite(n)) {
+    if (n < 0) grossMargin.value = 0
+    else if (n > 1) grossMargin.value = 1
+  }
 })
 
 const result = computed(() => {
@@ -90,8 +120,9 @@ function loadExample() {
   observedValue.value = 2000
   avgTicket.value = 20
   grossMargin.value = 0.6
-  monthlyFixedCost.value = 15000
-  yearlyFixedCost.value = 0
+  monthlyRent.value = 15000
+  yearlyRent.value = 0
+  otherFixedCost.value = 3000
   seats.value = 24
   customerToOrderRatio.value = 1
   daysPerMonth.value = 30
@@ -102,8 +133,9 @@ function clearAll() {
   observedValue.value = 0
   avgTicket.value = 0
   grossMargin.value = 0
-  monthlyFixedCost.value = 0
-  yearlyFixedCost.value = 0
+  monthlyRent.value = 0
+  yearlyRent.value = 0
+  otherFixedCost.value = 0
   seats.value = 0
   customerToOrderRatio.value = 1
   daysPerMonth.value = 30
@@ -130,7 +162,9 @@ function downloadResultsAsImage() {
     ['录入数值', `${fmtMoney(observedValue.value)} ${selectedMode.value.unit}`],
     ['平均客单价', `${fmtMoney(avgTicket.value)} 元`],
     ['毛利率', `${((grossMargin.value || 0) * 100).toFixed(0)}%`],
-    ['月固定成本', `${fmtMoney(effectiveMonthlyFixedCost.value)} 元`],
+    ['月租金', `${fmtMoney(effectiveMonthlyRent.value)} 元`],
+    ['其他固定成本', `${fmtMoney(otherFixedCost.value)} 元`],
+    ['总月固定成本', `${fmtMoney(effectiveMonthlyFixedCost.value)} 元`],
     ['座位数', `${seats.value || 0} 个`],
     ['日均单数', `${fmtNumber(result.value.dailyOrders, 1)} 单`],
     ['日营业额', `${fmtMoney(result.value.dailyRevenue)} 元`],
@@ -197,20 +231,20 @@ function downloadResultsAsImage() {
 
   y += sectionGap
   drawSectionTitle('估算参数')
-  for (let i = 2; i < 6; i++) {
+  for (let i = 2; i < 8; i++) {
     drawRow(rows[i][0], rows[i][1])
   }
 
   y += sectionGap
   drawSectionTitle('反推结果')
-  for (let i = 6; i < rows.length; i++) {
+  for (let i = 8; i < rows.length; i++) {
     ctx.fillStyle = '#6b7280'
     ctx.fillText(rows[i][0], padding, y)
-    const color = i === 9
+    const color = i === 11
       ? (result.value.monthlyNetProfit >= 0 ? '#16a34a' : '#dc2626')
       : '#111827'
     ctx.fillStyle = color
-    ctx.font = i === 9 ? 'bold 14px sans-serif' : '14px sans-serif'
+    ctx.font = i === 11 ? 'bold 14px sans-serif' : '14px sans-serif'
     ctx.fillText(rows[i][1], valueX, y)
     ctx.font = '14px sans-serif'
     y += lineHeight
@@ -263,36 +297,42 @@ function downloadResultsAsImage() {
         </div>
         <div class="form-row">
           <label>{{ selectedMode.name }}（{{ selectedMode.unit }}）</label>
-          <input v-model.number="observedValue" type="number" class="input" :placeholder="selectedMode.placeholder">
+          <input v-model.number="observedValue" type="number" min="0" class="input" :placeholder="selectedMode.placeholder">
         </div>
 
         <div class="section-title">估算参数</div>
-        <div class="form-row">
-          <label>平均客单价（元）</label>
-          <input v-model.number="avgTicket" type="number" class="input" placeholder="例如：20">
-        </div>
-        <div class="form-row">
-          <label>毛利率</label>
-          <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input" placeholder="0.6 表示 60%">
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>平均客单价（元）</label>
+            <input v-model.number="avgTicket" type="number" min="0" class="input" placeholder="例如：20">
+          </div>
+          <div class="form-col">
+            <label>毛利率</label>
+            <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input" placeholder="0.6 表示 60%">
+          </div>
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">
-            <label>月固定成本（元）</label>
-            <input v-model.number="monthlyFixedCost" type="number" class="input" placeholder="例如：15000">
+            <label>月租金（元）</label>
+            <input v-model.number="monthlyRent" type="number" min="0" class="input" placeholder="例如：15000">
           </div>
           <div class="form-col">
-            <label>年固定成本（元）</label>
-            <input v-model.number="yearlyFixedCost" type="number" class="input" placeholder="会自动换算成月">
+            <label>年租金（元）</label>
+            <input v-model.number="yearlyRent" type="number" min="0" class="input" placeholder="会自动换算成月租金">
           </div>
+        </div>
+        <div class="form-row">
+          <label>其他固定成本（元/月，如水电杂费）</label>
+          <input v-model.number="otherFixedCost" type="number" min="0" class="input" placeholder="例如：3000">
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">
             <label>座位数</label>
-            <input v-model.number="seats" type="number" class="input" placeholder="用于算翻台率">
+            <input v-model.number="seats" type="number" min="0" class="input" placeholder="用于算翻台率">
           </div>
           <div class="form-col">
             <label>每月营业天数</label>
-            <input v-model.number="daysPerMonth" type="number" min="1" max="31" class="input">
+            <input v-model.number="daysPerMonth" type="number" min="0" max="31" class="input">
           </div>
         </div>
         <div v-if="mode === 'dailyCustomers'" class="form-row">
@@ -343,7 +383,9 @@ function downloadResultsAsImage() {
           <ul class="param-list">
             <li>平均客单价：{{ fmtMoney(avgTicket) }} 元</li>
             <li>毛利率：{{ ((grossMargin || 0) * 100).toFixed(0) }}%</li>
-            <li>月固定成本：{{ fmtMoney(effectiveMonthlyFixedCost) }} 元</li>
+            <li>月租金：{{ fmtMoney(effectiveMonthlyRent) }} 元</li>
+            <li>其他固定成本：{{ fmtMoney(otherFixedCost) }} 元</li>
+            <li>总月固定成本：{{ fmtMoney(effectiveMonthlyFixedCost) }} 元</li>
             <li v-if="mode === 'dailyCustomers'">客户→订单转化率：{{ customerToOrderRatio }}</li>
             <li>每月营业天数：{{ daysPerMonth }} 天</li>
           </ul>

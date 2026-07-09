@@ -9,15 +9,15 @@
  */
 
 /**
- * 解析出实际用于计算的月固定成本
+ * 解析出实际用于计算的月租金
  * @param {Object} params
- * @param {number} [params.monthlyFixedCost=0]
- * @param {number} [params.yearlyFixedCost=0]
+ * @param {number} [params.monthlyRent=0]
+ * @param {number} [params.yearlyRent=0]
  * @returns {number}
  */
-export function resolveMonthlyFixedCost({ monthlyFixedCost = 0, yearlyFixedCost = 0 } = {}) {
-  const monthly = Number(monthlyFixedCost) || 0
-  const yearly = Number(yearlyFixedCost) || 0
+export function resolveMonthlyRent({ monthlyRent = 0, yearlyRent = 0 } = {}) {
+  const monthly = Number(monthlyRent) || 0
+  const yearly = Number(yearlyRent) || 0
   if (monthly > 0) return monthly
   if (yearly > 0) return yearly / 12
   return 0

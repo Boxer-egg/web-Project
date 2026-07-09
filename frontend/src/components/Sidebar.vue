@@ -43,6 +43,39 @@ const groups = [
     ]
   },
   {
+    title: '文本处理',
+    tools: [
+      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰', keywords: ['wenben', 'text', 'toolbox', 'daxiao', 'case', 'quchong', 'sort', 'fanzhuan', 'reverse'] },
+      { path: '/tools/word-counter', name: '字数统计', icon: '📝', keywords: ['zishu', 'word', 'count', 'tongji', 'character'] },
+      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️', keywords: ['jianfan', 'chinese', 'convert', 'simplified', 'traditional', 'fantizhongwen'] },
+      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝', keywords: ['jiawen', 'lorem', 'ipsum', 'dummy', 'placeholder', 'shengcheng'] },
+      { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', keywords: ['shuzi', 'number', 'chinese', 'daxie', 'jine', 'renminbi', 'convert'] },
+      { path: '/tools/pinyin', name: '文字转拼音', icon: '🔤', keywords: ['pinyin', 'wenzi', 'zhuanpin', 'fayin', 'yinjie'] },
+      { path: '/tools/hanzi-info', name: '汉字信息', icon: '📖', keywords: ['hanzi', 'bushou', 'pianpang', 'bihua', 'pinyin', 'fayin'] },
+      { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', keywords: ['huoxingwen', 'martian', 'fanzhuan', 'wenzi'] },
+      { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', keywords: ['wenben', 'text', 'yanyi', 'kaomoji', 'yincang', 'yinxie'] },
+    ]
+  },
+  {
+    title: '商业测算',
+    tools: [
+      { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', keywords: ['canyin', 'restaurant', 'profit', 'yingli', 'jisuan', 'kaidian', 'kuiyin'] },
+      { path: '/tools/rpr', name: '餐饮反向调研', icon: '🕵️‍♂️', keywords: ['canyin', 'restaurant', 'reverse', 'fankui', 'diaoyan', 'jingpin', 'yingli', 'fanxuan'] },
+    ]
+  },
+  {
+    title: '转换计算',
+    tools: [
+      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰', keywords: ['shijianchuo', 'timestamp', 'date', 'unix', 'shijian'] },
+      { path: '/tools/color', name: '颜色转换器', icon: '🎨', keywords: ['yanse', 'color', 'hex', 'rgb', 'hsl', 'convert'] },
+      { path: '/tools/unit-converter', name: '单位换算', icon: '📐', keywords: ['danwei', 'unit', 'length', 'weight', 'temperature', 'huansuan'] },
+      { path: '/tools/date-calculator', name: '日期计算', icon: '📅', keywords: ['riqi', 'date', 'jisuan', 'days', 'tianshu'] },
+      { path: '/tools/calculator', name: '计算器', icon: '🧮', keywords: ['jisuanqi', 'calculator', 'compute', 'math'] },
+      { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', keywords: ['youbian', 'chepai', 'quhao', 'zip', 'plate', 'area', 'postal'] },
+      { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', keywords: ['baozhiqi', 'shelf', 'life', 'guoqi', 'expiry', 'date'] },
+    ]
+  },
+  {
     title: '开发工具',
     tools: [
       { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋', keywords: ['json', 'geshihua', 'ge shi hua', 'format', 'meihua', 'yasuo', 'compress'] },
@@ -60,39 +93,6 @@ const groups = [
       { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝', keywords: ['markdown', 'yulan', 'preview', 'md'] },
       { path: '/tools/text-diff', name: '文本差异对比', icon: '📊', keywords: ['wenben', 'text', 'chayi', 'diff', 'compare', 'duibi'] },
       { path: '/tools/yaml-json', name: 'YAML ↔ JSON', icon: '🔄', keywords: ['yaml', 'json', 'zhuanhuan', 'convert', 'jiaoHU'] },
-    ]
-  },
-  {
-    title: '文本处理',
-    tools: [
-      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰', keywords: ['wenben', 'text', 'toolbox', 'daxiao', 'case', 'quchong', 'sort', 'fanzhuan', 'reverse'] },
-      { path: '/tools/word-counter', name: '字数统计', icon: '📝', keywords: ['zishu', 'word', 'count', 'tongji', 'character'] },
-      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️', keywords: ['jianfan', 'chinese', 'convert', 'simplified', 'traditional', 'fantizhongwen'] },
-      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝', keywords: ['jiawen', 'lorem', 'ipsum', 'dummy', 'placeholder', 'shengcheng'] },
-      { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', keywords: ['shuzi', 'number', 'chinese', 'daxie', 'jine', 'renminbi', 'convert'] },
-      { path: '/tools/pinyin', name: '文字转拼音', icon: '🔤', keywords: ['pinyin', 'wenzi', 'zhuanpin', 'fayin', 'yinjie'] },
-      { path: '/tools/hanzi-info', name: '汉字信息', icon: '📖', keywords: ['hanzi', 'bushou', 'pianpang', 'bihua', 'pinyin', 'fayin'] },
-      { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', keywords: ['huoxingwen', 'martian', 'fanzhuan', 'wenzi'] },
-      { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', keywords: ['wenben', 'text', 'yanyi', 'kaomoji', 'yincang', 'yinxie'] },
-    ]
-  },
-  {
-    title: '转换计算',
-    tools: [
-      { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰', keywords: ['shijianchuo', 'timestamp', 'date', 'unix', 'shijian'] },
-      { path: '/tools/color', name: '颜色转换器', icon: '🎨', keywords: ['yanse', 'color', 'hex', 'rgb', 'hsl', 'convert'] },
-      { path: '/tools/unit-converter', name: '单位换算', icon: '📐', keywords: ['danwei', 'unit', 'length', 'weight', 'temperature', 'huansuan'] },
-      { path: '/tools/date-calculator', name: '日期计算', icon: '📅', keywords: ['riqi', 'date', 'jisuan', 'days', 'tianshu'] },
-      { path: '/tools/calculator', name: '计算器', icon: '🧮', keywords: ['jisuanqi', 'calculator', 'compute', 'math'] },
-      { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', keywords: ['youbian', 'chepai', 'quhao', 'zip', 'plate', 'area', 'postal'] },
-      { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', keywords: ['baozhiqi', 'shelf', 'life', 'guoqi', 'expiry', 'date'] },
-    ]
-  },
-  {
-    title: '商业测算',
-    tools: [
-      { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', keywords: ['canyin', 'restaurant', 'profit', 'yingli', 'jisuan', 'kaidian', 'kuiyin'] },
-      { path: '/tools/restaurant-profit-reverse', name: '餐饮反向调研', icon: '🕵️‍♂️', keywords: ['canyin', 'restaurant', 'reverse', 'fankui', 'diaoyan', 'jingpin', 'yingli', 'fanxuan'] },
     ]
   },
   {

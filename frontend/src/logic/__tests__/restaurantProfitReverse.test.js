@@ -1,23 +1,23 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import {
-  resolveMonthlyFixedCost,
+  resolveMonthlyRent,
   calcFromDailyRevenue,
   calcFromMonthlyNetProfit,
   calcFromDailyCustomers,
 } from '../restaurantProfitReverse.js'
 
-describe('resolveMonthlyFixedCost', () => {
-  it('优先返回月固定成本', () => {
-    assert.strictEqual(resolveMonthlyFixedCost({ monthlyFixedCost: 15000, yearlyFixedCost: 200000 }), 15000)
+describe('resolveMonthlyRent', () => {
+  it('优先返回月租金', () => {
+    assert.strictEqual(resolveMonthlyRent({ monthlyRent: 15000, yearlyRent: 200000 }), 15000)
   })
 
-  it('月固定成本为 0 时，用年固定成本换算', () => {
-    assert.strictEqual(resolveMonthlyFixedCost({ monthlyFixedCost: 0, yearlyFixedCost: 120000 }), 10000)
+  it('月租金为 0 时，用年租金换算', () => {
+    assert.strictEqual(resolveMonthlyRent({ monthlyRent: 0, yearlyRent: 120000 }), 10000)
   })
 
   it('两者都为 0 时返回 0', () => {
-    assert.strictEqual(resolveMonthlyFixedCost({ monthlyFixedCost: 0, yearlyFixedCost: 0 }), 0)
+    assert.strictEqual(resolveMonthlyRent({ monthlyRent: 0, yearlyRent: 0 }), 0)
   })
 })
 

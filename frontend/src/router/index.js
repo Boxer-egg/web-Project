@@ -358,13 +358,17 @@ const router = createRouter({
       }
     },
     {
-      path: '/tools/restaurant-profit-reverse',
+      path: '/tools/rpr',
       name: 'restaurant-profit-reverse',
       component: () => import('../views/tools/RestaurantProfitReverseCalculator.vue'),
       meta: {
         title: '餐饮反向调研',
         description: '餐饮店竞品反向调研工具，通过日营业额、月净利润或日均客户数反推日均单数、营业额、净利润与翻台率。'
       }
+    },
+    {
+      path: '/tools/restaurant-profit-reverse',
+      redirect: '/tools/rpr'
     },
     {
       path: '/tools/random-generator',

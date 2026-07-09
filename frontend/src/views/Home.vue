@@ -45,7 +45,7 @@ const tools = [
   { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', desc: '颜文字装饰与零宽字符文字隐写', category: '文本' },
   { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', desc: '离线查询邮编、车牌归属地、电话区号', category: '转换' },
   { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', desc: '开店成本、盈亏平衡、回本周期测算', category: '商业' },
-  { path: '/tools/restaurant-profit-reverse', name: '餐饮反向调研', icon: '🕵️‍♂️', desc: '通过单一数据反推竞品营收与翻台率', category: '商业' },
+  { path: '/tools/rpr', name: '餐饮反向调研', icon: '🕵️‍♂️', desc: '通过单一数据反推竞品营收与翻台率', category: '商业' },
   { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', desc: '常见生活垃圾所属分类与投放提示', category: '健康' },
   { path: '/tools/blood-type', name: '血型遗传', icon: '🩸', desc: '根据父母血型推算子女可能血型及概率', category: '健康' },
   { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', desc: '根据生产日期和保质期计算过期日期', category: '转换' },
@@ -56,6 +56,48 @@ const tools = [
 ]
 
 const categories = [
+  {
+    key: 'text',
+    name: '文本处理',
+    icon: '📝',
+    desc: '文本清洗、统计、简繁转换、假文生成、拼音、火星文',
+    paths: [
+      '/tools/text-toolbox',
+      '/tools/word-counter',
+      '/tools/chinese-converter',
+      '/tools/lorem-ipsum',
+      '/tools/number-chinese',
+      '/tools/pinyin',
+      '/tools/hanzi-info',
+      '/tools/martian-text',
+      '/tools/text-art',
+    ]
+  },
+  {
+    key: 'business',
+    name: '商业测算',
+    icon: '📊',
+    desc: '餐饮盈利测算与竞品反向调研工具',
+    paths: [
+      '/tools/restaurant-profit',
+      '/tools/rpr',
+    ]
+  },
+  {
+    key: 'convert',
+    name: '转换计算',
+    icon: '🔢',
+    desc: '时间戳、颜色、单位、进制、日期换算',
+    paths: [
+      '/tools/timestamp',
+      '/tools/color',
+      '/tools/unit-converter',
+      '/tools/date-calculator',
+      '/tools/calculator',
+      '/tools/zip-plate-area',
+      '/tools/shelf-life',
+    ]
+  },
   {
     key: 'dev',
     name: '开发工具',
@@ -77,38 +119,6 @@ const categories = [
       '/tools/css-unit',
       '/tools/markdown',
       '/tools/text-diff',
-    ]
-  },
-  {
-    key: 'text',
-    name: '文本处理',
-    icon: '📝',
-    desc: '文本清洗、统计、简繁转换、假文生成、拼音、火星文',
-    paths: [
-      '/tools/text-toolbox',
-      '/tools/word-counter',
-      '/tools/chinese-converter',
-      '/tools/lorem-ipsum',
-      '/tools/number-chinese',
-      '/tools/pinyin',
-      '/tools/hanzi-info',
-      '/tools/martian-text',
-      '/tools/text-art',
-    ]
-  },
-  {
-    key: 'convert',
-    name: '转换计算',
-    icon: '🔢',
-    desc: '时间戳、颜色、单位、进制、日期换算',
-    paths: [
-      '/tools/timestamp',
-      '/tools/color',
-      '/tools/unit-converter',
-      '/tools/date-calculator',
-      '/tools/calculator',
-      '/tools/zip-plate-area',
-      '/tools/shelf-life',
     ]
   },
   {
@@ -151,16 +161,6 @@ const categories = [
       '/driving/jk',
     ]
   },
-  {
-    key: 'business',
-    name: '商业测算',
-    icon: '📊',
-    desc: '餐饮盈利测算与竞品反向调研工具',
-    paths: [
-      '/tools/restaurant-profit',
-      '/tools/restaurant-profit-reverse',
-    ]
-  }
 ]
 
 function toolsFor(paths) {

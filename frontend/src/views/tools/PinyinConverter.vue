@@ -62,6 +62,14 @@ const pairs = computed(() => {
 
 const previewVisible = ref(false)
 const previewDataUrl = ref('')
+const exportWidth = ref(1600)
+
+const EXPORT_WIDTHS = [
+  { value: 1200, label: '标清 1200px' },
+  { value: 1600, label: '高清 1600px' },
+  { value: 2400, label: '超清 2400px' },
+  { value: 3200, label: '打印 3200px' },
+]
 
 function getSiteDomain() {
   try {
@@ -76,27 +84,33 @@ function measureText(ctx, text, font) {
   return ctx.measureText(text).width
 }
 
-function renderPairsToCanvas() {
+function renderPairsToCanvas(targetWidth = 1600) {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
   if (!ctx) return ''
 
-  const padding = 40
-  const titleHeight = 80
-  const footerHeight = 50
-  const rowGap = 24
-  const cellGapX = 12
-  const cellGapY = 16
-  const cellPaddingX = 10
-  const cellPaddingY = 12
-  const pinyinFont = '24px sans-serif'
-  const charFont = 'bold 36px sans-serif'
-  const nonZhFont = '36px sans-serif'
-  const titleFont = 'bold 32px sans-serif'
-  const subtitleFont = '18px sans-serif'
-  const footerFont = '14px sans-serif'
+  const BASE_WIDTH = 800
+  const scale = targetWidth / BASE_WIDTH
 
-  const maxContentWidth = 720
+  const padding = 40 * scale
+  const titleHeight = 80 * scale
+  const footerHeight = 50 * scale
+  const rowGap = 24 * scale
+  const cellGapX = 12 * scale
+  const cellGapY = 16 * scale
+  const cellPaddingX = 10 * scale
+  const cellPaddingY = 12 * scale
+  const pinyinFont = `${24 * scale}px sans-serif`
+  const charFont = `bold ${36 * scale}px sans-serif`
+  const nonZhFont = `${36 * scale}px sans-serif`
+  const titleFont = `bold ${32 * scale}px sans-serif`
+  const subtitleFont = `${18 * scale}px sans-serif`
+  const footerFont = `${14 * scale}px sans-serif`
+  const maxContentWidth = 720 * scale
+  const borderRadius = 8 * scale
+  const outerBorderWidth = 8 * scale
+  const innerBorderWidth = 2 * scale
+
   let x = 0
   let rowMaxWidth = 0
   let rowHeight = 0
@@ -119,7 +133,7 @@ function renderPairsToCanvas() {
     const pinyinWidth = pinyin ? measureText(ctx, pinyin, pinyinFont) : 0
     const charWidth = measureText(ctx, char, charFontToUse)
     const cellWidth = Math.max(pinyinWidth, charWidth) + cellPaddingX * 2
-    const cellHeight = (pinyin ? 34 : 0) + 44 + cellPaddingY * 2
+    const cellHeight = (pinyin ? 34 * scale : 0) + 44 * scale + cellPaddingY * 2
 
     if (x + cellWidth > maxContentWidth && currentRow.length) {
       rows.push({ items: currentRow, height: rowHeight })
@@ -150,7 +164,7 @@ function renderPairsToCanvas() {
   }
   totalHeight += footerHeight + padding
 
-  canvas.width = 800
+  canvas.width = targetWidth
   canvas.height = totalHeight
 
   // Background
@@ -159,25 +173,25 @@ function renderPairsToCanvas() {
 
   // Border
   ctx.strokeStyle = '#f59e0b'
-  ctx.lineWidth = 8
-  ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20)
+  ctx.lineWidth = outerBorderWidth
+  ctx.strokeRect(10 * scale, 10 * scale, canvas.width - 20 * scale, canvas.height - 20 * scale)
 
   // Inner border
   ctx.strokeStyle = '#fcd34d'
-  ctx.lineWidth = 2
-  ctx.strokeRect(22, 22, canvas.width - 44, canvas.height - 44)
+  ctx.lineWidth = innerBorderWidth
+  ctx.strokeRect(22 * scale, 22 * scale, canvas.width - 44 * scale, canvas.height - 44 * scale)
 
   // Title
   ctx.fillStyle = '#92400e'
   ctx.font = titleFont
   ctx.textAlign = 'center'
   ctx.textBaseline = 'top'
-  ctx.fillText('字音对照', canvas.width / 2, 38)
+  ctx.fillText('字音对照', canvas.width / 2, 38 * scale)
 
   // Subtitle
   ctx.fillStyle = '#78350f'
   ctx.font = subtitleFont
-  ctx.fillText(`共 ${stats.value.chineseCount} 个汉字`, canvas.width / 2, 76)
+  ctx.fillText(`共 ${stats.value.chineseCount} 个汉字`, canvas.width / 2, 76 * scale)
 
   // Content
   let y = titleHeight + padding
@@ -186,13 +200,13 @@ function renderPairsToCanvas() {
     for (const item of row.items) {
       // Cell background
       ctx.fillStyle = item.isZh ? '#fffbeb' : '#f3f4f6'
-      roundRect(ctx, rowX, y, item.width, row.height, 8)
+      roundRect(ctx, rowX, y, item.width, row.height, borderRadius)
       ctx.fill()
 
       // Cell border
       ctx.strokeStyle = item.isZh ? '#fbbf24' : '#d1d5db'
-      ctx.lineWidth = 1.5
-      roundRect(ctx, rowX, y, item.width, row.height, 8)
+      ctx.lineWidth = 1.5 * scale
+      roundRect(ctx, rowX, y, item.width, row.height, borderRadius)
       ctx.stroke()
 
       // Pinyin
@@ -201,7 +215,7 @@ function renderPairsToCanvas() {
         ctx.font = pinyinFont
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
-        ctx.fillText(item.pinyin, rowX + item.width / 2, y + cellPaddingY + 17)
+        ctx.fillText(item.pinyin, rowX + item.width / 2, y + cellPaddingY + 17 * scale)
       }
 
       // Char
@@ -209,7 +223,7 @@ function renderPairsToCanvas() {
       ctx.font = item.isZh ? charFont : nonZhFont
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      const charY = item.pinyin ? y + row.height - cellPaddingY - 22 : y + row.height / 2
+      const charY = item.pinyin ? y + row.height - cellPaddingY - 22 * scale : y + row.height / 2
       ctx.fillText(item.char, rowX + item.width / 2, charY)
 
       rowX += item.width + cellGapX
@@ -222,7 +236,7 @@ function renderPairsToCanvas() {
   ctx.font = footerFont
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillText(`由 ${getSiteDomain()} 生成，数据仅供参考`, canvas.width / 2, canvas.height - 28)
+  ctx.fillText(`由 ${getSiteDomain()} 生成，数据仅供参考`, canvas.width / 2, canvas.height - 28 * scale)
 
   return canvas.toDataURL('image/png')
 }
@@ -243,12 +257,17 @@ function roundRect(ctx, x, y, width, height, radius) {
 
 function openPreview() {
   if (!pairs.value.length) return
-  previewDataUrl.value = renderPairsToCanvas()
+  previewDataUrl.value = renderPairsToCanvas(exportWidth.value)
   previewVisible.value = true
 }
 
 function closePreview() {
   previewVisible.value = false
+}
+
+function regeneratePreview() {
+  if (!pairs.value.length) return
+  previewDataUrl.value = renderPairsToCanvas(exportWidth.value)
 }
 
 function downloadImage() {
@@ -346,8 +365,16 @@ watch([tone, segment, preserve], () => {
             <img v-if="previewDataUrl" :src="previewDataUrl" alt="字音对照预览">
           </div>
           <div class="preview-footer">
-            <button class="btn" @click="downloadImage">下载图片</button>
-            <button class="btn btn-secondary" @click="closePreview">关闭</button>
+            <div class="resolution-selector">
+              <label v-for="w in EXPORT_WIDTHS" :key="w.value" class="resolution-option">
+                <input v-model="exportWidth" type="radio" :value="w.value" @change="regeneratePreview">
+                <span>{{ w.label }}</span>
+              </label>
+            </div>
+            <div class="preview-actions">
+              <button class="btn" @click="downloadImage">下载图片</button>
+              <button class="btn btn-secondary" @click="closePreview">关闭</button>
+            </div>
           </div>
         </div>
       </div>
@@ -496,10 +523,32 @@ watch([tone, segment, preserve], () => {
 }
 .preview-footer {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   padding: 14px 16px;
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.resolution-selector {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.resolution-option {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.resolution-option input {
+  margin: 0;
+}
+.preview-actions {
+  display: flex;
+  gap: 10px;
 }
 .error-msg {
   color: var(--error);

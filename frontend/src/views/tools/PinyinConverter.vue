@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useTool } from '../../composables/useTool'
 import { convertToPinyin, convertToPinyinPairs, TONE_MODES } from '../../logic/pinyin'

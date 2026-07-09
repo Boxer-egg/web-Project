@@ -60,6 +60,206 @@ const pairs = computed(() => {
   return result.pairs
 })
 
+const previewVisible = ref(false)
+const previewDataUrl = ref('')
+
+function getSiteDomain() {
+  try {
+    return window.location.hostname || 'vvzzv.com'
+  } catch {
+    return 'vvzzv.com'
+  }
+}
+
+function measureText(ctx, text, font) {
+  ctx.font = font
+  return ctx.measureText(text).width
+}
+
+function renderPairsToCanvas() {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return ''
+
+  const padding = 40
+  const titleHeight = 80
+  const footerHeight = 50
+  const rowGap = 24
+  const cellGapX = 12
+  const cellGapY = 16
+  const cellPaddingX = 10
+  const cellPaddingY = 12
+  const pinyinFont = '24px sans-serif'
+  const charFont = 'bold 36px sans-serif'
+  const nonZhFont = '36px sans-serif'
+  const titleFont = 'bold 32px sans-serif'
+  const subtitleFont = '18px sans-serif'
+  const footerFont = '14px sans-serif'
+
+  const maxContentWidth = 720
+  let x = 0
+  let rowMaxWidth = 0
+  let rowHeight = 0
+  const rows = []
+  let currentRow = []
+
+  for (const pair of pairs.value) {
+    if (pair.char === '\n') {
+      if (currentRow.length) {
+        rows.push({ items: currentRow, height: rowHeight })
+        currentRow = []
+        rowHeight = 0
+      }
+      continue
+    }
+
+    const char = pair.char
+    const pinyin = pair.isZh ? (pair.pinyin || '') : ''
+    const charFontToUse = pair.isZh ? charFont : nonZhFont
+    const pinyinWidth = pinyin ? measureText(ctx, pinyin, pinyinFont) : 0
+    const charWidth = measureText(ctx, char, charFontToUse)
+    const cellWidth = Math.max(pinyinWidth, charWidth) + cellPaddingX * 2
+    const cellHeight = (pinyin ? 34 : 0) + 44 + cellPaddingY * 2
+
+    if (x + cellWidth > maxContentWidth && currentRow.length) {
+      rows.push({ items: currentRow, height: rowHeight })
+      currentRow = []
+      x = 0
+      rowHeight = 0
+    }
+
+    currentRow.push({
+      char,
+      pinyin,
+      width: cellWidth,
+      height: cellHeight,
+      isZh: pair.isZh
+    })
+    x += cellWidth + cellGapX
+    rowMaxWidth = Math.max(rowMaxWidth, x - cellGapX)
+    rowHeight = Math.max(rowHeight, cellHeight)
+  }
+
+  if (currentRow.length) {
+    rows.push({ items: currentRow, height: rowHeight })
+  }
+
+  let totalHeight = titleHeight + padding
+  for (const row of rows) {
+    totalHeight += row.height + cellGapY
+  }
+  totalHeight += footerHeight + padding
+
+  canvas.width = 800
+  canvas.height = totalHeight
+
+  // Background
+  ctx.fillStyle = '#fffdf5'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  // Border
+  ctx.strokeStyle = '#f59e0b'
+  ctx.lineWidth = 8
+  ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20)
+
+  // Inner border
+  ctx.strokeStyle = '#fcd34d'
+  ctx.lineWidth = 2
+  ctx.strokeRect(22, 22, canvas.width - 44, canvas.height - 44)
+
+  // Title
+  ctx.fillStyle = '#92400e'
+  ctx.font = titleFont
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'top'
+  ctx.fillText('字音对照', canvas.width / 2, 38)
+
+  // Subtitle
+  ctx.fillStyle = '#78350f'
+  ctx.font = subtitleFont
+  ctx.fillText(`共 ${stats.value.chineseCount} 个汉字`, canvas.width / 2, 76)
+
+  // Content
+  let y = titleHeight + padding
+  for (const row of rows) {
+    let rowX = (canvas.width - rowMaxWidth) / 2
+    for (const item of row.items) {
+      // Cell background
+      ctx.fillStyle = item.isZh ? '#fffbeb' : '#f3f4f6'
+      roundRect(ctx, rowX, y, item.width, row.height, 8)
+      ctx.fill()
+
+      // Cell border
+      ctx.strokeStyle = item.isZh ? '#fbbf24' : '#d1d5db'
+      ctx.lineWidth = 1.5
+      roundRect(ctx, rowX, y, item.width, row.height, 8)
+      ctx.stroke()
+
+      // Pinyin
+      if (item.pinyin) {
+        ctx.fillStyle = '#4b5563'
+        ctx.font = pinyinFont
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(item.pinyin, rowX + item.width / 2, y + cellPaddingY + 17)
+      }
+
+      // Char
+      ctx.fillStyle = item.isZh ? '#111827' : '#9ca3af'
+      ctx.font = item.isZh ? charFont : nonZhFont
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      const charY = item.pinyin ? y + row.height - cellPaddingY - 22 : y + row.height / 2
+      ctx.fillText(item.char, rowX + item.width / 2, charY)
+
+      rowX += item.width + cellGapX
+    }
+    y += row.height + cellGapY
+  }
+
+  // Footer
+  ctx.fillStyle = '#9ca3af'
+  ctx.font = footerFont
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(`由 ${getSiteDomain()} 生成，数据仅供参考`, canvas.width / 2, canvas.height - 28)
+
+  return canvas.toDataURL('image/png')
+}
+
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath()
+  ctx.moveTo(x + radius, y)
+  ctx.lineTo(x + width - radius, y)
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius)
+  ctx.lineTo(x + width, y + height - radius)
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height)
+  ctx.lineTo(x + radius, y + height)
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius)
+  ctx.lineTo(x, y + radius)
+  ctx.quadraticCurveTo(x, y, x + radius, y)
+  ctx.closePath()
+}
+
+function openPreview() {
+  if (!pairs.value.length) return
+  previewDataUrl.value = renderPairsToCanvas()
+  previewVisible.value = true
+}
+
+function closePreview() {
+  previewVisible.value = false
+}
+
+function downloadImage() {
+  if (!previewDataUrl.value) return
+  const link = document.createElement('a')
+  link.href = previewDataUrl.value
+  const filename = input.value.slice(0, 20).replace(/\\s+/g, '_') || '字音对照'
+  link.download = `${filename}-${new Date().toISOString().slice(0, 10)}.png`
+  link.click()
+}
+
 watch([tone, segment, preserve], () => {
   if (autoMode.value) convertText()
 })
@@ -120,7 +320,10 @@ watch([tone, segment, preserve], () => {
     </div>
 
     <div v-if="pairs.length" class="card pinyin-pairs-card">
-      <h3>字音对照</h3>
+      <div class="pairs-header">
+        <h3>字音对照</h3>
+        <button class="btn btn-sm" @click="openPreview">导出图片</button>
+      </div>
       <div class="pinyin-pairs">
         <template v-for="(pair, index) in pairs" :key="index">
           <div v-if="pair.char === '\n'" class="line-break"></div>
@@ -131,6 +334,24 @@ watch([tone, segment, preserve], () => {
         </template>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="previewVisible" class="preview-overlay" @click.self="closePreview">
+        <div class="preview-dialog">
+          <div class="preview-header">
+            <h3>图片预览</h3>
+            <button class="preview-close" @click="closePreview">×</button>
+          </div>
+          <div class="preview-body">
+            <img v-if="previewDataUrl" :src="previewDataUrl" alt="字音对照预览">
+          </div>
+          <div class="preview-footer">
+            <button class="btn" @click="downloadImage">下载图片</button>
+            <button class="btn btn-secondary" @click="closePreview">关闭</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <div v-if="input" class="card stats-bar">
       中文字符：{{ stats.chineseCount }} 个｜非中文字符：{{ stats.nonChineseCount }} 个
@@ -175,8 +396,14 @@ watch([tone, segment, preserve], () => {
   margin-top: 20px;
   padding: 16px;
 }
-.pinyin-pairs-card h3 {
-  margin: 0 0 12px;
+.pairs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.pairs-header h3 {
+  margin: 0;
   font-size: 15px;
   color: var(--text-primary);
 }
@@ -210,6 +437,69 @@ watch([tone, segment, preserve], () => {
 .line-break {
   flex-basis: 100%;
   height: 0;
+}
+
+/* 图片预览弹窗 */
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+.preview-dialog {
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.preview-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+.preview-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  line-height: 1;
+}
+.preview-body {
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  background: var(--bg-secondary);
+}
+.preview-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.preview-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
 }
 .error-msg {
   color: var(--error);

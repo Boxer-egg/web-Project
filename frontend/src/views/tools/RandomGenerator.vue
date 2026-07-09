@@ -119,9 +119,17 @@ function clearAll() {
         <h3>配置</h3>
         <div class="config-row">
           <label>类型</label>
-          <select v-model="type" class="input">
-            <option v-for="t in types" :key="t.value" :value="t.value">{{ t.label }}</option>
-          </select>
+          <div class="type-tabs">
+            <button
+              v-for="t in types"
+              :key="t.value"
+              class="tab-btn"
+              :class="{ active: type === t.value }"
+              @click="type = t.value"
+            >
+              {{ t.label }}
+            </button>
+          </div>
         </div>
         <div v-if="showMinMax" class="config-row">
           <label>最小值</label>
@@ -200,6 +208,26 @@ function clearAll() {
 }
 .range-input {
   width: 100%;
+}
+.type-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tab-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.tab-btn:hover, .tab-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
 }
 .panel-label {
   display: flex;

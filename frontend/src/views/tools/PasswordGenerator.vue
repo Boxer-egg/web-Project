@@ -22,6 +22,7 @@ const {
   process: generate
 } = useTool({
   storageKey: 'pwd',
+  requireInput: false,
   processor: () => {
     const res = []
     for (let i = 0; i < count.value; i++) {

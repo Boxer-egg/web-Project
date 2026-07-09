@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { getUrlParams } from '../../utils/urlParams'
 import { search, getCategoryMeta } from '../../data/garbageData'
@@ -10,42 +10,48 @@ const results = ref([])
 
 const examples = ['电池', '塑料瓶', '剩饭', '餐巾纸', '榴莲壳', '过期药品']
 
-function doSearch() {
-  results.value = search(query.value)
+function doSearch(q = query.value) {
+  results.value = search(q)
 }
 
-watch(query, () => {
-  doSearch()
-})
+function setQuery(val) {
+  query.value = val
+  doSearch(val)
+}
 
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('q')) {
-    query.value = params.get('q')
+    const q = params.get('q')
+    query.value = q
+    doSearch(q)
+  } else if (query.value.trim()) {
+    doSearch(query.value)
   }
-  doSearch()
 })
-
-function setQuery(val) {
-  query.value = val
-}
 
 function clearAll() {
   query.value = ''
   results.value = []
 }
 
-const grouped = computed(() => {
+const categoryOrder = [
+  { key: 'recyclable', meta: getCategoryMeta('recyclable') },
+  { key: 'hazardous',  meta: getCategoryMeta('hazardous') },
+  { key: 'kitchen',    meta: getCategoryMeta('kitchen') },
+  { key: 'other',      meta: getCategoryMeta('other') },
+]
+
+const groupedList = computed(() => {
   const groups = {}
   for (const item of results.value) {
     if (!groups[item.category]) groups[item.category] = []
     groups[item.category].push(item)
   }
-  return groups
-})
-
-const categoryOrder = ['recyclable', 'hazardous', 'kitchen', 'other']
-</script>
+  return categoryOrder
+    .map(c => ({ ...c, items: groups[c.key] || [] }))
+    .filter(c => c.items.length > 0)
+})</script>
 
 <template>
   <div class="tool-page">
@@ -91,19 +97,18 @@ const categoryOrder = ['recyclable', 'hazardous', 'kitchen', 'other']
 
     <div class="results">
       <div
-        v-for="cat in categoryOrder"
-        :key="cat"
-        v-show="grouped[cat]?.length"
+        v-for="cat in groupedList"
+        :key="cat.key"
         class="category-group card"
       >
-        <div class="category-header" :style="{ background: getCategoryMeta(cat).color }">
-          <span class="category-label">{{ getCategoryMeta(cat).label }}</span>
-          <span class="category-desc">{{ getCategoryMeta(cat).desc }}</span>
-          <span class="category-count">{{ grouped[cat]?.length }} 个</span>
+        <div class="category-header" :style="{ background: cat.meta.color }">
+          <span class="category-label">{{ cat.meta.label }}</span>
+          <span class="category-desc">{{ cat.meta.desc }}</span>
+          <span class="category-count">{{ cat.items.length }} 个</span>
         </div>
         <div class="items">
           <div
-            v-for="item in grouped[cat]"
+            v-for="item in cat.items"
             :key="item.name"
             class="item"
           >

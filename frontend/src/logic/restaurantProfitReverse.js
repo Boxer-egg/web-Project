@@ -112,7 +112,6 @@ export function calcFromMonthlyNetProfit({
  * @param {number} params.monthlyFixedCost
  * @param {number} [params.seats=0]
  * @param {number} [params.daysPerMonth=30]
- * @param {number} [params.customerToOrderRatio=1]
  * @returns {ReverseResult}
  */
 export function calcFromDailyCustomers({
@@ -122,7 +121,6 @@ export function calcFromDailyCustomers({
   monthlyFixedCost,
   seats = 0,
   daysPerMonth = 30,
-  customerToOrderRatio = 1,
 }) {
   const customers = Number(dailyCustomers) || 0
   const ticket = Number(avgTicket) || 0
@@ -130,9 +128,8 @@ export function calcFromDailyCustomers({
   const fixed = Number(monthlyFixedCost) || 0
   const seatCount = Number(seats) || 0
   const days = Number(daysPerMonth) || 30
-  const ratio = Number(customerToOrderRatio) || 1
 
-  const dailyOrders = customers * ratio
+  const dailyOrders = customers
   const dailyRevenue = dailyOrders * ticket
   const monthlyRevenue = dailyRevenue * days
   const monthlyNetProfit = monthlyRevenue * margin - fixed

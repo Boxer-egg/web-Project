@@ -53,7 +53,6 @@ const yearlyRent = useStorage('rpr-yearly-rent', 0)
 const utilityFixedCost = useStorage('rpr-utility-fixed-cost', 0)
 const laborFixedCost = useStorage('rpr-labor-fixed-cost', 0)
 const seats = useStorage('rpr-seats', 0)
-const customerToOrderRatio = useStorage('rpr-customer-to-order-ratio', 1)
 const daysPerMonth = useStorage('rpr-days-per-month', 30)
 const businessName = useStorage('rpr-business-name', '')
 
@@ -111,7 +110,6 @@ clampMin(utilityFixedCost)
 clampMin(laborFixedCost)
 clampMin(seats)
 clampMin(daysPerMonth, 1)
-clampMin(customerToOrderRatio)
 
 watch(grossMargin, (val) => {
   const n = Number(val)
@@ -169,7 +167,7 @@ const result = computed(() => {
     case 'monthlyNetProfit':
       return calcFromMonthlyNetProfit({ ...common, monthlyNetProfit: observedValue.value })
     case 'dailyCustomers':
-      return calcFromDailyCustomers({ ...common, dailyCustomers: observedValue.value, customerToOrderRatio: customerToOrderRatio.value })
+      return calcFromDailyCustomers({ ...common, dailyCustomers: observedValue.value })
     case 'dailyRevenue':
     default:
       return calcFromDailyRevenue({ ...common, dailyRevenue: observedValue.value })
@@ -198,7 +196,6 @@ function loadExample() {
   utilityFixedCost.value = 2000
   laborFixedCost.value = 8000
   seats.value = 24
-  customerToOrderRatio.value = 1
   daysPerMonth.value = 30
 }
 
@@ -214,7 +211,6 @@ function clearAll() {
   utilityFixedCost.value = 0
   laborFixedCost.value = 0
   seats.value = 0
-  customerToOrderRatio.value = 1
   daysPerMonth.value = 30
   businessName.value = ''
 }
@@ -438,10 +434,6 @@ function downloadResultsAsImage() {
             </div>
           </div>
         </div>
-        <div v-if="mode === 'dailyCustomers'" class="form-row">
-          <label>客户→订单转化率（默认 1 等于 一人一单）</label>
-          <input v-model.number="customerToOrderRatio" type="number" step="0.01" min="0" max="2" class="input">
-        </div>
         <div class="form-row">
           <label>商圈名称（选填）</label>
           <input v-model="businessName" type="text" class="input" placeholder="例如：一中店">
@@ -486,16 +478,15 @@ function downloadResultsAsImage() {
 
         <div class="card result-card">
           <div class="section-title">参数回显</div>
-          <ul class="param-list">
-            <li>平均客单价：{{ fmtMoney(avgTicket) }} 元</li>
-            <li>毛利率：{{ ((grossMargin || 0) * 100).toFixed(0) }}%</li>
-            <li>月租金：{{ fmtMoney(effectiveMonthlyRent) }} 元</li>
-            <li>水电杂费：{{ fmtMoney(utilityFixedCost) }} 元</li>
-            <li>人工固定成本：{{ fmtMoney(laborFixedCost) }} 元</li>
-            <li>总月固定成本：{{ fmtMoney(effectiveMonthlyFixedCost) }} 元</li>
-            <li v-if="mode === 'dailyCustomers'">客户→订单转化率：{{ customerToOrderRatio }}</li>
-            <li>每月营业天数：{{ daysPerMonth }} 天</li>
-          </ul>
+          <div class="param-echo-grid">
+            <div class="param-item"><span class="param-label">平均客单价</span><span class="param-value">{{ fmtMoney(avgTicket) }} 元</span></div>
+            <div class="param-item"><span class="param-label">毛利率</span><span class="param-value">{{ ((grossMargin || 0) * 100).toFixed(0) }}%</span></div>
+            <div class="param-item"><span class="param-label">月租金</span><span class="param-value">{{ fmtMoney(effectiveMonthlyRent) }} 元</span></div>
+            <div class="param-item"><span class="param-label">水电杂费</span><span class="param-value">{{ fmtMoney(utilityFixedCost) }} 元</span></div>
+            <div class="param-item"><span class="param-label">人工固定成本</span><span class="param-value">{{ fmtMoney(laborFixedCost) }} 元</span></div>
+            <div class="param-item"><span class="param-label">总月固定成本</span><span class="param-value">{{ fmtMoney(effectiveMonthlyFixedCost) }} 元</span></div>
+            <div class="param-item"><span class="param-label">每月营业天数</span><span class="param-value">{{ daysPerMonth }} 天</span></div>
+          </div>
         </div>
 
         <div class="download-bar">
@@ -654,12 +645,27 @@ function downloadResultsAsImage() {
 .text-error .metric-value {
   color: var(--error);
 }
-.param-list {
-  margin: 0;
-  padding-left: 18px;
+.param-echo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+}
+.param-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
-  line-height: 1.8;
   color: var(--text-secondary);
+  padding: 4px 0;
+}
+.param-label {
+  flex-shrink: 0;
+}
+.param-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
 }
 .hint-text {
   margin: 0 0 16px;

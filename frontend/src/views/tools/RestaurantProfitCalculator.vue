@@ -12,7 +12,7 @@ const DISTRICT_TYPES = [
 ]
 
 /** 输入项（带本地存储） */
-const districtType = useStorage('rpf-district-type', 'custom')
+const districtType = useStorage('rpf-district-type', 'community')
 const area = useStorage('rpf-area', 0)
 const annualRent = useStorage('rpf-annual-rent', 0)
 const deposit = useStorage('rpf-deposit', 0)
@@ -22,7 +22,7 @@ const decorationAd = useStorage('rpf-decoration-ad', 0)
 const equipment = useStorage('rpf-equipment', 0)
 const firstBatchMaterial = useStorage('rpf-first-batch-material', 0)
 const laborAvgSalary = useStorage('rpf-labor-avg-salary', 0)
-const laborHeadcount = useStorage('rpf-labor-headcount', 0)
+const laborHeadcount = useStorage('rpf-labor-headcount', 1)
 const monthlyUtilities = useStorage('rpf-monthly-utilities', 0)
 const grossMargin = useStorage('rpf-gross-margin', 0)
 const avgTicket = useStorage('rpf-avg-ticket', 0)
@@ -381,7 +381,7 @@ function loadExample() {
 
 /** 清空所有输入 */
 function clearAll() {
-  districtType.value = 'custom'
+  districtType.value = 'community'
   area.value = 0
   annualRent.value = 0
   deposit.value = 0
@@ -391,7 +391,7 @@ function clearAll() {
   equipment.value = 0
   firstBatchMaterial.value = 0
   laborAvgSalary.value = 0
-  laborHeadcount.value = 0
+  laborHeadcount.value = 1
   monthlyUtilities.value = 0
   grossMargin.value = 0
   avgTicket.value = 0
@@ -687,6 +687,7 @@ function downloadResultsAsImage() {
           <div class="form-col">
             <label>人数</label>
             <input v-model.number="laborHeadcount" type="number" class="input">
+            <span v-if="laborHeadcount > 0 && laborAvgSalary > 0" class="labor-inline-hint">总工资 {{ fmtMoney(monthlyLabor) }} 元</span>
           </div>
         </div>
         <div class="form-row form-row-2col">
@@ -1023,6 +1024,12 @@ input[type="number"] {
   background: var(--bg-secondary);
   padding: 8px 10px;
   border-radius: var(--radius);
+}
+.labor-inline-hint {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 .result-panel {

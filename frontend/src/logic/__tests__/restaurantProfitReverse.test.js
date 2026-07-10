@@ -104,16 +104,15 @@ describe('calcFromDailyCustomers', () => {
     assert.strictEqual(result.monthlyNetProfit, 9600)
   })
 
-  it('客户到订单转化率可调整', () => {
+  it('日均客户数直接等于日均单数', () => {
     const result = calcFromDailyCustomers({
       dailyCustomers: 80,
       avgTicket: 18,
       grossMargin: 0.5,
       monthlyFixedCost: 12000,
-      customerToOrderRatio: 0.8,
     })
 
-    assert.strictEqual(result.dailyOrders, 64)
-    assert.strictEqual(result.dailyRevenue, 64 * 18)
+    assert.strictEqual(result.dailyOrders, 80)
+    assert.strictEqual(result.dailyRevenue, 80 * 18)
   })
 })

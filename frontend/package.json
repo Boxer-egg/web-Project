@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:e2e": "node scripts/e2e-smoke.mjs"
+    "test:e2e": "node scripts/e2e-smoke.mjs",
+    "test:e2e:watermark": "node scripts/e2e-image-watermark.mjs"
   },
   "dependencies": {
     "@vueuse/core": "^14.3.0",

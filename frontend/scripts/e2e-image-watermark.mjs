@@ -80,10 +80,17 @@ function pngChunk(type, data) {
  * Parse a 6-digit hex color into RGB components.
  * @param {string} hex Color like `#4f46e5`.
  * @returns {{ r: number, g: number, b: number }}
+ * @throws {Error} If the hex string is not a valid 3 or 6 digit color.
  */
 function parseHexColor(hex) {
-  const normalized = hex.replace('#', '')
-  const int = Number.parseInt(normalized, 16)
+  const normalized = String(hex || '').replace('#', '')
+  const expanded = normalized.length === 3
+    ? normalized.split('').map(c => c + c).join('')
+    : normalized
+  if (!/^[0-9a-fA-F]{6}$/.test(expanded)) {
+    throw new Error(`Invalid hex color: ${hex}`)
+  }
+  const int = Number.parseInt(expanded, 16)
   return {
     r: (int >> 16) & 0xff,
     g: (int >> 8) & 0xff,
@@ -136,9 +143,18 @@ function generatePng(width, height, hex = '#4f46e5') {
 function ensureTestImage() {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'watermark-e2e-'))
   const imagePath = path.join(tmpDir, 'test-image.png')
-  const png = generatePng(64, 64, '#4f46e5')
-  fs.writeFileSync(imagePath, png)
-  return imagePath
+  try {
+    const png = generatePng(64, 64, '#4f46e5')
+    fs.writeFileSync(imagePath, png)
+    return imagePath
+  } catch (err) {
+    try {
+      fs.rmSync(tmpDir, { recursive: true, force: true })
+    } catch {
+      // Ignore cleanup errors.
+    }
+    throw err
+  }
 }
 
 /**

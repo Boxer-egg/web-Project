@@ -102,6 +102,7 @@ watch(
     suffix,
     customSuffix,
     density,
+    isSingleMode,
     position,
     fontKey,
     fontSize,
@@ -115,6 +116,10 @@ watch(
   }
 )
 
+/**
+ * Render the watermarked preview onto the visible canvas.
+ * The canvas is sized to fit the preview panel while preserving aspect ratio.
+ */
 function renderCanvas() {
   if (!originalImage.value || !canvasRef.value) return
   const canvas = canvasRef.value
@@ -166,6 +171,13 @@ function getPreviewDimensions(naturalW, naturalH) {
   }
 }
 
+/**
+ * Draw watermark text onto the given canvas context.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} w Canvas width.
+ * @param {number} h Canvas height.
+ * @param {number} scale Scale factor relative to the original image (preview vs download).
+ */
 function drawWatermarks(ctx, w, h, scale = 1) {
   const text = watermarkText.value
   const size = Math.max(1, Math.round(displayFontSize.value * scale))
@@ -202,6 +214,16 @@ function drawWatermarks(ctx, w, h, scale = 1) {
   ctx.restore()
 }
 
+/**
+ * Draw watermarks tiled across the canvas.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} text Watermark text.
+ * @param {number} w Canvas width.
+ * @param {number} h Canvas height.
+ * @param {number} textWidth Measured text width.
+ * @param {number} textHeight Text height (font size).
+ * @param {{ rows: number, cols: number }} grid Density grid.
+ */
 function drawTiledWatermarks(ctx, text, w, h, textWidth, textHeight, grid) {
   const cols = grid.cols
   const rows = grid.rows
@@ -217,6 +239,14 @@ function drawTiledWatermarks(ctx, text, w, h, textWidth, textHeight, grid) {
   }
 }
 
+/**
+ * Draw a single line of text rotated around its center point.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} text
+ * @param {number} cx Center x coordinate.
+ * @param {number} cy Center y coordinate.
+ * @param {number} angleDeg Rotation angle in degrees.
+ */
 function drawRotatedText(ctx, text, cx, cy, angleDeg) {
   ctx.save()
   ctx.translate(cx, cy)
@@ -266,6 +296,10 @@ function onPaste(e) {
   }
 }
 
+/**
+ * Load and validate an uploaded image file.
+ * @param {File} file
+ */
 function loadFile(file) {
   errorMsg.value = ''
   if (!file.type.startsWith('image/')) {
@@ -305,18 +339,27 @@ function loadFile(file) {
   img.src = url
 }
 
+/**
+ * Clear the current image and reset related state.
+ * Also increments the load id so any pending image load is ignored.
+ */
 function clearImage() {
   currentLoadId++
   originalImage.value = null
   originalFileName.value = ''
   originalFileType.value = ''
   errorMsg.value = ''
+  isLoading.value = false
   if (fileInputRef.value) fileInputRef.value.value = ''
 }
 
 // ============================================================
 // Download
 // ============================================================
+/**
+ * Download the watermarked image at the original resolution.
+ * Preserves the original file format and appends `_watermark` to the filename.
+ */
 function downloadImage() {
   if (!originalImage.value) return
 
@@ -351,6 +394,10 @@ function downloadImage() {
 
 /**
  * Render the original image with watermarks at its natural resolution.
+ * @returns {HTMLCanvasElement | null}
+ */
+/**
+ * Create a full-resolution offscreen canvas with the watermark applied.
  * @returns {HTMLCanvasElement | null}
  */
 function createFullResolutionCanvas() {
@@ -466,17 +513,19 @@ function getExtensionFromMime(mime) {
             </label>
           </div>
           <div class="density-slider-wrap">
-            <span>稀疏</span>
-            <input
-              v-model.number="density"
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              class="density-slider"
-            >
-            <span>中等</span>
-            <span>密集</span>
+            <div class="density-slider-top">
+              <span>稀疏</span>
+              <input
+                v-model.number="density"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                class="density-slider"
+              >
+              <span>密集</span>
+            </div>
+            <span class="density-slider-center">中等</span>
           </div>
         </div>
 
@@ -721,10 +770,20 @@ function getExtensionFromMime(mime) {
 
 .density-slider-wrap {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 4px;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+.density-slider-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.density-slider-center {
+  align-self: center;
 }
 
 .density-slider {

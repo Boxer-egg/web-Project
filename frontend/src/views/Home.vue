@@ -23,6 +23,7 @@ const tools = [
   { path: '/tools/json-csv', name: 'JSON ↔ CSV 转换', icon: '📑', desc: 'JSON 数组与 CSV 格式互相转换', category: '转换' },
   { path: '/tools/qrcode', name: '二维码生成器', icon: '▣', desc: '文本/URL 转可扫描的二维码图片', category: '图像' },
   { path: '/tools/image-canvas', name: '图片 Canvas 工具箱', icon: '🖌️', desc: '像素化、水印、九宫格切割、格式转换', category: '图像' },
+  { path: '/tools/image-watermark', name: '图片水印生成器', icon: '💧', desc: '添加仅供指定用途使用的文字水印', category: '图像' },
   { path: '/tools/css-unit', name: 'CSS 单位转换', icon: '📐', desc: 'PX/REM/EM/VH/VW/百分比互转', category: '转换' },
   { path: '/tools/lorem-ipsum', name: 'Lorem Ipsum', icon: '📝', desc: '假文生成，拉丁语/中文占位文本', category: '文本' },
   { path: '/tools/word-counter', name: '字数统计', icon: '📝', desc: '实时统计中文字数、单词数、阅读时间', category: '文本' },
@@ -126,7 +127,7 @@ const categories = [
     name: '图像分享',
     icon: '🖼️',
     desc: '二维码生成与图像相关工具',
-    paths: ['/tools/qrcode', '/tools/image-canvas']
+    paths: ['/tools/qrcode', '/tools/image-canvas', '/tools/image-watermark']
   },
   {
     key: 'security',

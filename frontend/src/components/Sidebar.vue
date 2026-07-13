@@ -100,6 +100,7 @@ const groups = [
     tools: [
       { path: '/tools/qrcode', name: '二维码', icon: '▣', keywords: ['erweima', 'qrcode', 'barcode', 'scan', 'shengcheng'] },
       { path: '/tools/image-canvas', name: '图片 Canvas 工具箱', icon: '🖌️', keywords: ['tupian', 'image', 'canvas', 'xiangsu', 'shuiyin', 'jiugongge', 'filter'] },
+      { path: '/tools/image-watermark', name: '图片水印生成器', icon: '💧', keywords: ['tupian', 'image', 'shuiyin', 'watermark', 'shenhe', 'shengcheng'] },
     ]
   },
   {

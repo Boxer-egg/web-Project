@@ -37,18 +37,17 @@ const isBold = useStorage('watermark-bold', false)
 
 const canvasRef = ref(null)
 const fileInputRef = ref(null)
+const previewWrapRef = ref(null)
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20MB
+
+// Token to cancel stale image load callbacks.
+let currentLoadId = 0
 
 // ============================================================
 // Computed
 // ============================================================
 const hasImage = computed(() => !!originalImage.value)
-
-const suffixOptions = computed(() => [
-  ...WATERMARK_SUFFIX_OPTIONS,
-  'custom',
-])
 
 const effectiveSuffix = computed(() => {
   if (suffix.value === 'custom') return customSuffix.value
@@ -113,8 +112,7 @@ watch(
   ],
   () => {
     nextTick(debouncedRender)
-  },
-  { deep: true }
+  }
 )
 
 function renderCanvas() {
@@ -127,8 +125,7 @@ function renderCanvas() {
   }
 
   const img = originalImage.value
-  const w = img.naturalWidth
-  const h = img.naturalHeight
+  const { w, h, scale } = getPreviewDimensions(img.naturalWidth, img.naturalHeight)
 
   canvas.width = w
   canvas.height = h
@@ -136,12 +133,42 @@ function renderCanvas() {
   ctx.clearRect(0, 0, w, h)
   ctx.drawImage(img, 0, 0, w, h)
 
-  drawWatermarks(ctx, w, h)
+  drawWatermarks(ctx, w, h, scale)
 }
 
-function drawWatermarks(ctx, w, h) {
+/**
+ * Compute preview canvas dimensions that fit inside the preview panel
+ * while preserving the original aspect ratio.
+ * @param {number} naturalW Original image width.
+ * @param {number} naturalH Original image height.
+ * @returns {{ w: number, h: number, scale: number }}
+ */
+function getPreviewDimensions(naturalW, naturalH) {
+  const wrap = previewWrapRef.value
+  // Cap preview height so large vertical images do not overflow the viewport.
+  const maxPreviewHeight = 600
+  const fallbackMaxW = 1200
+
+  let maxW = fallbackMaxW
+  if (wrap) {
+    const rect = wrap.getBoundingClientRect()
+    maxW = Math.max(1, Math.floor(rect.width))
+  }
+
+  const ratio = Math.min(maxW / naturalW, maxPreviewHeight / naturalH, 1)
+  if (ratio >= 1) {
+    return { w: naturalW, h: naturalH, scale: 1 }
+  }
+  return {
+    w: Math.max(1, Math.round(naturalW * ratio)),
+    h: Math.max(1, Math.round(naturalH * ratio)),
+    scale: ratio,
+  }
+}
+
+function drawWatermarks(ctx, w, h, scale = 1) {
   const text = watermarkText.value
-  const size = displayFontSize.value
+  const size = Math.max(1, Math.round(displayFontSize.value * scale))
   const family = fontFamilyOption(fontKey.value)
   const weight = isBold.value ? 'bold' : 'normal'
   ctx.font = `${weight} ${size}px ${family}`
@@ -157,13 +184,14 @@ function drawWatermarks(ctx, w, h) {
   ctx.globalAlpha = displayOpacity.value
 
   if (isSingle.value) {
+    const padding = Math.max(1, Math.round(20 * scale))
     const { x, y } = calcSinglePosition(
       position.value,
       w,
       h,
       textWidth,
       textHeight,
-      20
+      padding
     )
     drawRotatedText(ctx, text, x + textWidth / 2, y + textHeight / 2, displayRotation.value)
   } else {
@@ -250,9 +278,15 @@ function loadFile(file) {
   }
 
   isLoading.value = true
+  currentLoadId++
+  const loadId = currentLoadId
   const url = URL.createObjectURL(file)
   const img = new Image()
   img.onload = () => {
+    if (loadId !== currentLoadId) {
+      URL.revokeObjectURL(url)
+      return
+    }
     originalImage.value = img
     originalFileName.value = file.name.replace(/\.[^.]+$/, '')
     originalFileType.value = file.type
@@ -260,6 +294,10 @@ function loadFile(file) {
     isLoading.value = false
   }
   img.onerror = () => {
+    if (loadId !== currentLoadId) {
+      URL.revokeObjectURL(url)
+      return
+    }
     errorMsg.value = '图片加载失败，请尝试其他文件'
     URL.revokeObjectURL(url)
     isLoading.value = false
@@ -268,6 +306,7 @@ function loadFile(file) {
 }
 
 function clearImage() {
+  currentLoadId++
   originalImage.value = null
   originalFileName.value = ''
   originalFileType.value = ''
@@ -279,9 +318,14 @@ function clearImage() {
 // Download
 // ============================================================
 function downloadImage() {
-  if (!canvasRef.value || !originalImage.value) return
+  if (!originalImage.value) return
 
-  const canvas = canvasRef.value
+  const canvas = createFullResolutionCanvas()
+  if (!canvas) {
+    errorMsg.value = '图片生成失败，请重试'
+    return
+  }
+
   const mime = originalFileType.value || 'image/png'
   const quality = mime === 'image/jpeg' || mime === 'image/webp' ? 0.92 : undefined
 
@@ -297,11 +341,29 @@ function downloadImage() {
       const ext = getExtensionFromMime(mime)
       a.download = `${originalFileName.value || 'image'}_watermark.${ext}`
       a.click()
-      URL.revokeObjectURL(url)
+      // Delay revocation so the browser has time to start the download.
+      setTimeout(() => URL.revokeObjectURL(url), 2000)
     },
     mime,
     quality
   )
+}
+
+/**
+ * Render the original image with watermarks at its natural resolution.
+ * @returns {HTMLCanvasElement | null}
+ */
+function createFullResolutionCanvas() {
+  const img = originalImage.value
+  if (!img) return null
+  const canvas = document.createElement('canvas')
+  canvas.width = img.naturalWidth
+  canvas.height = img.naturalHeight
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+  ctx.drawImage(img, 0, 0)
+  drawWatermarks(ctx, canvas.width, canvas.height, 1)
+  return canvas
 }
 
 function getExtensionFromMime(mime) {
@@ -354,7 +416,7 @@ function getExtensionFromMime(mime) {
           </div>
         </div>
 
-        <div v-else class="preview-wrap">
+        <div v-else ref="previewWrapRef" class="preview-wrap">
           <canvas ref="canvasRef" class="watermark-canvas"></canvas>
           <button class="btn btn-secondary btn-sm clear-btn" @click="clearImage">
             移除图片
@@ -413,6 +475,7 @@ function getExtensionFromMime(mime) {
               step="0.01"
               class="density-slider"
             >
+            <span>中等</span>
             <span>密集</span>
           </div>
         </div>

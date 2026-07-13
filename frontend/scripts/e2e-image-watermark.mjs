@@ -262,7 +262,7 @@ async function runTests(browser) {
       throw new Error(`Middle text input mismatch: got "${inputValue}"`)
     }
 
-    // 5. Change the density slider.
+    // 5. Change the density slider to enable tiled mode.
     const densitySlider = page.locator('.density-slider-wrap .density-slider')
     await setRangeValue(densitySlider, 0.5)
 
@@ -273,20 +273,53 @@ async function runTests(browser) {
     })
     await positionSection.waitFor({ state: 'visible', timeout: ELEMENT_TIMEOUT_MS })
 
-    // 7. Click the download button and verify no error message appears.
+    // 7. Sample canvas pixels to confirm the watermark is rendered.
+    const centerSamples = await page.locator('canvas.watermark-canvas').evaluate((canvas) => {
+      const ctx = canvas.getContext('2d')
+      const { width, height } = canvas
+      const cx = Math.floor(width / 2)
+      const cy = Math.floor(height / 2)
+      const points = [
+        [cx, cy],
+        [cx - 5, cy],
+        [cx + 5, cy],
+        [cx, cy - 5],
+        [cx, cy + 5],
+      ]
+      return points.map(([x, y]) => {
+        const data = ctx.getImageData(x, y, 1, 1).data
+        return { r: data[0], g: data[1], b: data[2] }
+      })
+    })
+
+    const ORIGINAL_FILL = { r: 79, g: 70, b: 229 }
+    const hasWatermarkPixel = centerSamples.some(
+      (c) =>
+        Math.abs(c.r - ORIGINAL_FILL.r) > 10 ||
+        Math.abs(c.g - ORIGINAL_FILL.g) > 10 ||
+        Math.abs(c.b - ORIGINAL_FILL.b) > 10
+    )
+    if (!hasWatermarkPixel) {
+      throw new Error('Canvas center pixels unchanged; watermark text may not be rendered')
+    }
+
+    // 8. Click the download button and verify the filename contains _watermark.
     const downloadButton = page.locator('button.download-btn')
     await downloadButton.waitFor({ state: 'visible', timeout: ELEMENT_TIMEOUT_MS })
     await page.waitForSelector('button.download-btn:not([disabled])', {
       timeout: ELEMENT_TIMEOUT_MS,
     })
-    await downloadButton.click()
-    await page.waitForTimeout(300)
 
-    const errorVisible = await page.locator('.error-msg').isVisible().catch(() => false)
-    if (errorVisible) {
-      const msg = await page.locator('.error-msg').textContent()
-      throw new Error(`Error message visible after download: ${msg}`)
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      downloadButton.click(),
+    ])
+
+    const filename = download.suggestedFilename()
+    if (!filename.includes('_watermark')) {
+      throw new Error(`Download filename missing _watermark: ${filename}`)
     }
+    await download.cancel().catch(() => {})
 
     return true
   } finally {

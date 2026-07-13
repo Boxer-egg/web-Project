@@ -339,6 +339,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/image-watermark',
+      name: 'image-watermark',
+      component: () => import('../views/tools/ImageWatermarkGenerator.vue'),
+      meta: {
+        title: '图片水印生成器 - 仅供指定用途使用的水印工具',
+        description: '在线图片水印生成器，支持上传图片后添加「仅供……使用」格式文字水印，可调节密度、位置、字体、字号、透明度与旋转角度。'
+      }
+    },
+    {
       path: '/tools/calculator',
       name: 'calculator',
       component: () => import('../views/tools/Calculator.vue'),

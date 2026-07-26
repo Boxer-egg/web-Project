@@ -15,7 +15,7 @@ const QUESTION_TYPES = {
 }
 
 /** 视图状态 */
-const view = ref('home') // home | practice | exam | result | wrongbook
+const view = ref('home') // home | practice | exam | result
 const mode = ref('sequential') // sequential | random | exam | wrong
 
 /** 题库 */
@@ -174,6 +174,7 @@ function selectOption(index) {
   const type = currentQuestion.value.type
 
   if (type === 'multiple') {
+    if (isLocked()) return
     const current = answers.value[qid] || []
     if (current.includes(index)) {
       answers.value[qid] = current.filter(i => i !== index)
@@ -278,46 +279,6 @@ function startWrongBook() {
   startSession('wrong')
 }
 
-/** 移除错题 */
-function removeWrong(id) {
-  wrongIds.value = wrongIds.value.filter(x => x !== id)
-}
-
-/** 清空错题 */
-function clearWrong() {
-  if (!confirm('确定清空所有错题？')) return
-  wrongIds.value = []
-}
-
-/** 导出错题本 */
-function exportWrongBook() {
-  const data = wrongQuestions.value.map(q => ({
-    id: q.id,
-    type: q.type,
-    question: q.question,
-    options: q.options,
-    answer: q.answer,
-    explain: q.explain,
-    picture: q.picture,
-    chapter: q.chapter,
-  }))
-  const payload = {
-    meta: {
-      title: '科目四错题本',
-      exportedAt: new Date().toISOString(),
-      total: data.length,
-    },
-    questions: data,
-  }
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `wrong-book-${new Date().toISOString().slice(0, 10)}.json`
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(url), 2000)
-}
-
 /** 查看解析 */
 const showExplain = ref(false)
 
@@ -414,11 +375,6 @@ function isCorrect(qid) {
 function optionLabel(i) {
   return String.fromCharCode(65 + i)
 }
-
-/** 错题列表 */
-const wrongQuestions = computed(() => {
-  return bank.value.questions.filter(q => wrongIds.value.includes(q.id))
-})
 
 onMounted(loadBank)
 
@@ -623,35 +579,6 @@ onUnmounted(stopTimer)
       <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap">
         <button class="btn" @click="restart">重新{{ mode === 'exam' ? '考试' : mode === 'wrong' ? '错题本' : '练习' }}</button>
         <button class="btn btn-secondary" @click="goHome">返回首页</button>
-      </div>
-    </div>
-
-    <!-- 错题本 -->
-    <div v-else-if="view === 'wrongbook'" class="wrongbook">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <h3 style="font-size:16px">错题本（{{ wrongQuestions.length }} 题）</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-sm" @click="exportWrongBook" :disabled="!wrongQuestions.length">导出 JSON</button>
-            <button class="btn btn-secondary btn-sm" @click="clearWrong">清空错题</button>
-          </div>
-        </div>
-        <div v-if="!wrongQuestions.length" style="color:var(--text-muted);text-align:center;padding:40px">
-          暂无错题，继续加油！
-        </div>
-        <div v-else class="wrong-list">
-          <div v-for="q in wrongQuestions" :key="q.id" class="wrong-item">
-            <p><strong>{{ q.question }}</strong></p>
-            <p style="color:var(--success);font-size:13px;margin-top:4px">
-              正确答案：{{ q.answer.map(i => optionLabel(i)).join('、') }}
-            </p>
-            <p style="font-size:13px;color:var(--text-secondary);margin-top:4px">{{ q.explain }}</p>
-            <button class="btn btn-sm btn-secondary" style="margin-top:8px" @click="removeWrong(q.id)">已掌握，移除</button>
-          </div>
-        </div>
-      </div>
-      <div style="text-align:center;margin-top:20px">
-        <button class="btn" @click="goHome">返回首页</button>
       </div>
     </div>
   </div>
@@ -928,12 +855,12 @@ onUnmounted(stopTimer)
   font-size: 14px;
 }
 
-.review-list, .wrong-list {
+.review-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-.review-item, .wrong-item {
+.review-item {
   padding: 14px;
   background: var(--bg-secondary);
   border-radius: var(--radius);

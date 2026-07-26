@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout.js'
 
 const STORAGE_KEY = 'driving-study-progress'
 
@@ -17,6 +18,7 @@ const STORAGE_KEY = 'driving-study-progress'
  *   loadData: () => Promise<void>,
  *   isCompleted: (topicId: string) => boolean,
  *   markCompleted: (topicId: string) => void,
+ *   unmarkCompleted: (topicId: string) => void,
  *   findTopicById: (topicId: string) => { chapter: object, topic: object } | null,
  *   getTopicIndex: (topicId: string) => number,
  *   getNextTopicId: (topicId: string) => string | null,
@@ -50,11 +52,11 @@ export function useDrivingStudy() {
     loading.value = true
     error.value = ''
     try {
-      const res = await fetch('/data/driving-license-study.json')
+      const res = await fetchWithTimeout('/data/driving-license-study.json', {}, 15000)
       if (!res.ok) throw new Error('学习资料加载失败')
       data.value = await res.json()
     } catch (e) {
-      error.value = '学习资料加载失败：' + e.message
+      error.value = '学习资料加载失败：' + (e.message || '网络异常')
     } finally {
       loading.value = false
     }
@@ -68,6 +70,10 @@ export function useDrivingStudy() {
     if (!progress.value.includes(topicId)) {
       progress.value = [...progress.value, topicId]
     }
+  }
+
+  function unmarkCompleted(topicId) {
+    progress.value = progress.value.filter(id => id !== topicId)
   }
 
   function findTopicById(topicId) {
@@ -109,6 +115,7 @@ export function useDrivingStudy() {
     loadData,
     isCompleted,
     markCompleted,
+    unmarkCompleted,
     findTopicById,
     getTopicIndex,
     getNextTopicId,

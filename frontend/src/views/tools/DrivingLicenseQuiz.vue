@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import { matchMnemonics } from '../../logic/drivingMnemonics'
+import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
 
 const route = useRoute()
 
@@ -14,7 +15,7 @@ const QUESTION_TYPES = {
 }
 
 /** 视图状态 */
-const view = ref('home') // home | practice | exam | result | wrongbook | review
+const view = ref('home') // home | practice | exam | result | wrongbook
 const mode = ref('sequential') // sequential | random | exam | wrong
 
 /** 题库 */
@@ -35,11 +36,27 @@ const timerId = ref(null)
 const wrongIds = useStorage('driving-quiz-wrong-ids', [])
 const quizHistory = useStorage('driving-quiz-history', [])
 
+/** 题目答案缓存，避免 stats 计算时 O(n²) 查找 */
+const answerMap = computed(() => {
+  const map = new Map()
+  for (const q of sessionQuestions.value) {
+    map.set(q.id, (q.answer || []).slice().sort((a, b) => a - b))
+  }
+  return map
+})
+
 /** 统计 */
 const stats = computed(() => {
   const total = sessionQuestions.value.length
   const answered = Object.keys(answers.value).length
-  const correct = sessionQuestions.value.filter(q => isCorrect(q.id)).length
+  let correct = 0
+  for (const [qid, ans] of Object.entries(answers.value)) {
+    if (!ans.length) continue
+    const expected = answerMap.value.get(qid)
+    if (expected && arraysEqual(ans.slice().sort((a, b) => a - b), expected)) {
+      correct++
+    }
+  }
   const wrong = answered - correct
   return { total, answered, correct, wrong }
 })
@@ -64,12 +81,14 @@ const passScore = computed(() => bank.value.meta.passScore || 90)
 const examDuration = computed(() => bank.value.meta.examDuration || 45)
 const isPassed = computed(() => score.value >= passScore.value)
 
+const isWrongBookSession = computed(() => mode.value === 'wrong')
+
 /** 加载题库 */
 async function loadBank() {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetch('/data/driving-license-c4.json')
+    const res = await fetchWithTimeout('/data/driving-license-c4.json', {}, 15000)
     if (!res.ok) throw new Error('题库加载失败')
     bank.value = await res.json()
   } catch (e) {
@@ -154,7 +173,6 @@ function selectOption(index) {
   const qid = currentQuestion.value.id
   const type = currentQuestion.value.type
 
-  // 单选/判断题：选择后立即显示对错并锁定
   if (type === 'multiple') {
     const current = answers.value[qid] || []
     if (current.includes(index)) {
@@ -163,11 +181,13 @@ function selectOption(index) {
       answers.value[qid] = [...current, index].sort((a, b) => a - b)
     }
     showExplain.value = false
-  } else {
-    answers.value[qid] = [index]
-    showExplain.value = true
-    addToWrongBookIfWrong(qid)
+    return
   }
+
+  // 单选/判断题：选择后立即显示对错并锁定
+  answers.value[qid] = [index]
+  showExplain.value = true
+  handleAnswerResult(qid)
 }
 
 /** 提交多选题答案 */
@@ -179,7 +199,24 @@ function confirmMultiple() {
   }
   error.value = ''
   showExplain.value = true
-  addToWrongBookIfWrong(currentQuestion.value.id)
+  handleAnswerResult(currentQuestion.value.id)
+}
+
+/** 处理答题后的错题本逻辑 */
+function handleAnswerResult(qid) {
+  const correct = isCorrect(qid)
+  if (isWrongBookSession.value) {
+    if (correct) {
+      removeWrong(qid)
+    } else {
+      addToWrongBookIfWrong(qid)
+    }
+  } else if (mode.value !== 'exam') {
+    // 练习/随机模式下，只把实际答错的题加入错题本，不把未答题加入
+    if (!correct) {
+      addToWrongBookIfWrong(qid)
+    }
+  }
 }
 
 /** 当前题是否已锁定（单选/判断选中后，或多选提交后） */
@@ -193,12 +230,17 @@ function isLocked() {
 /** 完成考试/练习 */
 function finishExam() {
   stopTimer()
-  recordWrongAnswers()
-  saveHistory()
+  if (mode.value === 'exam') {
+    recordWrongAnswers()
+    saveHistory()
+  } else if (mode.value !== 'wrong') {
+    // 练习/随机模式只保存历史，不批量记录未答题为错题
+    saveHistory()
+  }
   view.value = 'result'
 }
 
-/** 记录错题 */
+/** 记录错题（仅考试模式使用） */
 function recordWrongAnswers() {
   const wrong = sessionQuestions.value.filter(q => !isCorrect(q.id)).map(q => q.id)
   const set = new Set(wrongIds.value)
@@ -226,7 +268,7 @@ function saveHistory() {
     wrong: stats.value.wrong,
     total: stats.value.total,
     duration,
-    passed: isPassed.value,
+    passed: mode.value === 'exam' ? isPassed.value : null,
   })
   if (quizHistory.value.length > 50) quizHistory.value = quizHistory.value.slice(0, 50)
 }
@@ -273,7 +315,7 @@ function exportWrongBook() {
   a.href = url
   a.download = `wrong-book-${new Date().toISOString().slice(0, 10)}.json`
   a.click()
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 2000)
 }
 
 /** 查看解析 */
@@ -313,11 +355,31 @@ function restart() {
   startSession(mode.value)
 }
 
-/** 打乱数组 */
+/** 标记当前题 */
+function toggleMark() {
+  if (!currentQuestion.value) return
+  const idx = currentIndex.value
+  if (marked.value.includes(idx)) {
+    marked.value = marked.value.filter(i => i !== idx)
+  } else {
+    marked.value = [...marked.value, idx]
+  }
+}
+
+/** 打乱数组，使用加密安全随机数 */
 function shuffleArray(arr) {
   const copy = [...arr]
+  const cryptoObj = window.crypto || window.msCrypto
   for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    let rand
+    if (cryptoObj) {
+      const arr32 = new Uint32Array(1)
+      cryptoObj.getRandomValues(arr32)
+      rand = arr32[0] / (0xffffffff + 1)
+    } else {
+      rand = Math.random()
+    }
+    const j = Math.floor(rand * (i + 1))
     ;[copy[i], copy[j]] = [copy[j], copy[i]]
   }
   return copy
@@ -338,13 +400,13 @@ function isAnswered(qid) {
 
 /** 是否答对 */
 function isCorrect(qid) {
-  const q = sessionQuestions.value.find(x => x.id === qid)
-  if (!q) return false
   const ans = answers.value[qid] || []
   if (!ans.length) return false
+  const expected = answerMap.value.get(qid)
+  if (!expected) return false
   return arraysEqual(
     [...ans].sort((a, b) => a - b),
-    [...(q.answer || [])].sort((a, b) => a - b)
+    expected
   )
 }
 
@@ -360,8 +422,6 @@ const wrongQuestions = computed(() => {
 
 onMounted(loadBank)
 
-/** 清理计时器 */
-import { onUnmounted } from 'vue'
 onUnmounted(stopTimer)
 </script>
 
@@ -381,8 +441,7 @@ onUnmounted(stopTimer)
 
     <!-- 首页 -->
     <div v-if="view === 'home'" class="quiz-home">
-      <div v-if="route.query.chapter" class="card" style="margin-bottom:16px;padding:12px;background:var(--bg-secondary)"
-      >
+      <div v-if="route.query.chapter" class="card" style="margin-bottom:16px;padding:12px;background:var(--bg-secondary)">
         <span style="font-size:14px">当前为「{{ route.query.chapter }}」章节练习</span>
       </div>
 
@@ -433,7 +492,7 @@ onUnmounted(stopTimer)
           <div v-for="(h, i) in quizHistory.slice(0, 10)" :key="i" class="history-item">
             <span>{{ new Date(h.date).toLocaleString() }}</span>
             <span>{{ h.mode === 'exam' ? '模拟考试' : h.mode === 'wrong' ? '错题本' : h.mode === 'random' ? '随机练习' : '顺序练习' }}</span>
-            <span :style="{ color: h.passed ? 'var(--success)' : 'var(--error)' }">{{ h.score }}分</span>
+            <span :style="{ color: h.passed === true ? 'var(--success)' : h.passed === false ? 'var(--error)' : 'var(--text-secondary)' }">{{ h.score }}分</span>
           </div>
         </div>
       </div>
@@ -448,6 +507,7 @@ onUnmounted(stopTimer)
             <span style="color:var(--text-secondary);font-size:14px;margin-left:8px">
               {{ currentIndex + 1 }} / {{ sessionQuestions.length }}
             </span>
+            <span v-if="isWrongBookSession" class="quiz-badge" style="margin-left:8px;background:var(--warning)">错题本</span>
           </div>
           <div v-if="view === 'exam'" class="exam-timer" :class="{ warning: timeLeft < 300 }">
             ⏱️ {{ formatTime(timeLeft) }}
@@ -485,6 +545,9 @@ onUnmounted(stopTimer)
         <div class="question-actions">
           <button class="btn btn-secondary" @click="prevQuestion" :disabled="currentIndex === 0">上一题</button>
           <button v-if="currentQuestion?.type === 'multiple' && !showExplain" class="btn" @click="confirmMultiple">确认答案</button>
+          <button class="btn" :class="{ 'btn-secondary': marked.includes(currentIndex) }" @click="toggleMark">
+            {{ marked.includes(currentIndex) ? '取消标记' : '标记本题' }}
+          </button>
           <button class="btn" @click="nextQuestion" :disabled="currentIndex === sessionQuestions.length - 1">下一题</button>
         </div>
 
@@ -520,7 +583,9 @@ onUnmounted(stopTimer)
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:12px">
           <button class="btn btn-secondary" @click="goHome">返回首页</button>
-          <button class="btn" @click="finishExam">交卷</button>
+          <button class="btn" @click="finishExam">
+            {{ mode === 'exam' ? '交卷' : mode === 'wrong' ? '完成错题本' : '结束练习' }}
+          </button>
         </div>
       </div>
     </div>
@@ -529,7 +594,7 @@ onUnmounted(stopTimer)
     <div v-else-if="view === 'result'" class="quiz-result">
       <div class="card result-card" :class="{ passed: isPassed, failed: !isPassed }">
         <div class="result-score">{{ score }}<span>分</span></div>
-        <div class="result-status">{{ isPassed ? '恭喜，考试通过！' : '很遗憾，未通过' }}</div>
+        <div class="result-status">{{ mode === 'exam' ? (isPassed ? '恭喜，考试通过！' : '很遗憾，未通过') : '练习完成' }}</div>
         <div class="result-detail">
           <span>答对 {{ stats.correct }} 题</span>
           <span>答错 {{ stats.wrong }} 题</span>
@@ -556,7 +621,7 @@ onUnmounted(stopTimer)
       </div>
 
       <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap">
-        <button class="btn" @click="restart">重新{{ mode === 'exam' ? '考试' : '练习' }}</button>
+        <button class="btn" @click="restart">重新{{ mode === 'exam' ? '考试' : mode === 'wrong' ? '错题本' : '练习' }}</button>
         <button class="btn btn-secondary" @click="goHome">返回首页</button>
       </div>
     </div>
@@ -825,6 +890,11 @@ onUnmounted(stopTimer)
 .grid-btn.answered {
   border-color: var(--success);
   color: var(--success);
+}
+.grid-btn.marked {
+  border-style: dashed;
+  border-color: var(--warning);
+  color: var(--warning);
 }
 
 .result-card {

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
 
 const signs = ref([])
 const loading = ref(true)
@@ -50,7 +51,7 @@ const hasNext = computed(() => selectedIndex.value >= 0 && selectedIndex.value <
 
 async function loadData() {
   try {
-    const res = await fetch('/data/traffic-signs.json')
+    const res = await fetchWithTimeout('/data/traffic-signs.json', {}, 15000)
     if (!res.ok) throw new Error('加载失败')
     const data = await res.json()
     signs.value = data.signs || []
@@ -197,15 +198,22 @@ onUnmounted(() => {
       @touchstart="onTouchStart"
       @touchend="onTouchEnd"
     >
-      <button
-        v-if="hasPrev"
-        class="nav-arrow nav-prev"
-        @click.stop="prevSign"
-      >
-        ‹
-      </button>
       <div class="modal-card card">
         <button class="modal-close" @click="closeDetail">✕</button>
+        <button
+          v-if="hasPrev"
+          class="nav-arrow nav-prev"
+          @click.stop="prevSign"
+        >
+          ‹
+        </button>
+        <button
+          v-if="hasNext"
+          class="nav-arrow nav-next"
+          @click.stop="nextSign"
+        >
+          ›
+        </button>
         <h2>{{ selectedSign.title }}</h2>
         <div class="modal-image">
           <img :src="selectedSign.image" :alt="selectedSign.title" @error="$event.target.style.display = 'none'">
@@ -216,13 +224,6 @@ onUnmounted(() => {
           {{ selectedIndex + 1 }} / {{ filteredSigns.length }}
         </div>
       </div>
-      <button
-        v-if="hasNext"
-        class="nav-arrow nav-next"
-        @click.stop="nextSign"
-      >
-        ›
-      </button>
     </div>
   </div>
 </template>
@@ -358,7 +359,7 @@ onUnmounted(() => {
   margin-top: 10px;
 }
 .nav-arrow {
-  position: fixed;
+  position: absolute;
   top: 50%;
   transform: translateY(-50%);
   width: 48px;
@@ -379,10 +380,19 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.3);
 }
 .nav-prev {
-  left: 20px;
+  left: -64px;
 }
 .nav-next {
-  right: 20px;
+  right: -64px;
+}
+
+@media (max-width: 1100px) {
+  .nav-prev {
+    left: 8px;
+  }
+  .nav-next {
+    right: 8px;
+  }
 }
 
 .summary {

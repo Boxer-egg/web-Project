@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
 
 const meta = ref(null)
 const loading = ref(true)
@@ -15,9 +16,11 @@ const totalPages = computed(() => meta.value?.totalPages || 1)
 
 const pagedQuestions = computed(() => pageCache.value[currentPage.value] || [])
 
+const MAX_CACHED_PAGES = 5
+
 async function loadMeta() {
   try {
-    const res = await fetch('/data/jk/meta.json')
+    const res = await fetchWithTimeout('/data/jk/meta.json', {}, 15000)
     if (!res.ok) throw new Error('题库索引加载失败')
     meta.value = await res.json()
     currentPage.value = 1
@@ -40,10 +43,11 @@ async function loadPage(p) {
   }
   pageLoading.value = true
   try {
-    const res = await fetch(`/data/jk/pages/page-${p.toString().padStart(3, '0')}.json`)
+    const res = await fetchWithTimeout(`/data/jk/pages/page-${p.toString().padStart(3, '0')}.json`, {}, 15000)
     if (!res.ok) throw new Error(`第 ${p} 页加载失败`)
     const data = await res.json()
     pageCache.value[p] = data
+    trimPageCache()
     currentPage.value = p
     selectedAnswer.value = {}
     scrollTop()
@@ -52,6 +56,21 @@ async function loadPage(p) {
     error.value = e.message || '加载失败'
   } finally {
     pageLoading.value = false
+  }
+}
+
+function trimPageCache() {
+  const keys = Object.keys(pageCache.value).map(Number)
+  if (keys.length <= MAX_CACHED_PAGES) return
+  keys.sort((a, b) => a - b)
+  const current = currentPage.value
+  // Keep pages closest to current page.
+  const sortedByDistance = keys.sort((a, b) => Math.abs(a - current) - Math.abs(b - current))
+  const keep = new Set(sortedByDistance.slice(0, MAX_CACHED_PAGES))
+  for (const k of keys) {
+    if (!keep.has(k)) {
+      delete pageCache.value[k]
+    }
   }
 }
 
@@ -95,15 +114,34 @@ function globalIndex(idx) {
   return (currentPage.value - 1) * pageSize.value + idx
 }
 
+const parsedQuestions = computed(() => {
+  return pagedQuestions.value.map(q => ({
+    ...q,
+    parsed: parseQuestion(q.tm, q.tx),
+  }))
+})
+
+function normalizeJudgmentAnswer(value) {
+  const s = String(value || '').trim()
+  if (s === '正确' || s === '1' || s === 'A' || s === '对') return '正确'
+  if (s === '错误' || s === '0' || s === 'B' || s === '错') return '错误'
+  return s
+}
+
 function optionValue(q, opt, index) {
-  return q.tx === 1 ? opt : optionLabel(index)
+  return q.tx === 1 ? normalizeJudgmentAnswer(opt) : optionLabel(index)
+}
+
+function correctAnswerDisplay(q) {
+  if (q.tx === 1) return normalizeJudgmentAnswer(q.da)
+  return q.da
 }
 
 function isAnswered(globalIndex) {
   return selectedAnswer.value[globalIndex] !== undefined
 }
 
-function selectOption(globalIndex, value) {
+function selectOption(globalIndex, value, q) {
   if (isAnswered(globalIndex)) return
   selectedAnswer.value[globalIndex] = value
 }
@@ -116,6 +154,8 @@ function goPage(p) {
 }
 
 function onKeydown(e) {
+  const tag = e.target?.tagName?.toLowerCase()
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return
   if (e.key === 'ArrowLeft') {
     goPage(currentPage.value - 1)
   } else if (e.key === 'ArrowRight') {
@@ -158,7 +198,7 @@ onUnmounted(() => {
 
       <div v-else class="question-list">
         <div
-          v-for="(q, idx) in pagedQuestions"
+          v-for="(q, idx) in parsedQuestions"
           :key="q.tkId"
           class="card question-card"
         >
@@ -167,7 +207,7 @@ onUnmounted(() => {
             <span v-if="q.tags" class="question-tags">{{ q.tags.split('|').join(' · ') }}</span>
           </div>
 
-          <p class="question-stem">{{ parseQuestion(q.tm, q.tx).stem }}</p>
+          <p class="question-stem">{{ q.parsed.stem }}</p>
 
           <div v-if="q.tp" class="question-image">
             <img
@@ -181,14 +221,14 @@ onUnmounted(() => {
 
           <ol class="options">
             <li
-              v-for="(opt, oidx) in parseQuestion(q.tm, q.tx).options"
+              v-for="(opt, oidx) in q.parsed.options"
               :key="oidx"
               :class="{
                 selected: selectedAnswer[globalIndex(idx)] === optionValue(q, opt, oidx),
-                correct: isAnswered(globalIndex(idx)) && q.da === optionValue(q, opt, oidx),
-                wrong: isAnswered(globalIndex(idx)) && selectedAnswer[globalIndex(idx)] === optionValue(q, opt, oidx) && q.da !== optionValue(q, opt, oidx)
+                correct: isAnswered(globalIndex(idx)) && correctAnswerDisplay(q) === optionValue(q, opt, oidx),
+                wrong: isAnswered(globalIndex(idx)) && selectedAnswer[globalIndex(idx)] === optionValue(q, opt, oidx) && correctAnswerDisplay(q) !== optionValue(q, opt, oidx)
               }"
-              @click="selectOption(globalIndex(idx), optionValue(q, opt, oidx))"
+              @click="selectOption(globalIndex(idx), optionValue(q, opt, oidx), q)"
             >
               <span class="opt-label">{{ optionLabel(oidx) }}.</span>
               <span class="opt-text">{{ opt }}</span>
@@ -196,8 +236,8 @@ onUnmounted(() => {
           </ol>
 
           <div v-if="isAnswered(globalIndex(idx))" class="answer-result">
-            <span v-if="selectedAnswer[globalIndex(idx)] === q.da" class="result-correct">回答正确 ✅</span>
-            <span v-else class="result-wrong">回答错误，正确答案是 <b>{{ q.da }}</b></span>
+            <span v-if="selectedAnswer[globalIndex(idx)] === correctAnswerDisplay(q)" class="result-correct">回答正确 ✅</span>
+            <span v-else class="result-wrong">回答错误，正确答案是 <b>{{ correctAnswerDisplay(q) }}</b></span>
           </div>
         </div>
       </div>

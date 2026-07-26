@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDrivingStudy } from '../../composables/useDrivingStudy.js'
 
@@ -97,12 +97,6 @@ function goHome() {
 }
 
 onMounted(loadData)
-
-watch(currentTopicId, (id) => {
-  if (id && view.value === 'topic') {
-    markCompleted(id)
-  }
-})
 </script>
 
 <template>

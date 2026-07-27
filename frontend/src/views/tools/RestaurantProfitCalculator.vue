@@ -1,6 +1,10 @@
 <script setup>
 import { ref, computed, nextTick, watch, onMounted, onUnmounted, reactive } from 'vue'
 import { useStorage } from '@vueuse/core'
+import { getUrlParams, applyParams, toNumber, syncParamsToUrl, buildShareUrl } from '../../utils/urlParams.js'
+import { useToast } from '../../composables/useToast.js'
+
+const toast = useToast()
 
 /** 商区类型配置 */
 const DISTRICT_TYPES = [
@@ -35,6 +39,59 @@ const rentPaymentMode = useStorage('rpf-rent-payment-mode', 'year')
 
 /** 移动端折叠状态 */
 const inputCollapsed = useStorage('rpf-input-collapsed', false)
+
+/**
+ * URL 分享参数映射。key 为 query 参数名，default 为缺省值（缺省时不写入链接）。
+ */
+const shareMapping = {
+  district: { ref: districtType, default: 'community' },
+  area: { ref: area, default: 0 },
+  rent: { ref: annualRent, default: 0 },
+  deposit: { ref: deposit, default: 0 },
+  transfer: { ref: transferFee, default: 0 },
+  franchise: { ref: franchiseFee, default: 0 },
+  decor: { ref: decorationAd, default: 0 },
+  equip: { ref: equipment, default: 0 },
+  material: { ref: firstBatchMaterial, default: 0 },
+  salary: { ref: laborAvgSalary, default: 0 },
+  staff: { ref: laborHeadcount, default: 1 },
+  util: { ref: monthlyUtilities, default: 0 },
+  gm: { ref: grossMargin, default: 0 },
+  ticket: { ref: avgTicket, default: 0 },
+  seats: { ref: seats, default: 0 },
+  tables: { ref: tables, default: 0 },
+  months: { ref: customMonths, default: 12 },
+  target: { ref: targetDailyOrders, default: 0 },
+  name: { ref: businessName, default: '' },
+  paymode: { ref: rentPaymentMode, default: 'year' },
+}
+
+/**
+ * 打开分享链接时把 URL 参数回填到表单。
+ * 在撤销/重做历史初始化之前执行，避免 URL 回填污染撤销栈。
+ */
+applyParams(getUrlParams(), {
+  district: { ref: districtType, allowed: DISTRICT_TYPES.map(d => d.key) },
+  area: { ref: area, transform: toNumber },
+  rent: { ref: annualRent, transform: toNumber },
+  deposit: { ref: deposit, transform: toNumber },
+  transfer: { ref: transferFee, transform: toNumber },
+  franchise: { ref: franchiseFee, transform: toNumber },
+  decor: { ref: decorationAd, transform: toNumber },
+  equip: { ref: equipment, transform: toNumber },
+  material: { ref: firstBatchMaterial, transform: toNumber },
+  salary: { ref: laborAvgSalary, transform: toNumber },
+  staff: { ref: laborHeadcount, transform: toNumber },
+  util: { ref: monthlyUtilities, transform: toNumber },
+  gm: { ref: grossMargin, transform: toNumber },
+  ticket: { ref: avgTicket, transform: toNumber },
+  seats: { ref: seats, transform: toNumber },
+  tables: { ref: tables, transform: toNumber },
+  months: { ref: customMonths, transform: toNumber },
+  target: { ref: targetDailyOrders, transform: toNumber },
+  name: { ref: businessName },
+  paymode: { ref: rentPaymentMode, allowed: ['year', 'half', 'quarter', 'twoMonth', 'month'] },
+})
 
 /** 每月人工 = 平均工资 × 人数 */
 const monthlyLabor = computed(() => Number(laborAvgSalary.value || 0) * Number(laborHeadcount.value || 0))
@@ -512,6 +569,21 @@ function clearAll() {
   targetDailyOrders.value = 0
   businessName.value = ''
   rentPaymentMode.value = 'year'
+}
+
+/** 输入变化时把当前参数同步到地址栏，保证复制链接永远是最新的 */
+const stopUrlSync = syncParamsToUrl(shareMapping)
+onUnmounted(stopUrlSync)
+
+/** 复制包含当前所有参数的分享链接 */
+async function copyShareLink() {
+  const url = buildShareUrl(shareMapping)
+  try {
+    await navigator.clipboard.writeText(url)
+    toast.success('分享链接已复制，发送给对方即可')
+  } catch {
+    window.prompt('复制下面的链接分享给他人：', url)
+  }
 }
 
 /** 找到元素所在的实际滚动容器 */
@@ -1483,6 +1555,7 @@ function downloadResultsAsImage() {
 
         <div class="form-actions">
           <button class="btn" @click="loadExample">加载表格示例</button>
+          <button class="btn" @click="copyShareLink">🔗 复制分享链接</button>
           <button class="btn btn-secondary" @click="clearAll">清空</button>
         </div>
       </div>

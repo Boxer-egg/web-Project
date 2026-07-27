@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import {
   resolveMonthlyRent,
@@ -7,6 +7,10 @@ import {
   calcFromMonthlyNetProfit,
   calcFromDailyCustomers,
 } from '../../logic/restaurantProfitReverse.js'
+import { getUrlParams, applyParams, toNumber, syncParamsToUrl, buildShareUrl } from '../../utils/urlParams.js'
+import { useToast } from '../../composables/useToast.js'
+
+const toast = useToast()
 
 const MODES = [
   { key: 'dailyRevenue', name: '日营业额', unit: '元/天', placeholder: '例如：2000' },
@@ -213,6 +217,55 @@ function clearAll() {
   seats.value = 0
   daysPerMonth.value = 30
   businessName.value = ''
+}
+
+/**
+ * URL 分享参数映射。key 为 query 参数名，default 为缺省值（缺省时不写入链接）。
+ * 顺序有意义：applyParams 按声明顺序写入，mode 需先于 v（观测值），
+ * yrent 需先于 mrent（租金联动 watcher 会让后写的一方生效）。
+ */
+const shareMapping = {
+  mode: { ref: mode, default: 'dailyRevenue' },
+  v: { ref: observedValue, default: 0 },
+  ticket: { ref: avgTicket, default: 0 },
+  gm: { ref: grossMargin, default: 0 },
+  yrent: { ref: yearlyRent, default: 0 },
+  mrent: { ref: monthlyRent, default: 0 },
+  util: { ref: utilityFixedCost, default: 0 },
+  labor: { ref: laborFixedCost, default: 0 },
+  seats: { ref: seats, default: 0 },
+  days: { ref: daysPerMonth, default: 30 },
+  name: { ref: businessName, default: '' },
+}
+
+/** 打开带参数的分享链接时，把参数回填到表单（优先级高于 localStorage） */
+applyParams(getUrlParams(), {
+  mode: { ref: mode, allowed: MODES.map(m => m.key) },
+  v: { ref: observedValue, transform: toNumber },
+  ticket: { ref: avgTicket, transform: toNumber },
+  gm: { ref: grossMargin, transform: toNumber },
+  yrent: { ref: yearlyRent, transform: toNumber },
+  mrent: { ref: monthlyRent, transform: toNumber },
+  util: { ref: utilityFixedCost, transform: toNumber },
+  labor: { ref: laborFixedCost, transform: toNumber },
+  seats: { ref: seats, transform: toNumber },
+  days: { ref: daysPerMonth, transform: toNumber },
+  name: { ref: businessName },
+})
+
+/** 输入变化时把当前参数同步到地址栏，保证复制链接永远是最新的 */
+const stopUrlSync = syncParamsToUrl(shareMapping)
+onUnmounted(stopUrlSync)
+
+/** 复制包含当前所有参数的分享链接 */
+async function copyShareLink() {
+  const url = buildShareUrl(shareMapping)
+  try {
+    await navigator.clipboard.writeText(url)
+    toast.success('分享链接已复制，发送给对方即可')
+  } catch {
+    window.prompt('复制下面的链接分享给他人：', url)
+  }
 }
 
 function getSiteDomain() {
@@ -441,6 +494,7 @@ function downloadResultsAsImage() {
 
         <div class="form-actions">
           <button class="btn" @click="loadExample">加载示例</button>
+          <button class="btn" @click="copyShareLink">🔗 复制分享链接</button>
           <button class="btn btn-secondary" @click="clearAll">清空</button>
         </div>
       </div>

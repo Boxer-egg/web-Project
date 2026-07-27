@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import { matchMnemonics } from '../../logic/drivingMnemonics'
 import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
+import { useCloudSync } from '../../composables/useCloudSync.js'
 
 const route = useRoute()
 
@@ -35,6 +36,40 @@ const timerId = ref(null)
 /** 错题本 */
 const wrongIds = useStorage('driving-quiz-wrong-ids', [])
 const quizHistory = useStorage('driving-quiz-history', [])
+
+/** 云同步 */
+const {
+  code: syncCode,
+  syncing,
+  syncError,
+  lastSync,
+  lastPull,
+  push: cloudPush,
+  pull: cloudPull,
+  resetCode: resetSyncCode,
+} = useCloudSync()
+
+async function syncUpload() {
+  const data = {
+    wrongIds: wrongIds.value,
+    quizHistory: quizHistory.value,
+  }
+  await cloudPush(data)
+}
+
+async function syncDownload() {
+  const data = await cloudPull()
+  if (!data) return
+  const mergedWrong = new Set([...wrongIds.value, ...(data.wrongIds || [])])
+  wrongIds.value = Array.from(mergedWrong)
+  const existingIds = new Set(quizHistory.value.map(h => h.date + h.mode))
+  const mergedHistory = [
+    ...quizHistory.value,
+    ...(data.quizHistory || []).filter(h => !existingIds.has(h.date + h.mode)),
+  ]
+  mergedHistory.sort((a, b) => new Date(b.date) - new Date(a.date))
+  quizHistory.value = mergedHistory.slice(0, 50)
+}
 
 /** 题目答案缓存，避免 stats 计算时 O(n²) 查找 */
 const answerMap = computed(() => {
@@ -417,6 +452,27 @@ onUnmounted(stopTimer)
             <div class="stat-label">练习次数</div>
           </div>
         </div>
+      </div>
+
+      <div class="card sync-card" style="margin-bottom:20px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <h3 style="font-size:15px">☁️ 云同步</h3>
+          <span v-if="syncCode" style="font-size:12px;color:var(--text-secondary);font-family:monospace;user-select:all" title="恢复码（点击全选复制）">{{ syncCode }}</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <button class="btn btn-sm" :disabled="syncing" @click="syncUpload">
+            {{ syncing ? '上传中…' : '上传到云端' }}
+          </button>
+          <button class="btn btn-sm btn-secondary" :disabled="syncing" @click="syncDownload">
+            {{ syncing ? '下载中…' : '从云端恢复' }}
+          </button>
+          <button v-if="syncCode" class="btn btn-sm btn-secondary" @click="resetSyncCode">重置恢复码</button>
+        </div>
+        <div style="font-size:12px;color:var(--text-secondary)">
+          <span v-if="lastSync">上次上传: {{ lastSync }}</span>
+          <span v-if="lastPull" style="margin-left:12px">上次下载: {{ lastPull }}</span>
+        </div>
+        <div v-if="syncError" style="font-size:12px;color:var(--error);margin-top:4px">{{ syncError }}</div>
       </div>
 
       <div class="quiz-modes">

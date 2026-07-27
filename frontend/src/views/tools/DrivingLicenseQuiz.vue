@@ -1,11 +1,8 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { matchMnemonics } from '../../logic/drivingMnemonics'
 import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
 import { useCloudSync } from '../../composables/useCloudSync.js'
-
-const route = useRoute()
 
 /** 题目类型 */
 const QUESTION_TYPES = {
@@ -89,9 +86,15 @@ const score = computed(() => {
 
 const passScore = computed(() => bank.value.meta.passScore || 90)
 const examDuration = computed(() => bank.value.meta.examDuration || 45)
+const examCount = computed(() => bank.value.meta.examCount || 50)
 const isPassed = computed(() => score.value >= passScore.value)
 
 const isWrongBookSession = computed(() => mode.value === 'wrong')
+
+/** 结果页错题回顾：只包含已作答但答错的题，未答题不列入 */
+const wrongReviewQuestions = computed(() => {
+  return sessionQuestions.value.filter(q => isAnswered(q.id) && !isCorrect(q.id))
+})
 
 /** 加载题库 */
 async function loadBank() {
@@ -114,6 +117,7 @@ function startSession(selectedMode) {
   answers.value = {}
   marked.value = []
   currentIndex.value = 0
+  error.value = ''
 
   let questions = []
   if (selectedMode === 'wrong') {
@@ -125,18 +129,9 @@ function startSession(selectedMode) {
   } else if (selectedMode === 'random') {
     questions = shuffleArray([...bank.value.questions]).slice(0, Math.min(50, bank.value.questions.length))
   } else if (selectedMode === 'exam') {
-    questions = shuffleArray([...bank.value.questions]).slice(0, Math.min(100, bank.value.questions.length))
+    questions = shuffleArray([...bank.value.questions]).slice(0, Math.min(examCount.value, bank.value.questions.length))
   } else {
-    const chapter = route.query.chapter
-    if (chapter) {
-      questions = bank.value.questions.filter(q => q.chapter === chapter)
-      if (!questions.length) {
-        error.value = `章节「${chapter}」暂无题目`
-        return
-      }
-    } else {
-      questions = [...bank.value.questions]
-    }
+    questions = [...bank.value.questions]
   }
 
   sessionQuestions.value = questions
@@ -195,8 +190,10 @@ function selectOption(index) {
     return
   }
 
-  // 单选/判断题：选择后立即显示对错并锁定
+  // 单选/判断题
   answers.value[qid] = [index]
+  if (mode.value === 'exam') return
+  // 练习模式：选择后立即显示对错并锁定
   showExplain.value = true
   handleAnswerResult(qid)
 }
@@ -230,8 +227,9 @@ function handleAnswerResult(qid) {
   }
 }
 
-/** 当前题是否已锁定（单选/判断选中后，或多选提交后） */
+/** 当前题是否已锁定（单选/判断选中后，或多选提交后）；考试模式交卷前不锁定 */
 function isLocked() {
+  if (mode.value === 'exam') return false
   if (!currentQuestion.value) return false
   const type = currentQuestion.value.type
   if (type === 'multiple') return showExplain.value
@@ -408,14 +406,10 @@ onUnmounted(stopTimer)
     </div>
 
     <!-- 错误提示 -->
-    <div v-if="error && view !== 'home'" class="error-msg" style="margin-bottom:16px">{{ error }}</div>
+    <div v-if="error" class="error-msg" style="margin-bottom:16px">{{ error }}</div>
 
     <!-- 首页 -->
     <div v-if="view === 'home'" class="quiz-home">
-      <div v-if="route.query.chapter" class="card" style="margin-bottom:16px;padding:12px;background:var(--bg-secondary)">
-        <span style="font-size:14px">当前为「{{ route.query.chapter }}」章节练习</span>
-      </div>
-
       <div class="quiz-stats card" style="margin-bottom:20px">
         <h3 style="font-size:16px;margin-bottom:12px">学习统计</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px">
@@ -469,7 +463,7 @@ onUnmounted(stopTimer)
         <div class="mode-card card" @click="startSession('exam')">
           <div class="mode-icon">📝</div>
           <h3>模拟考试</h3>
-          <p>100题 / 45分钟 / 90分及格</p>
+          <p>{{ examCount }}题 / {{ examDuration }}分钟 / {{ passScore }}分及格</p>
         </div>
         <div class="mode-card card" @click="startWrongBook">
           <div class="mode-icon">❌</div>
@@ -536,14 +530,14 @@ onUnmounted(stopTimer)
 
         <div class="question-actions">
           <button class="btn btn-secondary" @click="prevQuestion" :disabled="currentIndex === 0">上一题</button>
-          <button v-if="currentQuestion?.type === 'multiple' && !showExplain" class="btn" @click="confirmMultiple">确认答案</button>
+          <button v-if="currentQuestion?.type === 'multiple' && !showExplain && mode !== 'exam'" class="btn" @click="confirmMultiple">确认答案</button>
           <button class="btn" :class="{ 'btn-secondary': marked.includes(currentIndex) }" @click="toggleMark">
             {{ marked.includes(currentIndex) ? '取消标记' : '标记本题' }}
           </button>
           <button class="btn" @click="nextQuestion" :disabled="currentIndex === sessionQuestions.length - 1">下一题</button>
         </div>
 
-        <div v-if="showExplain || (currentQuestion?.type !== 'multiple' && isAnswered(currentQuestion?.id))" class="explain-box">
+        <div v-if="mode !== 'exam' && (showExplain || (currentQuestion?.type !== 'multiple' && isAnswered(currentQuestion?.id)))" class="explain-box">
           <strong>正确答案：</strong>{{ currentQuestion.answer.map(i => optionLabel(i)).join('、') }}<br>
           <strong>解析：</strong>{{ currentQuestion.explain || '暂无解析' }}
         </div>
@@ -596,11 +590,11 @@ onUnmounted(stopTimer)
 
       <div class="card" style="margin-top:20px">
         <h3 style="font-size:16px;margin-bottom:16px">错题回顾</h3>
-        <div v-if="stats.wrong === 0" style="color:var(--text-muted);text-align:center;padding:20px">
+        <div v-if="wrongReviewQuestions.length === 0" style="color:var(--text-muted);text-align:center;padding:20px">
           太棒了，全部答对！
         </div>
         <div v-else class="review-list">
-          <div v-for="q in sessionQuestions.filter(x => !isCorrect(x.id))" :key="q.id" class="review-item">
+          <div v-for="q in wrongReviewQuestions" :key="q.id" class="review-item">
             <p><strong>{{ q.question }}</strong></p>
             <p style="color:var(--error);font-size:13px;margin-top:4px">
               你的答案：{{ (answers[q.id] || []).map(i => optionLabel(i)).join('、') || '未答' }}
@@ -845,19 +839,18 @@ onUnmounted(stopTimer)
   cursor: pointer;
   font-size: 13px;
 }
-.grid-btn.current {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: white;
-}
 .grid-btn.answered {
   border-color: var(--success);
   color: var(--success);
 }
 .grid-btn.marked {
-  border-style: dashed;
-  border-color: var(--warning);
-  color: var(--warning);
+  outline: 2px dashed var(--warning);
+  outline-offset: -2px;
+}
+.grid-btn.current {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
 }
 
 .result-card {

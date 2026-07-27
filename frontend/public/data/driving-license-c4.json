@@ -5,7 +5,8 @@
     "version": "2026.07",
     "total": 1550,
     "passScore": 90,
-    "examDuration": 45
+    "examDuration": 45,
+    "examCount": 50
   },
   "questions": [
     {

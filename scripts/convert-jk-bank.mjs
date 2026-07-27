@@ -69,6 +69,20 @@ function makeId(code, index) {
   return `jk-${code || String(index).padStart(6, '0')}`
 }
 
+/**
+ * Convert a source image path (e.g. /tkimg_files/source/kms_2.5.1.jpg)
+ * to the local webp asset path under /images/jk.
+ * @param {string} tv
+ * @param {string} tp
+ * @returns {string}
+ */
+function mapPicture(tv, tp) {
+  const raw = tv || tp || ''
+  if (!raw) return ''
+  const base = raw.split('/').pop().replace(/\.[^.]+$/, '')
+  return base ? `/images/jk/${base}.webp` : ''
+}
+
 function convert() {
   const files = readdirSync(PAGES_DIR)
     .filter(f => f.startsWith('page-') && f.endsWith('.json'))
@@ -105,7 +119,7 @@ function convert() {
         options: finalOptions,
         answer,
         explain: '',
-        picture: item.tv || item.tp || '',
+        picture: mapPicture(item.tv, item.tp),
         chapter: item.tags || '综合',
       })
     }

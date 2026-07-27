@@ -268,6 +268,11 @@ function addToWrongBookIfWrong(qid) {
   }
 }
 
+/** 从错题本移除某题（错题本模式答对时调用） */
+function removeWrong(qid) {
+  wrongIds.value = wrongIds.value.filter(id => id !== qid)
+}
+
 /** 保存历史 */
 function saveHistory() {
   const duration = Math.floor((Date.now() - startTime.value) / 1000)

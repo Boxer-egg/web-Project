@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDrivingStudy } from '../../composables/useDrivingStudy.js'
-import { useCloudSync } from '../../composables/useCloudSync.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -24,28 +23,6 @@ const {
   getPrevTopicId,
   getChapterForTopic,
 } = useDrivingStudy()
-
-const {
-  code: syncCode,
-  syncing,
-  syncError,
-  lastSync,
-  lastPull,
-  push: cloudPush,
-  pull: cloudPull,
-  resetCode: resetSyncCode,
-} = useCloudSync()
-
-async function syncUpload() {
-  await cloudPush({ studyProgress: progress.value })
-}
-
-async function syncDownload() {
-  const data = await cloudPull()
-  if (!data || !data.studyProgress) return
-  const merged = new Set([...progress.value, ...data.studyProgress])
-  progress.value = Array.from(merged)
-}
 
 /** 当前视图：overview | topic | finish */
 const view = ref('overview')
@@ -170,27 +147,6 @@ onMounted(loadData)
         >
           查看全部标志图库
         </button>
-      </div>
-
-      <div class="card sync-card" style="margin-bottom:20px;padding:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-          <h3 style="font-size:15px">☁️ 云同步</h3>
-          <span v-if="syncCode" style="font-size:12px;color:var(--text-secondary);font-family:monospace;user-select:all" title="恢复码（点击全选复制）">{{ syncCode }}</span>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button class="btn btn-sm" :disabled="syncing" @click="syncUpload">
-            {{ syncing ? '上传中…' : '上传到云端' }}
-          </button>
-          <button class="btn btn-sm btn-secondary" :disabled="syncing" @click="syncDownload">
-            {{ syncing ? '下载中…' : '从云端恢复' }}
-          </button>
-          <button v-if="syncCode" class="btn btn-sm btn-secondary" @click="resetSyncCode">重置恢复码</button>
-        </div>
-        <div style="font-size:12px;color:var(--text-secondary)">
-          <span v-if="lastSync">上次上传: {{ lastSync }}</span>
-          <span v-if="lastPull" style="margin-left:12px">上次下载: {{ lastPull }}</span>
-        </div>
-        <div v-if="syncError" style="font-size:12px;color:var(--error);margin-top:4px">{{ syncError }}</div>
       </div>
 
       <div class="study-chapters">

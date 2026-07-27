@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useStorage } from '@vueuse/core'
 import { matchMnemonics } from '../../logic/drivingMnemonics'
 import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
 import { useCloudSync } from '../../composables/useCloudSync.js'
@@ -33,43 +32,19 @@ const startTime = ref(null)
 const timeLeft = ref(0)
 const timerId = ref(null)
 
-/** 错题本 */
-const wrongIds = useStorage('driving-quiz-wrong-ids', [])
-const quizHistory = useStorage('driving-quiz-history', [])
-
-/** 云同步 */
+/** 云同步（错题本与历史记录由 composable 共享管理） */
 const {
   code: syncCode,
+  wrongIds,
+  quizHistory,
   syncing,
   syncError,
   lastSync,
   lastPull,
-  push: cloudPush,
-  pull: cloudPull,
+  push: syncUpload,
+  pull: syncDownload,
   resetCode: resetSyncCode,
 } = useCloudSync()
-
-async function syncUpload() {
-  const data = {
-    wrongIds: wrongIds.value,
-    quizHistory: quizHistory.value,
-  }
-  await cloudPush(data)
-}
-
-async function syncDownload() {
-  const data = await cloudPull()
-  if (!data) return
-  const mergedWrong = new Set([...wrongIds.value, ...(data.wrongIds || [])])
-  wrongIds.value = Array.from(mergedWrong)
-  const existingIds = new Set(quizHistory.value.map(h => h.date + h.mode))
-  const mergedHistory = [
-    ...quizHistory.value,
-    ...(data.quizHistory || []).filter(h => !existingIds.has(h.date + h.mode)),
-  ]
-  mergedHistory.sort((a, b) => new Date(b.date) - new Date(a.date))
-  quizHistory.value = mergedHistory.slice(0, 50)
-}
 
 /** 题目答案缓存，避免 stats 计算时 O(n²) 查找 */
 const answerMap = computed(() => {

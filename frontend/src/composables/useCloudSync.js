@@ -3,6 +3,15 @@ import { useStorage } from '@vueuse/core'
 
 const CODE_STORAGE_KEY = 'cloud-sync-code'
 const API_BASE = '/api/sync-data'
+const HISTORY_LIMIT = 50
+
+const code = useStorage(CODE_STORAGE_KEY, '')
+const wrongIds = useStorage('driving-quiz-wrong-ids', [])
+const quizHistory = useStorage('driving-quiz-history', [])
+const syncing = ref(false)
+const syncError = ref('')
+const lastSync = ref('')
+const lastPull = ref('')
 
 function generateCode() {
   const hex = Array.from({ length: 16 }, () =>
@@ -11,18 +20,21 @@ function generateCode() {
   return `drv-${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12)}`
 }
 
-function sanitizeForDisplay(code) {
-  return code || '—'
+function mergeDrivingData(remote) {
+  if (!remote) return
+  const mergedWrong = new Set([...wrongIds.value, ...(remote.wrongIds || [])])
+  wrongIds.value = Array.from(mergedWrong)
+  const existing = new Set(quizHistory.value.map(h => h.date + h.mode))
+  const mergedHistory = [
+    ...quizHistory.value,
+    ...(remote.quizHistory || []).filter(h => !existing.has(h.date + h.mode)),
+  ]
+  mergedHistory.sort((a, b) => new Date(b.date) - new Date(a.date))
+  quizHistory.value = mergedHistory.slice(0, HISTORY_LIMIT)
 }
 
 export function useCloudSync() {
-  const code = useStorage(CODE_STORAGE_KEY, '')
-  const syncing = ref(false)
-  const syncError = ref('')
-  const lastSync = ref('')
-  const lastPull = ref('')
-
-  async function push(data) {
+  async function push() {
     if (!code.value) {
       code.value = generateCode()
     }
@@ -35,7 +47,10 @@ export function useCloudSync() {
         body: JSON.stringify({
           code: code.value,
           data: {
-            driving: data,
+            driving: {
+              wrongIds: wrongIds.value,
+              quizHistory: quizHistory.value,
+            },
             savedAt: new Date().toISOString(),
           },
         }),
@@ -52,8 +67,8 @@ export function useCloudSync() {
 
   async function pull() {
     if (!code.value) {
-      syncError.value = '暂无恢复码，请先生成'
-      return null
+      syncError.value = '暂无恢复码，请先上传一次生成'
+      return false
     }
     syncing.value = true
     syncError.value = ''
@@ -63,15 +78,16 @@ export function useCloudSync() {
       if (!json.ok) throw new Error(json.error || '拉取失败')
       if (!json.exists) {
         syncError.value = '云端暂无数据'
-        return null
+        return false
       }
       lastPull.value = json.data.savedAt
         ? new Date(json.data.savedAt).toLocaleString()
         : new Date().toLocaleString()
-      return json.data.driving || null
+      mergeDrivingData(json.data.driving)
+      return true
     } catch (e) {
       syncError.value = '拉取失败: ' + e.message
-      return null
+      return false
     } finally {
       syncing.value = false
     }
@@ -100,7 +116,8 @@ export function useCloudSync() {
 
   return {
     code,
-    displayCode: sanitizeForDisplay(code.value),
+    wrongIds,
+    quizHistory,
     syncing,
     syncError,
     lastSync,
@@ -109,6 +126,5 @@ export function useCloudSync() {
     pull,
     remove,
     resetCode,
-    generateCode,
   }
 }

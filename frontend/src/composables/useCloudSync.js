@@ -67,7 +67,7 @@ export function useCloudSync() {
 
   async function pull() {
     if (!code.value) {
-      syncError.value = '暂无恢复码，请先上传一次生成'
+      syncError.value = '请先输入恢复码'
       return false
     }
     syncing.value = true

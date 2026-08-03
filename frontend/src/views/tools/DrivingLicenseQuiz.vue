@@ -60,6 +60,15 @@ const {
   resetCode: resetSyncCode,
 } = useCloudSync()
 
+/** 复制恢复码到剪贴板 */
+async function copySyncCode() {
+  try {
+    await navigator.clipboard.writeText(syncCode.value)
+  } catch {
+    // 剪贴板不可用时忽略，用户可手动全选复制
+  }
+}
+
 /** 题目答案缓存，避免 stats 计算时 O(n²) 查找 */
 const answerMap = computed(() => {
   const map = new Map()
@@ -469,20 +478,29 @@ onUnmounted(stopTimer)
       <div class="card sync-card" style="margin-bottom:20px;padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
           <h3 style="font-size:15px">☁️ 云同步</h3>
-          <span v-if="syncCode" style="font-size:12px;color:var(--text-secondary);font-family:monospace;user-select:all" title="恢复码（点击全选复制）">{{ syncCode }}</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <input
+            v-model.trim="syncCode"
+            class="sync-code-input"
+            type="text"
+            placeholder="输入恢复码（drv- 开头），或点击上传自动生成"
+            spellcheck="false"
+          >
+          <button v-if="syncCode" class="btn btn-sm btn-secondary" @click="copySyncCode">复制</button>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
           <button class="btn btn-sm" :disabled="syncing" @click="syncUpload">
             {{ syncing ? '上传中…' : '上传到云端' }}
           </button>
           <button class="btn btn-sm btn-secondary" :disabled="syncing" @click="syncDownload">
-            {{ syncing ? '下载中…' : '从云端恢复' }}
+            {{ syncing ? '恢复中…' : '从云端恢复' }}
           </button>
           <button v-if="syncCode" class="btn btn-sm btn-secondary" @click="resetSyncCode">重置恢复码</button>
         </div>
         <div style="font-size:12px;color:var(--text-secondary)">
           <span v-if="lastSync">上次上传: {{ lastSync }}</span>
-          <span v-if="lastPull" style="margin-left:12px">上次下载: {{ lastPull }}</span>
+          <span v-if="lastPull" style="margin-left:12px">上次恢复: {{ lastPull }}</span>
         </div>
         <div v-if="syncError" style="font-size:12px;color:var(--error);margin-top:4px">{{ syncError }}</div>
       </div>
@@ -679,6 +697,22 @@ onUnmounted(stopTimer)
 .subject-tab.active {
   background: var(--accent);
   color: white;
+}
+
+.sync-code-input {
+  flex: 1;
+  min-width: 240px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: 13px;
+}
+.sync-code-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .quiz-stats {

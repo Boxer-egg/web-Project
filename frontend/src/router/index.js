@@ -288,8 +288,8 @@ const router = createRouter({
       name: 'driving-license-quiz',
       component: () => import('../views/tools/DrivingLicenseQuiz.vue'),
       meta: {
-        title: '驾考刷题 - C1/C2 科目四模拟考试',
-        description: '在线驾考刷题工具，支持顺序练习、随机抽题、模拟考试和错题本，C1/C2 科目四题库离线可用，错题数据支持云同步。'
+        title: '驾考刷题 - C1/C2 科目一/科目四模拟考试',
+        description: '在线驾考刷题工具，科目一 2006 题、科目四 1550 题，支持顺序练习、随机抽题、模拟考试和错题本，错题数据支持云同步。'
       }
     },
     {

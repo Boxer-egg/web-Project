@@ -1,8 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useStorage } from '@vueuse/core'
 import { matchMnemonics } from '../../logic/drivingMnemonics'
 import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
 import { useCloudSync } from '../../composables/useCloudSync.js'
+
+/** 科目配置 */
+const SUBJECTS = {
+  km1: { name: '科目一', file: '/data/driving-license-c1.json' },
+  km4: { name: '科目四', file: '/data/driving-license-c4.json' },
+}
 
 /** 题目类型 */
 const QUESTION_TYPES = {
@@ -16,9 +23,19 @@ const view = ref('home') // home | practice | exam | result
 const mode = ref('sequential') // sequential | random | exam | wrong
 
 /** 题库 */
+const subject = useStorage('driving-quiz-subject', 'km4')
 const bank = ref({ meta: {}, questions: [] })
 const loading = ref(false)
 const error = ref('')
+
+/** 当前科目名称 */
+const subjectName = computed(() => SUBJECTS[subject.value]?.name || '')
+
+/** 当前科目题库内的错题数量（错题本可能包含另一科目的题） */
+const wrongCountInBank = computed(() => {
+  const ids = new Set(bank.value.questions.map(q => q.id))
+  return wrongIds.value.filter(id => ids.has(id)).length
+})
 
 /** 当前会话 */
 const sessionQuestions = ref([])
@@ -101,7 +118,7 @@ async function loadBank() {
   loading.value = true
   error.value = ''
   try {
-    const res = await fetchWithTimeout('/data/driving-license-c4.json', {}, 15000)
+    const res = await fetchWithTimeout(SUBJECTS[subject.value].file, {}, 15000)
     if (!res.ok) throw new Error('题库加载失败')
     bank.value = await res.json()
   } catch (e) {
@@ -109,6 +126,13 @@ async function loadBank() {
   } finally {
     loading.value = false
   }
+}
+
+/** 切换科目 */
+function switchSubject(key) {
+  if (key === subject.value || !SUBJECTS[key]) return
+  subject.value = key
+  loadBank()
 }
 
 /** 初始化会话 */
@@ -396,8 +420,17 @@ onUnmounted(stopTimer)
 
 <template>
   <div class="tool-page driving-quiz">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h1>🚗 科目四刷题</h1>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h1>🚗 {{ subjectName }}刷题</h1>
+      <div class="subject-tabs">
+        <button
+          v-for="(s, key) in SUBJECTS"
+          :key="key"
+          class="subject-tab"
+          :class="{ active: subject === key }"
+          @click="switchSubject(key)"
+        >{{ s.name }}</button>
+      </div>
     </div>
 
     <!-- 加载中 -->
@@ -418,7 +451,7 @@ onUnmounted(stopTimer)
             <div class="stat-label">题库总数</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">{{ wrongIds.length }}</div>
+            <div class="stat-value">{{ wrongCountInBank }}</div>
             <div class="stat-label">错题数量</div>
           </div>
           <div class="stat-item">
@@ -468,7 +501,7 @@ onUnmounted(stopTimer)
         <div class="mode-card card" @click="startWrongBook">
           <div class="mode-icon">❌</div>
           <h3>错题本</h3>
-          <p>共 {{ wrongIds.length }} 道错题</p>
+          <p>共 {{ wrongCountInBank }} 道错题</p>
         </div>
       </div>
 
@@ -617,6 +650,29 @@ onUnmounted(stopTimer)
 <style scoped>
 .driving-quiz {
   max-width: 800px;
+}
+
+.subject-tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+.subject-tab {
+  padding: 6px 18px;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.subject-tab.active {
+  background: var(--accent);
+  color: white;
 }
 
 .quiz-stats {

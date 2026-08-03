@@ -155,41 +155,6 @@ await runCase('quiz-multiple-lock', async (page) => {
   }
 })
 
-await runCase('study-progress', async (page) => {
-  await page.goto(`${BASE}/driving/license-study`, { waitUntil: 'domcontentloaded' })
-  await waitForVisible(page.locator('.study-overview'))
-
-  // Click the first topic.
-  const firstTopic = page.locator('.topic-item').first()
-  await waitForVisible(firstTopic)
-  const beforeCompleted = await page.locator('.topic-item.completed').count()
-  await firstTopic.click()
-  await waitForVisible(page.locator('.study-topic'))
-
-  // Click "下一节" to mark complete and move on.
-  await page.locator('button:has-text("下一节")').click()
-  await page.waitForTimeout(300)
-
-  // Go back to overview and verify the topic is marked completed.
-  await page.locator('button:has-text("返回概览")').click()
-  await waitForVisible(page.locator('.study-overview'))
-  const afterCompleted = await page.locator('.topic-item.completed').count()
-  if (afterCompleted <= beforeCompleted) {
-    throw new Error('点击下一节后未标记为完成')
-  }
-})
-
-await runCase('jk-judgment', async (page) => {
-  await page.goto(`${BASE}/driving/jk`, { waitUntil: 'domcontentloaded' })
-  await waitForVisible(page.locator('.jsyks-kms4:has-text("第 1 /")'))
-
-  // Click the first option and verify a result is shown.
-  const firstOption = page.locator('.options li').first()
-  await waitForVisible(firstOption)
-  await firstOption.click()
-  await waitForVisible(page.locator('.answer-result'))
-})
-
 await runCase('traffic-sign-modal', async (page) => {
   await page.goto(`${BASE}/driving/traffic-signs`, { waitUntil: 'domcontentloaded' })
   await waitForVisible(page.locator('.sign-grid'))

@@ -284,21 +284,12 @@ const router = createRouter({
       }
     },
     {
-      path: '/driving/license-study',
-      name: 'driving-license-study',
-      component: () => import('../views/tools/DrivingLicenseStudy.vue'),
-      meta: {
-        title: '科目一系统学习 - 驾考理论知识',
-        description: '系统学习 C1/C2 科目一理论知识，按章节逐步掌握交通标志、通行规则、驾驶证规定和安全驾驶要点。'
-      }
-    },
-    {
       path: '/driving/quiz',
       name: 'driving-license-quiz',
       component: () => import('../views/tools/DrivingLicenseQuiz.vue'),
       meta: {
-        title: '驾考刷题 - C1/C2 科目一模拟考试',
-        description: '在线驾考刷题工具，支持顺序练习、随机抽题、模拟考试和错题本，C1/C2 科目一题库离线可用。'
+        title: '驾考刷题 - C1/C2 科目四模拟考试',
+        description: '在线驾考刷题工具，支持顺序练习、随机抽题、模拟考试和错题本，C1/C2 科目四题库离线可用，错题数据支持云同步。'
       }
     },
     {
@@ -308,15 +299,6 @@ const router = createRouter({
       meta: {
         title: '交通标志图库 - 驾考理论知识',
         description: '深圳交警与 GB 5768 道路交通标志图库，支持分类筛选、搜索和查看详情。'
-      }
-    },
-    {
-      path: '/driving/jk',
-      name: 'jk',
-      component: () => import('../views/tools/JsyksKms4View.vue'),
-      meta: {
-        title: '科目四顺序练习 - 驾考刷题',
-        description: '驾校一点通 2026 科目四顺序练习题库，共 1550 题，支持分页浏览和答案查看。'
       }
     },
     {

@@ -131,10 +131,8 @@ const groups = [
   {
     title: '驾考学习',
     tools: [
-      { path: '/driving/license-study', name: '科目一学习', icon: '📚', keywords: ['kemu', 'subject', 'one', 'study', 'jiaxiao', 'xuexi'] },
       { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', keywords: ['shuati', 'quiz', 'exam', 'jiaxiao', 'moni'] },
       { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', keywords: ['jiaotong', 'traffic', 'sign', 'biaozhi', 'tuku', 'tubiao'] },
-      { path: '/driving/jk', name: '科目四顺序练习', icon: '🚌', keywords: ['kemu', 'subject', 'four', 'practice', 'jk', 'shunxu'] },
     ]
   }
 ]

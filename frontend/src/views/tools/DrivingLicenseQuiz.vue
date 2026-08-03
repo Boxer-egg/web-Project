@@ -137,6 +137,10 @@ function switchSubject(key) {
 
 /** 初始化会话 */
 function startSession(selectedMode) {
+  if (!bank.value.questions.length) {
+    error.value = '题库尚未加载完成，请稍候'
+    return
+  }
   mode.value = selectedMode
   answers.value = {}
   marked.value = []
@@ -443,6 +447,7 @@ onUnmounted(stopTimer)
 
     <!-- 首页 -->
     <div v-if="view === 'home'" class="quiz-home">
+      <template v-if="bank.questions.length">
       <div class="quiz-stats card" style="margin-bottom:20px">
         <h3 style="font-size:16px;margin-bottom:12px">学习统计</h3>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px">
@@ -515,6 +520,7 @@ onUnmounted(stopTimer)
           </div>
         </div>
       </div>
+      </template>
     </div>
 
     <!-- 练习/考试界面 -->

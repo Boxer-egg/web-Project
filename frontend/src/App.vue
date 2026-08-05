@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import Sidebar from './components/Sidebar.vue'
 import Toast from './components/Toast.vue'
+import FeedbackWidget from './components/FeedbackWidget.vue'
 
 const route = useRoute()
 const isDark = ref(false)
@@ -46,6 +47,7 @@ onMounted(() => {
         <RouterView />
       </div>
     </main>
+    <FeedbackWidget />
   </div>
 </template>
 

@@ -49,7 +49,7 @@ const {
   processor: (val) => {
     stats.value.before = val.length
     const res = codeLogic.format(val, language.value, indent.value)
-    stats.value.after = val.length === res.length ? res.length : res.length
+    stats.value.after = res.length
     return res
   },
   paramMapping: { 

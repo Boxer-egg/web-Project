@@ -107,7 +107,7 @@ let textTimer = null
 watch(text, () => {
   if (textTimer) clearTimeout(textTimer)
   textTimer = setTimeout(() => {
-    if (text.value.trim() && qrDataUrl.value === '') generate()
+    if (text.value.trim()) generate()
   }, 500)
 })
 

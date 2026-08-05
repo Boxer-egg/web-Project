@@ -138,7 +138,7 @@ async function loadBank(autoStart) {
     loading.value = false
     if (autoStart) {
       const { mode: targetMode } = autoStart
-      if (SUBJECTS[targetMode] || ['sequential', 'random', 'exam', 'wrong'].includes(targetMode)) {
+      if (['sequential', 'random', 'exam', 'wrong'].includes(targetMode)) {
         startSession(targetMode)
       }
     }

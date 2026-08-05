@@ -4,7 +4,9 @@ import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import QRCode from 'qrcode'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+import { useToast } from '../../composables/useToast'
 
+const toast = useToast()
 const text = useStorage('qr-text', '')
 const size = useStorage('qr-size', 256)
 const level = useStorage('qr-level', 'M')
@@ -42,7 +44,11 @@ const recommendedLevel = computed(() => {
 
 async function generate() {
   error.value = ''
-  if (!text.value.trim()) { qrDataUrl.value = ''; return }
+  if (!text.value.trim()) {
+    qrDataUrl.value = ''
+    toast.warn('请输入文本或 URL 以生成二维码')
+    return
+  }
   if (fgColor.value.toLowerCase() === bgColor.value.toLowerCase()) {
     error.value = '前景色和背景色不能相同'
     qrDataUrl.value = ''
@@ -96,6 +102,14 @@ function loadExample() {
 watch([size, level, fgColor, bgColor, margin], () => {
   if (text.value) generate()
 }, { flush: 'post' })
+
+let textTimer = null
+watch(text, () => {
+  if (textTimer) clearTimeout(textTimer)
+  textTimer = setTimeout(() => {
+    if (text.value.trim() && qrDataUrl.value === '') generate()
+  }, 500)
+})
 
 onMounted(() => {
   const params = getUrlParams()

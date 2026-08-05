@@ -6,7 +6,7 @@ import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const input = useStorage('num-input', '')
 const fromBase = useStorage('num-from', 10)
-const toBases = useStorage('num-to', [2, 8, 10, 16])
+const toBases = useStorage('num-to', [2, 8, 10, 16, 36, 62])
 const results = ref([])
 
 const autoMode = useStorage('num-auto', true)

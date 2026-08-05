@@ -21,13 +21,18 @@ export function jsonToCsv(jsonStr, delimiter = ',', includeHeader = true, nested
   let data
   try {
     data = JSON.parse(jsonStr)
-  } catch {
-    throw new Error('JSON 解析失败，请检查输入格式')
+  } catch (e) {
+    const pos = e.message.match(/position\s+(\d+)/)
+    const line = pos ? (jsonStr.substring(0, parseInt(pos[1])).split('\n').length) : null
+    const hint = line ? `（第 ${line} 行附近）` : ''
+    throw new Error(`JSON 解析失败${hint}：${e.message}`)
   }
   if (!Array.isArray(data)) {
     throw new Error('JSON 必须是数组格式，例如 [{"a":1}, {"a":2}]')
   }
-  if (data.length === 0) return ''
+  if (data.length === 0) {
+    return includeHeader ? '\n' : ''
+  }
 
   // Normalize rows based on nested mode
   let rows = data.map(row => {

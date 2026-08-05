@@ -11,6 +11,9 @@ const format = useStorage('uuid-format', 'standard')
 const prefix = useStorage('uuid-prefix', '')
 const suffix = useStorage('uuid-suffix', '')
 const results = ref([])
+const verboseCount = ref(0)
+const truncated = ref(false)
+const dupCount = ref(0)
 const toast = useToast()
 
 const formats = [
@@ -33,16 +36,42 @@ const {
       suffix: suffix.value,
       quote: format.value === 'quoted' ? "'" : ''
     }
-    
-    if (count.value > 50) {
-      toast.warning('一次性生成超过50个可能影响性能')
-    }
-    
+
+    let generated
     if (format.value === 'array') {
-      const uuids = uuidLogic.generateBatch(count.value, { quote: "'" })
-      results.value = [`[${uuids.join(', ')}]`]
+      generated = uuidLogic.generateBatch(count.value, { quote: "'" })
     } else {
-      results.value = uuidLogic.generateBatch(count.value, opts)
+      generated = uuidLogic.generateBatch(count.value, opts)
+    }
+
+    const dupSet = new Set()
+    let d = 0
+    for (const g of generated) {
+      const key = g.toLowerCase()
+      if (dupSet.has(key)) d++
+      else dupSet.add(key)
+    }
+    dupCount.value = d
+
+    if (format.value === 'array') {
+      verboseCount.value = count.value
+      results.value = [`[${generated.join(', ')}]`]
+    } else {
+      verboseCount.value = generated.length
+      if (generated.length > 50) {
+        results.value = generated.slice(0, 50)
+        truncated.value = true
+      } else {
+        results.value = generated
+        truncated.value = false
+      }
+    }
+
+    if (count.value > 50) {
+      toast.warn('一次性生成超过50个可能影响性能')
+    }
+    if (d > 0) {
+      toast.warn(`发现 ${d} 个重复项`)
     }
     return ''
   },
@@ -78,6 +107,9 @@ function exportTxt() {
 
 function clearAll() {
   results.value = []
+  verboseCount.value = 0
+  truncated.value = false
+  dupCount.value = 0
 }
 </script>
 
@@ -126,12 +158,14 @@ function clearAll() {
       </div>
       <div class="tool-panel">
         <div class="panel-label">
-          <h3>结果 <span v-if="results.length" class="count-badge">({{ results.length }})</span></h3>
+          <h3>结果 <span v-if="results.length" class="count-badge">({{ verboseCount }})</span></h3>
           <div class="tool-actions">
             <button class="btn btn-sm btn-secondary" @click="copyAll">复制全部</button>
             <button class="btn btn-sm btn-secondary" @click="exportTxt">导出 TXT</button>
           </div>
         </div>
+        <div v-if="truncated" class="trunc-note">已显示前 50 个，还有 {{ verboseCount - results.length }} 个未展示</div>
+        <div v-if="dupCount > 0" class="dup-note">⚠️ 检测到 {{ dupCount }} 个重复项</div>
         <div class="result-list">
           <div v-for="(uuid, i) in results" :key="i" class="result-item">
             <code class="uuid-text">{{ uuid }}</code>
@@ -207,5 +241,19 @@ function clearAll() {
   background: var(--bg-secondary);
   border-radius: var(--radius);
   border: 1px dashed var(--border);
+}
+.trunc-note, .dup-note {
+  font-size: 12px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.trunc-note {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.dup-note {
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 8%, transparent);
 }
 </style>

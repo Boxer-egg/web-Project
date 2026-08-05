@@ -8,7 +8,13 @@ export function testRegex(text, pattern, flags = 'g') {
   if (!text) return { matches: [], error: null }
   if (!pattern) return { matches: [], error: null }
   try {
-    const re = new RegExp(pattern, flags.includes('g') ? flags : flags + 'g')
+    // 追加 'd' 标记以获取分组位置索引（不支持时退回普通模式）
+    let re
+    try {
+      re = new RegExp(pattern, flags.includes('d') ? flags : flags + 'd')
+    } catch {
+      re = new RegExp(pattern, flags)
+    }
     const matches = []
     let m
     let count = 0
@@ -20,11 +26,27 @@ export function testRegex(text, pattern, flags = 'g') {
       if (Date.now() - startTime > 1000) {
         return { matches, error: '正则匹配超时，请简化表达式', truncated: true }
       }
+      // 按起始位置映射命名分组名，供分组表格/着色使用
+      const nameByStart = {}
+      const named = (m.indices && m.indices.groups) || {}
+      for (const [name, range] of Object.entries(named)) {
+        if (range) nameByStart[range[0]] = name
+      }
+      const groupNames = []
+      const groupIndices = m.indices ? m.indices.slice(1) : null
+      if (groupIndices) {
+        groupIndices.forEach((g, i) => {
+          if (!g) { groupNames.push(null); return }
+          groupNames.push(nameByStart[g[0]] || null)
+        })
+      }
       matches.push({
         start: m.index,
         end: m.index + m[0].length,
         text: m[0],
-        groups: m.slice(1)
+        groups: m.slice(1),
+        groupIndices,
+        groupNames
       })
       if (!re.global) break
       if (m[0].length === 0) re.lastIndex++
@@ -38,7 +60,8 @@ export function testRegex(text, pattern, flags = 'g') {
 export function replaceText(text, pattern, flags, replacement) {
   if (!text || !pattern) return { result: text || '', error: null }
   try {
-    const re = new RegExp(pattern, flags.includes('g') ? flags : flags + 'g')
+    // 尊重用户选择的 flags：非全局（无 g）时仅替换第一处
+    const re = new RegExp(pattern, flags)
     return { result: text.replace(re, replacement), error: null }
   } catch (e) {
     return { result: text || '', error: e.message }

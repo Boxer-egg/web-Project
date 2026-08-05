@@ -41,9 +41,26 @@ const diffResult = computed(() => {
 })
 
 const stats = computed(() => {
-  const adds = diffResult.value.filter(d => d.type === 'add').length
-  const dels = diffResult.value.filter(d => d.type === 'del').length
-  return { adds, dels }
+  const rows = diffResult.value
+  let adds = 0, dels = 0, mods = 0
+  for (let i = 0; i < rows.length; i++) {
+    const d = rows[i]
+    if (d.type === 'add') {
+      adds++
+      const prev = rows[i - 1]
+      if (prev && prev.type === 'del') mods++
+    } else if (d.type === 'del') {
+      dels++
+    }
+  }
+  return { adds, dels, mods }
+})
+
+/** 极长文本（>10 万行）提示，对比可能耗时 */
+const isVeryLong = computed(() => {
+  const leftLines = (left.value || '').split('\n').length
+  const rightLines = (right.value || '').split('\n').length
+  return Math.max(leftLines, rightLines) > 100000
 })
 
 const isIdentical = computed(() =>
@@ -117,12 +134,14 @@ function handleLoadExample() {
     </div>
       <div class="card result-card">
       <div v-if="isIdentical" class="identical-hint">✅ 两段文本完全相同，无差异</div>
+      <div v-if="isVeryLong" class="long-hint">⚠️ 文本较长，对比可能需要一些时间</div>
       <div class="panel-label">
         <h3 style="font-size:14px">差异结果</h3>
         <div class="stats-badge">
-          <span class="del-count">-{{ stats.dels }}</span>
-          <span class="divider">/</span>
           <span class="add-count">+{{ stats.adds }}</span>
+          <span class="mod-count">~{{ stats.mods }}</span>
+          <span class="divider">/</span>
+          <span class="del-count">-{{ stats.dels }}</span>
         </div>
       </div>
       <div class="diff-container">
@@ -184,7 +203,17 @@ function handleLoadExample() {
 }
 .del-count { color: var(--error); }
 .add-count { color: var(--success); }
+.mod-count { color: #f59e0b; }
 .divider { margin: 0 4px; color: var(--text-muted); }
+.long-hint {
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  font-size: 13px;
+}
 
 .diff-container {
   font-family: 'Menlo', 'Monaco', 'Consolas', monospace;

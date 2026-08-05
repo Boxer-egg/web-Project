@@ -152,8 +152,8 @@ function clearAll() {
 
 const variants = computed(() => {
   const defs = [
-    { label: '更深', delta: -30 },
-    { label: '更暗', delta: -20 },
+    { label: '深色', delta: -20 },
+    { label: '更暗', delta: -30 },
     { label: '原色', delta: 0 },
     { label: '浅色', delta: 20 },
     { label: '更亮', delta: 30 }

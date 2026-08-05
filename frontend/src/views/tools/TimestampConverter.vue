@@ -1,12 +1,13 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useStorage } from '@vueuse/core'
 import { useTool } from '../../composables/useTool'
 import { useToast } from '../../composables/useToast'
 import * as tsLogic from '../../logic/timestamp'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const tsInput = ref('')
-const dateInput = ref('')
+const tsInput = useStorage('ts-input', '')
+const dateInput = useStorage('ts-date', '')
 const error = ref('')
 const toast = useToast()
 
@@ -15,7 +16,7 @@ function formatLocal(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-const tsResult = ref(null)
+const tsMs = ref(null)
 const dateResult = ref(null)
 
 const {
@@ -34,11 +35,12 @@ const {
 
 function tsToDate() {
   error.value = ''
-  if (!tsInput.value) { tsResult.value = null; return }
+  if (!tsInput.value) { tsMs.value = null; return }
   try {
-    tsResult.value = tsLogic.toDate(tsInput.value)
+    const res = tsLogic.toDate(tsInput.value)
+    tsMs.value = res.unixMs
   } catch (e) {
-    tsResult.value = null
+    tsMs.value = null
     error.value = e.message
   }
 }
@@ -53,6 +55,13 @@ function dateToTs() {
     error.value = e.message
   }
 }
+
+const tsResult = computed(() => {
+  if (tsMs.value === null) return null
+  // 引用 nowTs 使相对时间每秒自动刷新
+  void nowTs.value
+  return tsLogic.toDate(String(tsMs.value))
+})
 
 watch(tsInput, () => tsToDate())
 watch(dateInput, () => dateToTs())
@@ -86,7 +95,7 @@ function clearAll() {
   baseClear()
   tsInput.value = ''
   dateInput.value = ''
-  tsResult.value = null
+  tsMs.value = null
   dateResult.value = null
   error.value = ''
 }

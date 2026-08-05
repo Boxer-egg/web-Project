@@ -2,8 +2,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
+import { useToast } from '../../composables/useToast'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
+const toast = useToast()
 const value = useStorage('css-value', 16)
 const fromUnit = useStorage('css-from', 'px')
 const toUnits = useStorage('css-to', ['rem', 'em', 'vh', 'vw'])
@@ -11,7 +13,7 @@ const rootFont = useStorage('css-root', 16)
 const parentFont = useStorage('css-parent', 16)
 const viewportW = useStorage('css-vw', 1920)
 const viewportH = useStorage('css-vh', 1080)
-const toast = ref(null)
+const divZeroWarning = ref('')
 
 const allUnits = [
   { key: 'px', label: 'PX', toPx: 1 },
@@ -50,11 +52,11 @@ function toPx(val, unit) {
 function fromPx(pxVal, unit) {
   switch (unit) {
     case 'px': return pxVal
-    case 'rem': return pxVal / rootFont.value
-    case 'em': return pxVal / parentFont.value
-    case 'vh': return pxVal / viewportH.value * 100
-    case 'vw': return pxVal / viewportW.value * 100
-    case '%': return pxVal / parentFont.value * 100
+    case 'rem': return rootFont.value ? pxVal / rootFont.value : NaN
+    case 'em':
+    case '%': return parentFont.value ? pxVal / parentFont.value * (unit === '%' ? 100 : 1) : NaN
+    case 'vh': return viewportH.value ? pxVal / viewportH.value * 100 : NaN
+    case 'vw': return viewportW.value ? pxVal / viewportW.value * 100 : NaN
     case 'pt': return pxVal * 3 / 4
     case 'pc': return pxVal / 16
     case 'in': return pxVal / 96
@@ -64,14 +66,23 @@ function fromPx(pxVal, unit) {
   }
 }
 
+const forceKey = ref(0)
+
 const results = computed(() => {
+  void forceKey.value
+  divZeroWarning.value = ''
   const px = toPx(value.value, fromUnit.value)
   if (isNaN(px)) return []
-  return toUnits.value.map(u => {
+  const items = toUnits.value.map(u => {
     const converted = fromPx(px, u)
+    if (isNaN(converted)) {
+      divZeroWarning.value = `警告：${u === 'rem' || u === 'em' || u === '%' ? '根字体/父字体' : '视口尺寸'}不能为零`
+      return { unit: u, value: '—' }
+    }
     const precision = converted < 0.01 ? 6 : converted < 1 ? 4 : 2
     return { unit: u, value: parseFloat(converted.toFixed(precision)) }
   })
+  return items
 })
 
 function toggleUnit(unit) {
@@ -89,6 +100,13 @@ async function copy(text) {
 
 function clearAll() {
   value.value = ''
+  divZeroWarning.value = ''
+}
+
+function handleConvert() {
+  forceKey.value++
+  if (results.value.length) toast.success('转换完成')
+  else toast.warn('请填写转换参数')
 }
 
 function loadExample() {
@@ -181,12 +199,14 @@ onMounted(() => {
           </div>
         </div>
         <div class="tool-actions">
+          <button class="btn" @click="handleConvert">转换</button>
           <button class="btn btn-secondary" @click="clearAll">清空</button>
           <button class="btn btn-secondary" @click="loadExample">示例</button>
         </div>
       </div>
       <div class="tool-panel">
         <h3>结果</h3>
+        <div v-if="divZeroWarning" style="font-size:12px;color:var(--error);margin-bottom:8px">{{ divZeroWarning }}</div>
         <button v-if="results.length" class="btn btn-sm btn-secondary" style="margin-bottom:10px" @click="copyAll">复制全部</button>
         <div v-for="r in results" :key="r.unit" class="card" style="margin-bottom:8px;padding:10px 12px">
           <div style="display:flex;justify-content:space-between;align-items:center">

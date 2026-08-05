@@ -43,7 +43,12 @@ const groupRows = computed(() => {
   matches.value.forEach((match, mi) => {
     if (match.groups.length) {
       match.groups.forEach((g, gi) => {
-        rows.push({ matchIndex: mi + 1, groupIndex: gi + 1, value: g === undefined ? '' : g })
+        rows.push({
+          matchIndex: mi + 1,
+          groupIndex: gi + 1,
+          name: (match.groupNames && match.groupNames[gi]) || '',
+          value: g === undefined ? '' : g
+        })
       })
     }
   })
@@ -87,8 +92,33 @@ const highlightedHtml = computed(() => {
   let last = 0
   matches.value.forEach((match) => {
     result += escapeHtml(testText.value.slice(last, match.start))
-    const color = match.groups.length ? highlightColors[0] : 'rgba(234, 179, 8, 0.3)'
-    result += `<span style="background:${color}">${escapeHtml(match.text)}</span>`
+
+    const hasIndices = match.groupIndices && match.groupIndices.length &&
+      match.groupIndices.some(g => g && g[1] > g[0])
+
+    if (hasIndices) {
+      // 有分组位置信息时，用不同颜色高亮各捕获组
+      const segs = []
+      match.groupIndices.forEach((g, i) => {
+        if (!g || g[1] <= g[0]) return
+        segs.push({ start: g[0], end: g[1], color: highlightColors[(i + 1) % highlightColors.length] })
+      })
+      segs.sort((a, b) => a.start - b.start)
+      let cursor = match.start
+      for (const seg of segs) {
+        if (seg.start > cursor) {
+          result += `<span style="background:${highlightColors[0]}">${escapeHtml(testText.value.slice(cursor, seg.start))}</span>`
+        }
+        result += `<span style="background:${seg.color}">${escapeHtml(testText.value.slice(seg.start, seg.end))}</span>`
+        cursor = seg.end
+      }
+      if (cursor < match.end) {
+        result += `<span style="background:${highlightColors[0]}">${escapeHtml(testText.value.slice(cursor, match.end))}</span>`
+      }
+    } else {
+      const color = match.groups.length ? highlightColors[0] : 'rgba(234, 179, 8, 0.3)'
+      result += `<span style="background:${color}">${escapeHtml(match.text)}</span>`
+    }
     last = match.end
   })
   result += escapeHtml(testText.value.slice(last))
@@ -209,7 +239,7 @@ function clearAll() {
             <tbody>
               <tr v-for="(row, i) in groupRows" :key="i">
                 <td>{{ row.matchIndex }}</td>
-                <td>#{{ row.groupIndex }}</td>
+                <td>#{{ row.groupIndex }}{{ row.name ? ` (${row.name})` : '' }}</td>
                 <td>{{ row.value }}</td>
               </tr>
             </tbody>

@@ -14,7 +14,7 @@ const useNumber = useStorage('pwd-number', true)
 const useSpecial = useStorage('pwd-special', false)
 const excludeSimilar = useStorage('pwd-similar', false)
 const ensureEach = useStorage('pwd-ensure', false)
-const customCharset = useStorage('pwd-custom-charset', '')
+const customCharset = ref('')
 
 const results = ref([])
 const toast = useToast()
@@ -25,6 +25,19 @@ const {
   storageKey: 'pwd',
   requireInput: false,
   processor: () => {
+    if (customCharset.value) {
+      if (!customCharset.value.trim()) {
+        toast.error('请至少选择一种字符集')
+        return ''
+      }
+    } else if (!useLower.value && !useUpper.value && !useNumber.value && !useSpecial.value) {
+      toast.error('请至少选择一种字符集')
+      return ''
+    }
+    if (ensureEach.value && length.value < [useLower.value, useUpper.value, useNumber.value, useSpecial.value].filter(Boolean).length) {
+      toast.error('长度必须大于等于字符集种类数')
+      return ''
+    }
     const res = []
     for (let i = 0; i < count.value; i++) {
       res.push(pwdLogic.generate({
@@ -53,16 +66,15 @@ const {
 })
 
 const strength = computed(() => {
-  let score = 0
-  if (length.value >= 12) score += 2
-  else if (length.value >= 8) score += 1
-  if (useLower.value) score++
-  if (useUpper.value) score++
-  if (useNumber.value) score++
-  if (useSpecial.value) score++
-  
-  if (score >= 5) return { label: '强', color: 'var(--success)', width: '100%' }
-  if (score >= 3) return { label: '中', color: 'var(--warning)', width: '60%' }
+  const len = length.value
+  let charsetCount = 0
+  if (useLower.value) charsetCount++
+  if (useUpper.value) charsetCount++
+  if (useNumber.value) charsetCount++
+  if (useSpecial.value) charsetCount++
+
+  if (len >= 12 && charsetCount >= 3) return { label: '强', color: 'var(--success)', width: '100%' }
+  if (len >= 8 || charsetCount >= 2) return { label: '中', color: 'var(--warning)', width: '60%' }
   return { label: '弱', color: 'var(--error)', width: '30%' }
 })
 

@@ -2,13 +2,29 @@
 import { computed, ref, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
 import * as codeLogic from '../../logic/code-format'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+const toast = useToast()
 
 const language = useStorage('code-lang', 'javascript')
 const indent = useStorage('code-indent', 2)
 const showLineNumbers = useStorage('code-lines', true)
 const stats = ref({ before: 0, after: 0 })
+
+const SUPPORTED_LANGS = ['javascript', 'css', 'html', 'json']
+const langInputs = Object.fromEntries(
+  SUPPORTED_LANGS.map(l => [l, useStorage(`code-${l}`, '')])
+)
+const codeInput = ref(langInputs[language.value].value)
+
+watch(language, (newLang) => {
+  codeInput.value = langInputs[newLang].value
+})
+watch(codeInput, (val) => {
+  langInputs[language.value].value = val
+})
 
 const examples = {
   javascript: `function hello(name) {\n  if (!name) {\n    console.log('Hello World');\n  } else {\n    console.log('Hello ' + name);\n  }\n}\n\nhello('Developer');`,
@@ -23,25 +39,36 @@ const {
   error,
   autoMode,
   copyText,
-  clearAll,
-  loadExample,
+  clearAll: baseClear,
+  loadExample: baseLoadExample,
   process: format,
   copy
 } = useTool({
   storageKey: 'code',
+  customInput: codeInput,
   processor: (val) => {
     stats.value.before = val.length
     const res = codeLogic.format(val, language.value, indent.value)
-    stats.value.after = res.length
+    stats.value.after = val.length === res.length ? res.length : res.length
     return res
   },
   paramMapping: { 
-    code: { ref: ref('') },
+    code: { ref: codeInput },
     lang: { ref: language },
     indent: { ref: indent, transform: v => parseInt(v) }
   },
-  example: examples.javascript
+  example: examples[language.value]
 })
+
+function loadExample() {
+  codeInput.value = examples[language.value]
+  format()
+}
+
+function clearAll() {
+  baseClear()
+  langInputs[language.value].value = ''
+}
 
 watch([language, indent], () => {
   if (autoMode.value) format()

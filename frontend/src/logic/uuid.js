@@ -3,8 +3,18 @@
  */
 
 export function generateV4() {
+  const random = (() => {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      return () => {
+        const a = new Uint32Array(1)
+        crypto.getRandomValues(a)
+        return a[0]
+      }
+    }
+    return () => Math.floor(Math.random() * 0x100000000)
+  })()
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = crypto.getRandomValues(new Uint8Array(1))[0] % 16
+    const r = random() % 16
     const v = c === 'x' ? r : (r & 0x3 | 0x8)
     return v.toString(16)
   })

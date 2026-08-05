@@ -461,11 +461,16 @@ function getHealthStatus(key, value) {
   return { ok: true, color: 'var(--success)' }
 }
 
-/** 折线图 X 轴固定最大单数，保证用户可在 0–150 单范围内观察盈利拐点 */
-const LINE_X_MAX = 150
-
-/** 折线图 X 轴最大值 */
-const lineXMax = computed(() => LINE_X_MAX)
+/**
+ * 折线图 X 轴最大值：max(保本日单数×2, 目标日单数×1.5)，保证盈利拐点与目标点都在图内可见。
+ * 至少 20，避免无数据时坐标轴退化。
+ */
+const lineXMax = computed(() => {
+  const breakEven = Number(dailyBreakEvenOrders.value) || 0
+  const target = Number(targetDailyOrders.value) || 0
+  const max = Math.max(breakEven * 2, target * 1.5)
+  return Math.max(20, Math.ceil(max))
+})
 
 /** 当前选中日单数对应的经营指标 */
 const selectedDailyRevenue = computed(() => chartSelectedOrders.value * (Number(avgTicket.value) || 0))
@@ -878,6 +883,8 @@ function drawProfitLineChart(ctx, width, height, data, options = {}) {
   const selectedX = options.selectedX ?? null
   const selectedY = options.selectedY ?? 0
   const breakEvenX = options.breakEvenX ?? 0
+  const targetX = options.targetX ?? null
+  const targetY = options.targetY ?? 0
 
   ctx.fillStyle = '#ffffff'
   ctx.fillRect(0, 0, width, height)
@@ -1052,6 +1059,38 @@ function drawProfitLineChart(ctx, width, height, data, options = {}) {
     ctx.fillText(`保本线：${fmtNumber(breakEvenX, 1)}单/天`, bx - 10, by - 10)
   }
 
+  // 目标点独立标注（目标日单数 × 目标月净利润）
+  if (targetX !== null && targetX > 0 && targetX <= xMax) {
+    const tx = getX(targetX)
+    const ty = getY(targetY)
+    ctx.fillStyle = '#f59e0b'
+    ctx.beginPath()
+    const starRadius = 6
+    for (let i = 0; i < 10; i++) {
+      const angle = (Math.PI / 5) * i - Math.PI / 2
+      const r = i % 2 === 0 ? starRadius : starRadius / 2
+      const sx = tx + Math.cos(angle) * r
+      const sy = ty + Math.sin(angle) * r
+      if (i === 0) ctx.moveTo(sx, sy)
+      else ctx.lineTo(sx, sy)
+    }
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = '#d97706'
+    ctx.font = 'bold 11px sans-serif'
+    const labelText = `目标：${fmtNumber(targetX, 0)}单/天，月利润¥${fmtMoney(targetY)}`
+    const labelWidth = ctx.measureText(labelText).width
+    if (tx + labelWidth + 14 <= width - padding.right) {
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'top'
+      ctx.fillText(labelText, tx + 10, ty - 10)
+    } else {
+      ctx.textAlign = 'right'
+      ctx.textBaseline = 'top'
+      ctx.fillText(labelText, tx - 10, ty - 10)
+    }
+  }
+
   // 当前选中点标注（跟随滑块）
   if (selectedX !== null && selectedX >= xMin && selectedX <= xMax) {
     const tx = getX(selectedX)
@@ -1137,6 +1176,8 @@ function redrawCharts() {
           selectedX: chartSelectedOrders.value,
           selectedY: selectedMonthlyNetProfit.value,
           breakEvenX: dailyBreakEvenOrders.value,
+          targetX: targetDailyOrders.value,
+          targetY: targetMonthlyNetProfit.value,
         })
         ctx.restore()
       }
@@ -1438,9 +1479,11 @@ function downloadResultsAsImage() {
       drawProfitLineChart(lineCtx, lineW, lineH, {
         points: generateLineData(),
       }, {
-        selectedX: targetDailyOrders.value,
-        selectedY: targetMonthlyNetProfit.value,
+        selectedX: chartSelectedOrders.value,
+        selectedY: selectedMonthlyNetProfit.value,
         breakEvenX: dailyBreakEvenOrders.value,
+        targetX: targetDailyOrders.value,
+        targetY: targetMonthlyNetProfit.value,
       })
       lineCtx.restore()
       ctx.drawImage(lineCanvas, 0, 0, lineW * dpr, lineH * dpr, padding, y, lineW, lineH)

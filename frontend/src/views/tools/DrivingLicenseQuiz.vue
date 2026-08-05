@@ -3,7 +3,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { matchMnemonics } from '../../logic/drivingMnemonics'
 import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
+import { getUrlParams } from '../../utils/urlParams'
 import { useCloudSync } from '../../composables/useCloudSync.js'
+import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 /** 科目配置 */
 const SUBJECTS = {
@@ -123,7 +125,7 @@ const wrongReviewQuestions = computed(() => {
 })
 
 /** 加载题库 */
-async function loadBank() {
+async function loadBank(autoStart) {
   loading.value = true
   error.value = ''
   try {
@@ -134,6 +136,12 @@ async function loadBank() {
     error.value = '题库加载失败：' + e.message
   } finally {
     loading.value = false
+    if (autoStart) {
+      const { mode: targetMode } = autoStart
+      if (SUBJECTS[targetMode] || ['sequential', 'random', 'exam', 'wrong'].includes(targetMode)) {
+        startSession(targetMode)
+      }
+    }
   }
 }
 
@@ -308,6 +316,24 @@ function removeWrong(qid) {
   wrongIds.value = wrongIds.value.filter(id => id !== qid)
 }
 
+/** 错题本模式手动移除当前题，并跳到下一题 */
+function manualRemoveCurrent() {
+  const q = currentQuestion.value
+  if (!q) return
+  removeWrong(q.id)
+  const remaining = sessionQuestions.value.filter(item => item.id !== q.id)
+  sessionQuestions.value = remaining
+  if (!remaining.length) {
+    finishExam()
+    return
+  }
+  if (currentIndex.value >= remaining.length) {
+    currentIndex.value = remaining.length - 1
+  }
+  showExplain.value = false
+  error.value = ''
+}
+
 /** 保存历史 */
 function saveHistory() {
   const duration = Math.floor((Date.now() - startTime.value) / 1000)
@@ -426,7 +452,17 @@ function optionLabel(i) {
   return String.fromCharCode(65 + i)
 }
 
-onMounted(loadBank)
+onMounted(() => {
+  const params = getUrlParams()
+  const urlSubject = params.get('subject')
+  const urlMode = params.get('mode')
+  const auto = params.get('auto')
+  if (urlSubject && SUBJECTS[urlSubject]) subject.value = urlSubject
+  const autoStart = auto === '1' && ['sequential', 'random', 'exam', 'wrong'].includes(urlMode)
+    ? { mode: urlMode }
+    : null
+  loadBank(autoStart)
+})
 
 onUnmounted(stopTimer)
 </script>
@@ -435,6 +471,16 @@ onUnmounted(stopTimer)
   <div class="tool-page driving-quiz">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
       <h1>🚗 {{ subjectName }}刷题</h1>
+      <AiHelpPanel
+        title="驾考刷题"
+        desc="科目一/科目四刷题：顺序练习、随机抽题、模拟考试、错题本，支持云同步与 URL 直达指定模式"
+        api-tool="driving_license_quiz"
+        :params="[
+          { name: 'subject', desc: '科目：km1 / km4', required: false, example: 'km1' },
+          { name: 'mode', desc: '模式：sequential / random / exam / wrong', required: false, example: 'exam' },
+          { name: 'auto', desc: '加载后自动开始（填 1）', required: false, example: '1' }
+        ]"
+      />
       <div class="subject-tabs">
         <button
           v-for="(s, key) in SUBJECTS"
@@ -591,6 +637,7 @@ onUnmounted(stopTimer)
           <button class="btn" :class="{ 'btn-secondary': marked.includes(currentIndex) }" @click="toggleMark">
             {{ marked.includes(currentIndex) ? '取消标记' : '标记本题' }}
           </button>
+          <button v-if="isWrongBookSession" class="btn btn-danger" @click="manualRemoveCurrent">已掌握，移除本题</button>
           <button class="btn" @click="nextQuestion" :disabled="currentIndex === sessionQuestions.length - 1">下一题</button>
         </div>
 
@@ -1009,5 +1056,12 @@ onUnmounted(stopTimer)
     flex-direction: column;
     gap: 8px;
   }
+}
+.btn-danger {
+  background: var(--error);
+  color: #fff;
+}
+.btn-danger:hover {
+  filter: brightness(0.92);
 }
 </style>

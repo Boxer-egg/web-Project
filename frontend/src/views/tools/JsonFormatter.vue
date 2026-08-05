@@ -2,9 +2,11 @@
 import { ref, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
 import * as jsonLogic from '../../logic/json'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
+const toast = useToast()
 const indent = useStorage('json-indent', 2)
 const looksEscaped = ref(false)
 const validation = ref(null)
@@ -38,6 +40,10 @@ const {
 // In this case, useTool's 'input' is the ref we want.
 
 function compress() {
+  if (!input.value.trim()) {
+    toast.warn('请输入 JSON 内容')
+    return
+  }
   try {
     output.value = jsonLogic.compress(input.value)
     error.value = ''
@@ -47,6 +53,10 @@ function compress() {
 }
 
 function escape() {
+  if (!input.value.trim()) {
+    toast.warn('请输入 JSON 内容')
+    return
+  }
   try {
     output.value = jsonLogic.escape(input.value)
     error.value = ''
@@ -56,6 +66,10 @@ function escape() {
 }
 
 function unescape() {
+  if (!input.value.trim()) {
+    toast.warn('请输入 JSON 内容')
+    return
+  }
   try {
     output.value = jsonLogic.unescape(input.value)
     error.value = ''

@@ -38,6 +38,10 @@ const {
 })
 
 function decode() {
+  if (!input.value.trim()) {
+    toast.warn('请输入 URL 内容')
+    return
+  }
   try {
     output.value = urlLogic.mapLines(input.value, (line) => urlLogic.decode(line))
   } catch (e) {
@@ -46,10 +50,19 @@ function decode() {
 }
 
 function encodeAll() {
+  if (!input.value.trim()) {
+    toast.warn('请输入 URL 内容')
+    return
+  }
   output.value = urlLogic.mapLines(input.value, (line) => urlLogic.encodeAll(line))
 }
 
 function autoDetect() {
+  if (!input.value.trim()) {
+    toast.warn('请输入 URL 内容')
+    output.value = ''
+    return
+  }
   const lines = input.value.split('\n')
   const result = lines.map((line) => {
     if (!line.trim()) return line

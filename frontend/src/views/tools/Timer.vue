@@ -98,6 +98,9 @@ const usageLog = useStorage('timer-log', [])
 // Thresholds
 const warningThreshold = useStorage('timer-warning', 60)
 const dangerThreshold = useStorage('timer-danger', 10)
+const stageNormalColor = useStorage('timer-stage-normal', '#3b82f6')
+const stageWarningColor = useStorage('timer-stage-warning', '#f59e0b')
+const stageDangerColor = useStorage('timer-stage-danger', '#ef4444')
 
 // Audio context (lazy init)
 let audioCtx = null
@@ -238,7 +241,7 @@ function exportLogAsCsv() {
     const d = new Date(e.time)
     return `"${d.toLocaleString()}","${e.type}","${e.detail}","${e.mode}"`
   })
-  const csv = '﻿时间,类型,详情,模式\n' + rows.join('\n')
+  const csv = '\uFEFF时间,类型,详情,模式\n' + rows.join('\n')
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -246,6 +249,30 @@ function exportLogAsCsv() {
   a.download = `timer-log-${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+function exportLogAsPdf() {
+  if (!usageLog.value.length) return
+  const rows = usageLog.value.map((e) => {
+    const d = new Date(e.time)
+    return `<tr><td>${d.toLocaleString()}</td><td>${e.type}</td><td>${e.detail || ''}</td><td>${e.mode || ''}</td></tr>`
+  }).join('')
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>计时器使用记录</title><style>
+    body{font-family:sans-serif;padding:20px;max-width:900px;margin:0 auto}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:8px 12px;border:1px solid #ddd;text-align:left}
+    th{background:#f5f5f5}
+    h1{font-size:18px;margin-bottom:8px}
+    .sub{color:#666;font-size:13px;margin-bottom:16px}</style></head><body>
+    <h1>⏱ 计时器使用记录</h1><p class="sub">导出时间：${new Date().toLocaleString()}</p>
+    <table><thead><tr><th>时间</th><th>类型</th><th>详情</th><th>模式</th></tr></thead><tbody>${rows}</tbody></table>
+    </body></html>`
+  const win = window.open('', '_blank', 'width=900,height=600')
+  if (win) {
+    win.document.write(html)
+    win.document.close()
+    setTimeout(() => win.print(), 500)
+  }
 }
 
 function clearLog() {
@@ -729,7 +756,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Main Display -->
-    <div class="timer-display-card" :class="`status-${timeStatus}`">
+    <div class="timer-display-card" :class="`status-${timeStatus}`" :style="timeStatus === 'danger' ? { borderColor: stageDangerColor, boxShadow: `0 0 24px ${stageDangerColor}40` } : timeStatus === 'warning' ? { borderColor: stageWarningColor } : {}">
       <!-- Overlay Message -->
       <div v-if="overlayMessage" class="overlay-message">
         {{ overlayMessage }}
@@ -749,7 +776,7 @@ onUnmounted(() => {
           <circle cx="90" cy="90" r="80" fill="none" stroke="var(--bg-tertiary)" stroke-width="6" />
           <circle
             cx="90" cy="90" r="80" fill="none"
-            :stroke="timeStatus === 'danger' ? '#ef4444' : timeStatus === 'warning' ? '#f59e0b' : 'var(--accent)'"
+            :stroke="timeStatus === 'danger' ? stageDangerColor : timeStatus === 'warning' ? stageWarningColor : stageNormalColor"
             stroke-width="6"
             stroke-linecap="round"
             :stroke-dasharray="2 * Math.PI * 80"
@@ -913,6 +940,18 @@ onUnmounted(() => {
           <input v-model.number="dangerThreshold" type="number" min="1" :max="MAX_DURATION" />
         </div>
         <div class="setting-row">
+          <label>正常阶段颜色</label>
+          <input v-model="stageNormalColor" type="color" style="width:40px;height:28px;border:none;cursor:pointer" />
+        </div>
+        <div class="setting-row">
+          <label>警告阶段颜色</label>
+          <input v-model="stageWarningColor" type="color" style="width:40px;height:28px;border:none;cursor:pointer" />
+        </div>
+        <div class="setting-row">
+          <label>危险阶段颜色</label>
+          <input v-model="stageDangerColor" type="color" style="width:40px;height:28px;border:none;cursor:pointer" />
+        </div>
+        <div class="setting-row">
           <label>提示音量</label>
           <input v-model.number="soundVolume" type="range" min="0" max="1" step="0.1" />
           <span>{{ Math.round(soundVolume * 100) }}%</span>
@@ -933,6 +972,7 @@ onUnmounted(() => {
         <h3>使用记录</h3>
         <div class="log-actions">
           <button class="btn btn-sm btn-secondary" @click="exportLogAsCsv" :disabled="!usageLog.length">导出 CSV</button>
+          <button class="btn btn-sm btn-secondary" @click="exportLogAsPdf" :disabled="!usageLog.length">导出 PDF</button>
           <button class="btn btn-sm btn-danger" @click="clearLog" :disabled="!usageLog.length">清空</button>
         </div>
       </div>

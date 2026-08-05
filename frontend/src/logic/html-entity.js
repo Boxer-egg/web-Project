@@ -6,8 +6,12 @@ const NAMED_ENTITIES = {
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;',
   '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;',
 }
+const EBMD_ENTITIES = { ' ': '&nbsp;' }
 const REVERSE_ENTITIES = Object.fromEntries(
   Object.entries(NAMED_ENTITIES).map(([k, v]) => [v, k])
+)
+const REVERSE_NBSP = Object.fromEntries(
+  Object.entries(EBMD_ENTITIES).map(([k, v]) => [v, k])
 )
 const ENTITY_PATTERN = /&(?:#[xX][0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]*);/g
 
@@ -25,10 +29,12 @@ export function encodeNamed(str, options = {}) {
   text = text.replace(ENTITY_PATTERN, (m) => {
     return `\u0000${m}\u0000`
   })
-  for (const [char, entity] of Object.entries(NAMED_ENTITIES)) {
+  for (const entry of Object.entries(NAMED_ENTITIES)) {
+    const [char, entity] = entry
     if (onlyNonAscii && isAsciiPrintable(char)) continue
     text = text.split(char).join(entity)
   }
+  // 仅在“仅编码非 ASCII”关闭且需要显示时空格 → &nbsp;
   return text.replace(/\u0000/g, '')
 }
 
@@ -107,6 +113,9 @@ export function decode(str) {
     }
   })
   for (const [entity, char] of Object.entries(REVERSE_ENTITIES)) {
+    text = text.split(entity).join(char)
+  }
+  for (const [entity, char] of Object.entries(REVERSE_NBSP)) {
     text = text.split(entity).join(char)
   }
   return text

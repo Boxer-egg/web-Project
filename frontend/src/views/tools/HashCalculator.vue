@@ -10,6 +10,9 @@ const selected = useStorage('hash-selected', ['md5', 'sha1', 'sha256', 'sha512']
 const results = ref({})
 const fileMode = ref(false)
 const fileName = ref('')
+const computing = ref(false)
+const inputStats = ref({ chars: 0, bytes: 0 })
+const isDragging = ref(false)
 const toast = useToast()
 
 const algos = [
@@ -18,6 +21,11 @@ const algos = [
   { key: 'sha256', label: 'SHA256' },
   { key: 'sha512', label: 'SHA512' },
 ]
+
+function updateInputStats(v) {
+  const s = v || ''
+  inputStats.value = { chars: s.length, bytes: new TextEncoder().encode(s).length }
+}
 
 const {
   input,
@@ -29,8 +37,15 @@ const {
   storageKey: 'hash',
   processor: async (val) => {
     if (fileMode.value) return results.value // Don't auto-calculate for files via this processor
+    updateInputStats(val)
+    if (!val) { toast.warn('请输入文本或上传文件'); return '' }
+    if (val.length > 50 * 1024 * 1024) {
+      toast.warn('文本较大，计算可能需要一些时间')
+    }
+    computing.value = true
     const res = await hashLogic.calculateAll(val, selected.value)
     results.value = res
+    computing.value = false
     return '' // output isn't used as we use results ref
   },
   paramMapping: { 
@@ -44,18 +59,34 @@ watch(selected, () => {
   if (autoMode.value && !fileMode.value) calculate()
 }, { deep: true })
 
-async function handleFile(e) {
-  const file = e.target.files?.[0]
+async function processFile(file) {
   if (!file) return
   if (file.size > 100 * 1024 * 1024) {
     toast.error('文件过大，请选择 100MB 以内的文件')
-    e.target.value = ''
     return
+  }
+  if (file.size > 50 * 1024 * 1024) {
+    toast.warn('文件较大，计算可能需要一些时间')
   }
   fileName.value = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`
   fileMode.value = true
+  computing.value = true
   const buffer = await file.arrayBuffer()
   results.value = await hashLogic.calculateAll(buffer, selected.value)
+  computing.value = false
+}
+
+async function handleFile(e) {
+  const file = e.target.files?.[0]
+  if (!file) return
+  await processFile(file)
+  e.target.value = ''
+}
+
+function onDrop(e) {
+  isDragging.value = false
+  const file = e.dataTransfer?.files?.[0]
+  processFile(file)
 }
 
 function copy(text) {
@@ -74,6 +105,8 @@ function clearAll() {
   results.value = {}
   fileName.value = ''
   fileMode.value = false
+  computing.value = false
+  inputStats.value = { chars: 0, bytes: 0 }
 }
 
 function toggleAlgo(key) {
@@ -133,9 +166,21 @@ function toggleAll() {
     </div>
     <div class="tool-section">
       <div class="tool-panel">
-        <h3>输入</h3>
-        <textarea v-model="input" class="textarea" placeholder="输入文本..." rows="14" :disabled="fileMode"></textarea>
-        <div v-if="fileName" style="margin-top:8px;font-size:13px;color:var(--accent)">📎 {{ fileName }}</div>
+        <h3>输入
+          <span v-if="input" style="color:var(--text-muted);font-size:12px;margin-left:8px">{{ inputStats.chars }} 字符 / {{ inputStats.bytes }} 字节</span>
+        </h3>
+        <textarea v-model="input" class="textarea" placeholder="输入文本，或拖拽文件到下方区域..." rows="10" :disabled="fileMode || computing"></textarea>
+        <div
+          class="drop-zone"
+          :class="{ 'drag-active': isDragging }"
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
+          @drop.prevent="onDrop"
+        >
+          <span v-if="!fileMode">📁 拖拽文件到此处，或点击下方按钮选择</span>
+          <span v-else class="file-name">📎 {{ fileName }}</span>
+        </div>
+        <div v-if="computing" class="computing">⏳ 正在计算，请稍候...</div>
       </div>
       <div class="tool-panel">
         <h3>结果</h3>
@@ -162,5 +207,30 @@ function toggleAll() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+.drop-zone {
+  margin-top: 8px;
+  padding: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.drop-zone.drag-active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-secondary));
+}
+.drop-zone .file-name {
+  color: var(--accent);
+}
+.computing {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--accent);
 }
 </style>

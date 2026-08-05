@@ -4,11 +4,17 @@
 
 export function toDate(str) {
   if (!str) return null
-  const num = parseInt(str.trim())
+  const trimmed = str.trim()
+  if (!/^\d+$/.test(trimmed)) throw new Error('请输入纯数字')
+  // 校验位数：仅支持 10 位（秒）或 13 位（毫秒）
+  if (trimmed.length !== 10 && trimmed.length !== 13) {
+    throw new Error('请输入 10 位（秒）或 13 位（毫秒）时间戳')
+  }
+  const num = parseInt(trimmed, 10)
   if (isNaN(num)) throw new Error('请输入有效的数字')
   
   // Auto-detect seconds vs milliseconds
-  const ms = str.trim().length === 10 ? num * 1000 : num
+  const ms = trimmed.length === 10 ? num * 1000 : num
   const d = new Date(ms)
   
   if (isNaN(d.getTime())) throw new Error('无效的时间戳')

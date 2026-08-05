@@ -2,12 +2,15 @@
 import { ref, computed, watch } from 'vue'
 import { useTool } from '../../composables/useTool'
 import { useToast } from '../../composables/useToast'
+import { useStorage } from '@vueuse/core'
 import * as base64Logic from '../../logic/base64'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const toast = useToast()
 
+const mode = useStorage('base64-mode', 'text') // text | file
 const isImage = ref(false)
+const isNonImage = ref(false)
 const imagePreview = ref('')
 const fileInfo = ref('')
 const isBase64 = ref(false)
@@ -68,6 +71,7 @@ const {
 const inputChars = computed(() => textInput.value.length)
 
 function textToBase64() {
+  mode.value = 'text'
   if (!textInput.value) {
     toast.warn('请输入内容')
     return
@@ -75,6 +79,7 @@ function textToBase64() {
   try {
     output.value = base64Logic.utf8ToBase64(textInput.value)
     isImage.value = false
+    isNonImage.value = false
     imagePreview.value = ''
     fileInfo.value = ''
     error.value = ''
@@ -84,6 +89,7 @@ function textToBase64() {
 }
 
 function base64ToText() {
+  mode.value = 'text'
   if (!textInput.value) {
     toast.warn('请输入内容')
     return
@@ -91,6 +97,7 @@ function base64ToText() {
   try {
     output.value = base64Logic.base64ToUtf8(textInput.value)
     isImage.value = false
+    isNonImage.value = false
     imagePreview.value = ''
     fileInfo.value = ''
     error.value = ''
@@ -110,6 +117,7 @@ function readFileAsDataURL(file) {
 
 async function processFile(file) {
   if (!file) return
+  mode.value = 'file'
   if (file.size > 10 * 1024 * 1024) {
     toast.error('文件过大，请上传小于 10MB 的文件')
     return
@@ -120,10 +128,13 @@ async function processFile(file) {
     fileInfo.value = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`
     if (file.type.startsWith('image/')) {
       isImage.value = true
+      isNonImage.value = false
       imagePreview.value = dataUrl
     } else {
       isImage.value = false
+      isNonImage.value = true
       imagePreview.value = ''
+      toast.warn('该文件类型可能无法正确预览，但编码仍可进行')
     }
     error.value = ''
   } catch (e) {
@@ -154,6 +165,7 @@ function onDragLeave() {
 function clearAll() {
   baseClear()
   isImage.value = false
+  isNonImage.value = false
   imagePreview.value = ''
   fileInfo.value = ''
 }
@@ -206,6 +218,7 @@ function clearAll() {
       <div class="tool-panel">
         <h3>输出 <span v-if="fileInfo" style="color:var(--text-muted);font-size:12px">{{ fileInfo }}</span></h3>
         <img v-if="isImage && imagePreview" :src="imagePreview" style="max-width:100%;max-height:200px;border-radius:var(--radius);margin-bottom:10px">
+        <div v-if="isNonImage" class="file-note">⚠️ 非图片文件，无法预览，但编码已完成</div>
         <textarea v-model="output" class="textarea" :placeholder="isImage ? 'Base64 DataURL...' : '处理结果...'" :rows="isImage ? 8 : 14" readonly></textarea>
         <button class="btn btn-sm" @click="copy" style="align-self:flex-start">{{ copyText }}</button>
       </div>
@@ -244,5 +257,13 @@ function clearAll() {
   font-size: 12px;
   color: var(--text-muted);
   pointer-events: none;
+}
+.file-note {
+  font-size: 12px;
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.1);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  margin-bottom: 10px;
 }
 </style>

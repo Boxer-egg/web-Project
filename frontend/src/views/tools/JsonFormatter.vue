@@ -7,6 +7,7 @@ import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const indent = useStorage('json-indent', 2)
 const looksEscaped = ref(false)
+const validation = ref(null)
 
 const example = JSON.stringify({
   name: '张三',
@@ -65,7 +66,12 @@ function unescape() {
 
 watch(input, (newVal) => {
   looksEscaped.value = jsonLogic.detectEscaped(newVal)
+  validation.value = jsonLogic.validate(newVal)
 }, { immediate: true })
+
+watch(validation, (v) => {
+  if (v && v.ok && autoMode.value) format()
+})
 
 watch(indent, () => {
   if (autoMode.value) format()
@@ -86,24 +92,28 @@ watch(indent, () => {
         ]"
       />
     </div>
-    <div class="tool-actions">
-      <button class="btn" @click="format">格式化</button>
-      <button class="btn btn-secondary" @click="compress">压缩</button>
-      <button class="btn btn-secondary" @click="escape">转义</button>
-      <button class="btn" :class="looksEscaped ? '' : 'btn-secondary'" @click="unescape">去转义 {{ looksEscaped ? '←' : '' }}</button>
-      <button class="btn btn-secondary" @click="clearAll">清空</button>
-      <button class="btn btn-secondary" @click="loadExample">加载示例</button>
-      <select v-model="indent" class="input" style="width:auto;min-width:80px">
-        <option :value="2">2 空格</option>
-        <option :value="4">4 空格</option>
-        <option :value="'\t'">Tab</option>
-      </select>
-    </div>
-    <div class="tool-actions">
-      <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
-        自动 {{ autoMode ? 'ON' : 'OFF' }}
-      </button>
-    </div>
+      <div class="tool-actions">
+        <button class="btn" @click="format">格式化</button>
+        <button class="btn btn-secondary" @click="compress">压缩</button>
+        <button class="btn btn-secondary" @click="escape">转义</button>
+        <button class="btn" :class="looksEscaped ? '' : 'btn-secondary'" @click="unescape">去转义 {{ looksEscaped ? '←' : '' }}</button>
+        <button class="btn btn-secondary" @click="clearAll">清空</button>
+        <button class="btn btn-secondary" @click="loadExample">加载示例</button>
+        <select v-model="indent" class="input" style="width:auto;min-width:80px">
+          <option :value="2">2 空格</option>
+          <option :value="4">4 空格</option>
+          <option :value="'\t'">Tab</option>
+        </select>
+      </div>
+      <div class="tool-actions">
+        <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
+          自动 {{ autoMode ? 'ON' : 'OFF' }}
+        </button>
+        <span v-if="validation" class="validation-badge" :class="validation.ok ? 'valid' : 'invalid'">
+          <template v-if="validation.ok">✓ JSON 有效</template>
+          <template v-else>✗ {{ validation.error }}</template>
+        </span>
+      </div>
     <div class="tool-section">
       <div class="tool-panel">
         <h3>输入</h3>
@@ -133,5 +143,18 @@ watch(indent, () => {
   border-radius: var(--radius);
   margin-top: 10px;
   font-size: 14px;
+}
+.validation-badge {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.validation-badge.valid {
+  color: var(--success);
+  background: rgba(34, 197, 94, 0.12);
+}
+.validation-badge.invalid {
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.12);
 }
 </style>

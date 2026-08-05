@@ -83,6 +83,10 @@ function resetChain() {
 }
 
 function handleFindReplace() {
+  if (!findText.value) {
+    error.value = '请输入查找内容'
+    return
+  }
   try {
     output.value = textLogic.findReplace(input.value, findText.value, replaceText.value, useRegex.value)
     error.value = ''

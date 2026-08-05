@@ -20,10 +20,11 @@ const {
 } = useTool({
   storageKey: 'html-entity',
   processor: (val) => {
+    const opts = { onlyNonAscii: encodeAll.value }
     switch (mode.value) {
-      case 'encode_named': return htmlLogic.encodeNamed(val)
-      case 'encode_numeric': return htmlLogic.encodeNumeric(val)
-      case 'encode_hex': return htmlLogic.encodeHex(val)
+      case 'encode_named': return htmlLogic.encodeNamed(val, opts)
+      case 'encode_numeric': return htmlLogic.encodeNumeric(val, opts)
+      case 'encode_hex': return htmlLogic.encodeHex(val, opts)
       case 'decode': return htmlLogic.decode(val)
       default: return val
     }
@@ -75,6 +76,9 @@ const quickRef = [
       <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
         自动 {{ autoMode ? 'ON' : 'OFF' }}
       </button>
+      <label style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer">
+        <input type="checkbox" v-model="encodeAll"> 仅编码非 ASCII 字符（已编码的保持原样）
+      </label>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

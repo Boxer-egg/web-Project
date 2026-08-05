@@ -1,39 +1,31 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
 import * as tsLogic from '../../logic/timestamp'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const tsInput = ref('')
 const dateInput = ref('')
+const error = ref('')
+const toast = useToast()
 
 function formatLocal(d) {
   const pad = n => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+const tsResult = ref(null)
+const dateResult = ref(null)
+
 const {
-  output,
   autoMode,
-  copyText,
   clearAll: baseClear,
-  loadExample,
-  process: convert,
-  copy
+  loadExample
 } = useTool({
   storageKey: 'ts',
-  processor: (val) => {
-    // Determine which input triggered the change
-    if (tsInput.value && val === tsInput.value) {
-      const res = tsLogic.toDate(val)
-      return `ISO: ${res.iso}\n本地: ${res.local}\n秒级: ${res.unixSeconds}\n毫秒: ${res.unixMs}\n\n距离现在: ${res.relative}`
-    } else if (dateInput.value && val === dateInput.value) {
-      const res = tsLogic.fromDate(val)
-      return `秒级: ${res.unixSeconds}\n毫秒级: ${res.unixMs}\n\nISO: ${res.iso}\n本地: ${res.local}`
-    }
-    return ''
-  },
-  paramMapping: { 
+  processor: () => '',
+  paramMapping: {
     ts: { ref: tsInput },
     date: { ref: dateInput }
   },
@@ -41,36 +33,62 @@ const {
 })
 
 function tsToDate() {
-  if (!tsInput.value) return
+  error.value = ''
+  if (!tsInput.value) { tsResult.value = null; return }
   try {
-    const res = tsLogic.toDate(tsInput.value)
-    output.value = `ISO: ${res.iso}\n本地: ${res.local}\n秒级: ${res.unixSeconds}\n毫秒: ${res.unixMs}\n\n距离现在: ${res.relative}`
+    tsResult.value = tsLogic.toDate(tsInput.value)
   } catch (e) {
-    output.value = e.message
+    tsResult.value = null
+    error.value = e.message
   }
 }
 
 function dateToTs() {
-  if (!dateInput.value) return
+  error.value = ''
+  if (!dateInput.value) { dateResult.value = null; return }
   try {
-    const res = tsLogic.fromDate(dateInput.value)
-    output.value = `秒级: ${res.unixSeconds}\n毫秒级: ${res.unixMs}\n\nISO: ${res.iso}\n本地: ${res.local}`
+    dateResult.value = tsLogic.fromDate(dateInput.value)
   } catch (e) {
-    output.value = e.message
+    dateResult.value = null
+    error.value = e.message
   }
+}
+
+watch(tsInput, () => tsToDate())
+watch(dateInput, () => dateToTs())
+
+const nowTs = ref(Date.now())
+let timer = null
+onMounted(() => {
+  timer = setInterval(() => { nowTs.value = Date.now() }, 1000)
+})
+onUnmounted(() => clearInterval(timer))
+
+const nowText = computed(() => {
+  const d = new Date(nowTs.value)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+})
+
+async function copyVal(v) {
+  await navigator.clipboard.writeText(String(v))
+  toast.success('已复制')
 }
 
 function now() {
   const n = new Date()
   tsInput.value = String(Math.floor(n.getTime() / 1000))
   dateInput.value = formatLocal(n)
-  if (autoMode.value) tsToDate()
+  if (autoMode.value) { tsToDate(); dateToTs() }
 }
 
 function clearAll() {
   baseClear()
   tsInput.value = ''
   dateInput.value = ''
+  tsResult.value = null
+  dateResult.value = null
+  error.value = ''
 }
 </script>
 
@@ -90,8 +108,8 @@ function clearAll() {
     </div>
     <div class="help-text card">
       <strong style="color:var(--text-primary)">使用说明：</strong><br>
-      • <strong>时间戳 → 日期</strong>：输入 10 位（秒）或 13 位（毫秒）时间戳<br>
-      • <strong>日期 → 时间戳</strong>：使用日期选择器选择本地时间<br>
+      • <strong>时间戳 → 日期</strong>：输入 10 位（秒）或 13 位（毫秒）时间戳，实时转换<br>
+      • <strong>日期 → 时间戳</strong>：使用日期选择器选择本地时间，实时转换<br>
       • 点击「现在」按钮可快速填入当前时间
     </div>
     <div class="tool-section">
@@ -102,12 +120,39 @@ function clearAll() {
           <button class="btn" @click="tsToDate">转换</button>
           <button class="btn btn-secondary" @click="now">现在</button>
         </div>
+        <div v-if="tsResult" class="result-rows">
+          <div class="result-row" v-for="row in [
+            { label: '友好格式', value: tsResult.friendly },
+            { label: '本地时间', value: tsResult.local },
+            { label: 'ISO', value: tsResult.iso },
+            { label: '秒级', value: tsResult.unixSeconds },
+            { label: '毫秒', value: tsResult.unixMs },
+            { label: '相对时间', value: tsResult.relative }
+          ]" :key="row.label">
+            <span class="row-label">{{ row.label }}</span>
+            <code class="row-value">{{ row.value }}</code>
+            <button class="btn btn-sm btn-secondary row-copy" @click="copyVal(row.value)">复制</button>
+          </div>
+        </div>
       </div>
       <div class="tool-panel card">
         <h3>日期 → 时间戳</h3>
-        <input v-model="dateInput" class="input" type="datetime-local" @change="autoMode && dateToTs()">
+        <input v-model="dateInput" class="input" type="datetime-local" @change="dateToTs">
         <div class="tool-actions">
           <button class="btn" @click="dateToTs">转换</button>
+        </div>
+        <div v-if="dateResult" class="result-rows">
+          <div class="result-row" v-for="row in [
+            { label: '友好格式', value: dateResult.friendly },
+            { label: '本地时间', value: dateResult.local },
+            { label: 'ISO', value: dateResult.iso },
+            { label: '秒级', value: dateResult.unixSeconds },
+            { label: '毫秒', value: dateResult.unixMs }
+          ]" :key="row.label">
+            <span class="row-label">{{ row.label }}</span>
+            <code class="row-value">{{ row.value }}</code>
+            <button class="btn btn-sm btn-secondary row-copy" @click="copyVal(row.value)">复制</button>
+          </div>
         </div>
       </div>
     </div>
@@ -116,16 +161,11 @@ function clearAll() {
         自动 {{ autoMode ? 'ON' : 'OFF' }}
       </button>
     </div>
-    <div class="card" style="margin-top:16px">
-      <div class="panel-label">
-        <h3 style="font-size:14px">结果</h3>
-        <button class="btn btn-sm btn-secondary" @click="copy">{{ copyText }}</button>
-      </div>
-      <textarea v-model="output" class="textarea" placeholder="转换结果..." rows="8" readonly></textarea>
-    </div>
+    <div v-if="error" class="error-msg">❌ {{ error }}</div>
     <div class="tool-actions" style="margin-top:10px">
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">加载示例</button>
+      <span style="font-size:12px;color:var(--text-muted)">当前时间：{{ nowText }}</span>
     </div>
   </div>
 </template>
@@ -149,5 +189,43 @@ function clearAll() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+}
+.result-rows {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.row-label {
+  flex-shrink: 0;
+  min-width: 56px;
+  color: var(--text-muted);
+}
+.row-value {
+  flex: 1;
+  word-break: break-all;
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+}
+.row-copy {
+  flex-shrink: 0;
+}
+.error-msg {
+  color: var(--error);
+  background: rgba(239, 68, 68, 0.1);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  margin-top: 10px;
+  font-size: 14px;
 }
 </style>

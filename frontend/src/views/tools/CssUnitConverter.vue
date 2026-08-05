@@ -11,6 +11,7 @@ const rootFont = useStorage('css-root', 16)
 const parentFont = useStorage('css-parent', 16)
 const viewportW = useStorage('css-vw', 1920)
 const viewportH = useStorage('css-vh', 1080)
+const toast = ref(null)
 
 const allUnits = [
   { key: 'px', label: 'PX', toPx: 1 },
@@ -96,6 +97,22 @@ function loadExample() {
   toUnits.value = ['rem', 'em', 'vh', 'vw']
 }
 
+const quickRef = [
+  { px: 12, desc: '小字' },
+  { px: 14, desc: '正文字' },
+  { px: 16, desc: '标准字' },
+  { px: 20, desc: '副标题' },
+  { px: 24, desc: '标题' },
+  { px: 32, desc: '大标题' },
+  { px: 48, desc: 'Banner' },
+]
+
+function copyAll() {
+  if (!results.value.length) return
+  const text = results.value.map(r => `${r.value}${r.unit}`).join('\n')
+  navigator.clipboard.writeText(text)
+}
+
 onMounted(() => {
   const params = getUrlParams()
   if (params.get('value')) {
@@ -170,10 +187,20 @@ onMounted(() => {
       </div>
       <div class="tool-panel">
         <h3>结果</h3>
+        <button v-if="results.length" class="btn btn-sm btn-secondary" style="margin-bottom:10px" @click="copyAll">复制全部</button>
         <div v-for="r in results" :key="r.unit" class="card" style="margin-bottom:8px;padding:10px 12px">
           <div style="display:flex;justify-content:space-between;align-items:center">
             <code style="font-size:14px">{{ value }}{{ fromUnit }} = {{ r.value }}{{ r.unit }}</code>
             <button class="btn btn-sm btn-secondary" @click="copy(`${r.value}${r.unit}`)">复制</button>
+          </div>
+        </div>
+        <div class="quick-ref">
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">常用对照 (基于 16px 根字体)</div>
+          <div v-for="q in quickRef" :key="q.px" style="display:flex;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)">
+            <span style="width:50px;color:var(--text-muted)">{{ q.px }}px</span>
+            <span style="width:60px">{{ (q.px/16).toFixed(2) }}rem</span>
+            <span style="width:60px">{{ (q.px/16).toFixed(2) }}em</span>
+            <span style="color:var(--text-muted)">{{ q.desc }}</span>
           </div>
         </div>
         <div v-if="!results.length" style="color:var(--text-muted);padding:40px;text-align:center">

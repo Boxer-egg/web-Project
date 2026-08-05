@@ -1,20 +1,43 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
 import * as base64Logic from '../../logic/base64'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+const toast = useToast()
 
 const isImage = ref(false)
 const imagePreview = ref('')
 const fileInfo = ref('')
 const isBase64 = ref(false)
+const isDragging = ref(false)
 
 function autoProcess(val) {
   if (!val) return ''
-  if (base64Logic.detectBase64(val)) {
+
+  // Data URL → decode as image preview (keep raw for output text mode)
+  const dataUrl = base64Logic.extractDataUrl(val)
+  if (dataUrl && dataUrl.isBase64) {
+    const clean = base64Logic.stripWhitespace(dataUrl.payload)
+    if (clean && clean.length > 4) {
+      try {
+        const decoded = base64Logic.base64ToUtf8(clean)
+        isImage.value = dataUrl.mime.startsWith('image/')
+        if (isImage.value) imagePreview.value = val
+        isBase64.value = true
+        return decoded
+      } catch {
+        /* fall through */
+      }
+    }
+  }
+
+  const cleanInput = base64Logic.stripWhitespace(val)
+  if (base64Logic.detectBase64(cleanInput)) {
     isBase64.value = true
     try {
-      return base64Logic.base64ToUtf8(val)
+      return base64Logic.base64ToUtf8(cleanInput)
     } catch {
       isBase64.value = false
       return base64Logic.utf8ToBase64(val)
@@ -42,8 +65,13 @@ const {
   example: 'Hello 世界! 这是一段示例文本。'
 })
 
+const inputChars = computed(() => textInput.value.length)
+
 function textToBase64() {
-  if (!textInput.value) return
+  if (!textInput.value) {
+    toast.warn('请输入内容')
+    return
+  }
   try {
     output.value = base64Logic.utf8ToBase64(textInput.value)
     isImage.value = false
@@ -56,7 +84,10 @@ function textToBase64() {
 }
 
 function base64ToText() {
-  if (!textInput.value) return
+  if (!textInput.value) {
+    toast.warn('请输入内容')
+    return
+  }
   try {
     output.value = base64Logic.base64ToUtf8(textInput.value)
     isImage.value = false
@@ -68,26 +99,56 @@ function base64ToText() {
   }
 }
 
-function handleFile(e) {
-  const file = e.target.files?.[0]
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => reject(new Error('文件读取失败'))
+    reader.readAsDataURL(file)
+  })
+}
+
+async function processFile(file) {
   if (!file) return
   if (file.size > 10 * 1024 * 1024) {
-    error.value = '文件过大，请上传小于 10MB 的文件'
+    toast.error('文件过大，请上传小于 10MB 的文件')
     return
   }
-  const reader = new FileReader()
-  reader.onload = () => {
-    output.value = reader.result
+  try {
+    const dataUrl = await readFileAsDataURL(file)
+    output.value = dataUrl
     fileInfo.value = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`
     if (file.type.startsWith('image/')) {
       isImage.value = true
-      imagePreview.value = reader.result
+      imagePreview.value = dataUrl
     } else {
       isImage.value = false
       imagePreview.value = ''
     }
+    error.value = ''
+  } catch (e) {
+    error.value = '文件读取失败: ' + e.message
   }
-  reader.readAsDataURL(file)
+}
+
+function handleFile(e) {
+  processFile(e.target.files?.[0])
+  e.target.value = ''
+}
+
+function onDrop(e) {
+  isDragging.value = false
+  const file = e.dataTransfer?.files?.[0]
+  processFile(file)
+}
+
+function onDragOver(e) {
+  e.preventDefault()
+  isDragging.value = true
+}
+
+function onDragLeave() {
+  isDragging.value = false
 }
 
 function clearAll() {
@@ -104,7 +165,7 @@ function clearAll() {
       <h1>🔐 Base64 编解码</h1>
       <AiHelpPanel
         title="Base64 编解码"
-        desc="文本与 Base64 互相转换，支持文件上传为 Base64 DataURL"
+        desc="文本与 Base64 互相转换，支持文件拖拽上传为 Base64 DataURL"
         :params="[
           { name: 'text', desc: '要编码/解码的文本或 Base64 字符串', required: true, example: 'Hello World' },
           { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
@@ -130,13 +191,22 @@ function clearAll() {
     </div>
     <div class="tool-section">
       <div class="tool-panel">
-        <h3>输入</h3>
-        <textarea v-model="textInput" class="textarea" placeholder="输入文本或 Base64..." rows="16"></textarea>
+        <h3>输入 <span style="color:var(--text-muted);font-size:12px">{{ inputChars }} 字符</span></h3>
+        <div
+          class="drop-zone"
+          :class="{ dragging: isDragging }"
+          @dragover.prevent="onDragOver"
+          @dragleave="onDragLeave"
+          @drop.prevent="onDrop"
+        >
+          <textarea v-model="textInput" class="textarea" placeholder="输入文本或 Base64（支持换行 Base64、Data URL）..." rows="14"></textarea>
+          <div class="drop-hint">或将文件拖拽到此处</div>
+        </div>
       </div>
       <div class="tool-panel">
         <h3>输出 <span v-if="fileInfo" style="color:var(--text-muted);font-size:12px">{{ fileInfo }}</span></h3>
         <img v-if="isImage && imagePreview" :src="imagePreview" style="max-width:100%;max-height:200px;border-radius:var(--radius);margin-bottom:10px">
-        <textarea v-model="output" class="textarea" :placeholder="isImage ? 'Base64 DataURL...' : '处理结果...'" :rows="isImage ? 8 : 16" readonly></textarea>
+        <textarea v-model="output" class="textarea" :placeholder="isImage ? 'Base64 DataURL...' : '处理结果...'" :rows="isImage ? 8 : 14" readonly></textarea>
         <button class="btn btn-sm" @click="copy" style="align-self:flex-start">{{ copyText }}</button>
       </div>
     </div>
@@ -158,5 +228,21 @@ function clearAll() {
   border-radius: var(--radius);
   margin-top: 10px;
   font-size: 14px;
+}
+.drop-zone {
+  position: relative;
+  border-radius: var(--radius);
+}
+.drop-zone.dragging {
+  outline: 2px dashed var(--accent);
+  outline-offset: 4px;
+}
+.drop-hint {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
 }
 </style>

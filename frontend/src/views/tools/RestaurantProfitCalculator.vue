@@ -220,6 +220,10 @@ const pieWrapRef = ref(null)
 const barWrapRef = ref(null)
 const lineWrapRef = ref(null)
 
+/** 饼图悬停状态 */
+const pieHoverInfo = ref(null)
+const pieHoverStyle = ref({})
+
 /** 防抖重绘定时器 */
 let redrawTimer = null
 
@@ -951,6 +955,12 @@ function drawProfitLineChart(ctx, width, height, data, options = {}) {
     ctx.fillText(`${fmtNumber(val, 0)}单`, x, height - padding.bottom + 6)
   }
 
+  // X 轴公式
+  ctx.fillStyle = '#9ca3af'
+  ctx.font = 'italic 10px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('月净利润 = 日单数 × 客单价 × 30 × 毛利率 − 月固定成本', width / 2, height - 12)
+
   // 零利润参考线
   const zeroY = getY(0)
   ctx.strokeStyle = '#9ca3af'
@@ -1138,6 +1148,59 @@ function redrawCharts() {
 function debouncedRedrawCharts() {
   if (redrawTimer) clearTimeout(redrawTimer)
   redrawTimer = setTimeout(() => redrawCharts(), 150)
+}
+
+/** 饼图悬停提示 */
+function onPieMouseMove(e) {
+  const canvas = pieCanvasRef.value
+  if (!canvas) return
+  const rect = canvas.getBoundingClientRect()
+  const dpr = Math.max(window.devicePixelRatio || 1, 2)
+  const cssSize = Math.min(rect.width, 260)
+  const centerX = cssSize / 2
+  const centerY = cssSize / 2
+  const mx = e.clientX - rect.left
+  const my = e.clientY - rect.top
+  const dx = mx - centerX
+  const dy = my - centerY
+  const dist = Math.sqrt(dx * dx + dy * dy)
+  const radius = cssSize / 2 - 24
+  const innerRadius = radius * 0.55
+
+  if (dist > radius || dist < innerRadius) {
+    pieHoverInfo.value = null
+    return
+  }
+
+  const total = effectiveMonthlyRent.value + monthlyLabor.value + monthlyUtilities.value
+  if (total <= 0) { pieHoverInfo.value = null; return }
+
+  let angle = Math.atan2(dy, dx)
+  if (angle < -Math.PI / 2) angle += Math.PI * 2
+
+  const slices = [
+    { label: '有效房租', value: effectiveMonthlyRent.value, color: '#3b82f6' },
+    { label: '人工', value: monthlyLabor.value, color: '#f59e0b' },
+    { label: '水电杂费', value: monthlyUtilities.value, color: '#22c55e' },
+  ]
+
+  let startAngle = -Math.PI / 2
+  for (const s of slices) {
+    const sliceAngle = (s.value / total) * Math.PI * 2
+    const endAngle = startAngle + sliceAngle
+    if (angle >= startAngle && angle < endAngle) {
+      const pct = ((s.value / total) * 100).toFixed(1)
+      pieHoverInfo.value = `${s.label}：¥${fmtMoney(s.value)}（${pct}%）`
+      pieHoverStyle.value = { left: `${mx}px`, top: `${my}px` }
+      return
+    }
+    startAngle = endAngle
+  }
+  pieHoverInfo.value = null
+}
+
+function onPieMouseLeave() {
+  pieHoverInfo.value = null
 }
 
 /** 打开图表弹窗 */
@@ -1674,8 +1737,9 @@ function downloadResultsAsImage() {
             </div>
             <template v-else>
               <div class="chart-block chart-top-row">
-                <div ref="pieWrapRef" class="chart-canvas-wrap chart-pie-wrap">
-                  <canvas ref="pieCanvasRef" aria-label="成本结构环形饼图"></canvas>
+                <div ref="pieWrapRef" class="chart-canvas-wrap chart-pie-wrap" style="position:relative">
+                  <canvas ref="pieCanvasRef" aria-label="成本结构环形饼图" @mousemove="onPieMouseMove" @mouseleave="onPieMouseLeave"></canvas>
+                  <div v-if="pieHoverInfo" class="pie-tooltip" :style="pieHoverStyle">{{ pieHoverInfo }}</div>
                 </div>
                 <div class="chart-reference chart-reference-inline">
                   <div class="chart-reference-title">📌 快餐健康指标参考</div>
@@ -2307,6 +2371,19 @@ input[type="number"] {
   color: var(--text-muted);
   line-height: 1.5;
   margin: 0;
+}
+.pie-tooltip {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background: #1f2937;
+  color: #ffffff;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 900px) {

@@ -2,15 +2,22 @@
 import { ref, computed, watch } from 'vue'
 import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
+import { useToast } from '../../composables/useToast'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+const toast = useToast()
 
 const hex = ref('#3B82F6')
 const rgb = ref({ r: 59, g: 130, b: 246 })
 const hsl = ref({ h: 217, s: 91, l: 60 })
+const hexError = ref(false)
 const copyText = ref('')
+const recentColors = useStorage('color-recent', [])
 
 function hexToRgb(h) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h)
+  let s = h.replace(/^#/, '')
+  if (s.length === 8) s = s.slice(0, 6) // strip alpha
+  const result = /^([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(s)
   return result ? {
     r: parseInt(result[1], 16),
     g: parseInt(result[2], 16),
@@ -65,12 +72,18 @@ function updateFromHex() {
   let h = hex.value.trim()
   if (h.startsWith('#')) h = h.slice(1)
   if (h.length === 3) h = h.split('').map(c => c + c).join('')
-  if (!/^[0-9A-Fa-f]{6}$/.test(h)) return
-  hex.value = '#' + h.toUpperCase()
+  const valid = /^[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(h)
+  if (!valid) {
+    hexError.value = true
+    return
+  }
+  hexError.value = false
+  hex.value = '#' + h.toUpperCase().slice(0, 6)
   const r = hexToRgb(hex.value)
   if (r) {
     rgb.value = r
     hsl.value = rgbToHsl(r.r, r.g, r.b)
+    saveRecent(hex.value)
   }
 }
 
@@ -81,6 +94,8 @@ function updateFromRgb() {
   rgb.value = { r, g, b }
   hex.value = rgbToHex(r, g, b)
   hsl.value = rgbToHsl(r, g, b)
+  hexError.value = false
+  saveRecent(hex.value)
 }
 
 function updateFromHsl() {
@@ -91,6 +106,8 @@ function updateFromHsl() {
   const r = hslToRgb(h, s, l)
   rgb.value = r
   hex.value = rgbToHex(r.r, r.g, r.b)
+  hexError.value = false
+  saveRecent(hex.value)
 }
 
 function randomColor() {
@@ -100,6 +117,19 @@ function randomColor() {
   rgb.value = { r, g, b }
   hex.value = rgbToHex(r, g, b)
   hsl.value = rgbToHsl(r, g, b)
+  hexError.value = false
+  saveRecent(hex.value)
+}
+
+function saveRecent(color) {
+  const arr = recentColors.value.filter(c => c !== color)
+  arr.unshift(color)
+  recentColors.value = arr.slice(0, 5)
+}
+
+function applyColor(color) {
+  hex.value = color
+  updateFromHex()
 }
 
 async function copy(type) {
@@ -114,14 +144,25 @@ async function copy(type) {
   } catch {}
 }
 
+function clearAll() {
+  hexError.value = false
+  recentColors.value = []
+  toast.success('已清空色板')
+}
+
 const variants = computed(() => {
-  const v = []
-  for (let i = -2; i <= 2; i++) {
-    const nl = Math.max(10, Math.min(90, hsl.value.l + i * 15))
+  const defs = [
+    { label: '更深', delta: -30 },
+    { label: '更暗', delta: -20 },
+    { label: '原色', delta: 0 },
+    { label: '浅色', delta: 20 },
+    { label: '更亮', delta: 30 }
+  ]
+  return defs.map(d => {
+    const nl = Math.max(5, Math.min(95, hsl.value.l + d.delta))
     const r = hslToRgb(hsl.value.h, hsl.value.s, nl)
-    v.push({ hex: rgbToHex(r.r, r.g, r.b), label: i === 0 ? '原色' : (i > 0 ? `+${i * 15}%` : `${i * 15}%`) })
-  }
-  return v
+    return { hex: rgbToHex(r.r, r.g, r.b), label: d.label }
+  })
 })
 
 watch(hex, updateFromHex, { immediate: true })
@@ -133,7 +174,7 @@ watch(hex, updateFromHex, { immediate: true })
       <h1>🎨 颜色转换器</h1>
       <AiHelpPanel
         title="颜色转换器"
-        desc="HEX / RGB / HSL 互转"
+        desc="HEX / RGB / HSL 互转，支持透明度 HEX、配色建议和最近色板"
         api-tool="color"
         :params="[
           { name: 'color', desc: '颜色 HEX 值', required: true, example: '#3B82F6' }
@@ -142,13 +183,27 @@ watch(hex, updateFromHex, { immediate: true })
     </div>
     <div class="tool-section">
       <div class="tool-panel">
-        <div class="preview" :style="{ background: hex }"></div>
+        <div class="preview" :style="{ background: hex }" title="点击复制 HEX" @click="copy('hex')"></div>
         <div class="tool-actions">
           <button class="btn btn-secondary" @click="randomColor">随机颜色</button>
+          <button class="btn btn-secondary" @click="clearAll">清空</button>
           <input type="color" :value="hex" @input="e => { hex = e.target.value; updateFromHex() }" style="width:50px;height:36px;border:none;cursor:pointer">
         </div>
+        <div v-if="recentColors.length" class="recent-palette">
+          <span style="font-size:12px;color:var(--text-muted)">最近颜色</span>
+          <div class="palette-row">
+            <div
+              v-for="c in recentColors"
+              :key="c"
+              class="palette-swatch"
+              :style="{ background: c }"
+              :title="c"
+              @click="applyColor(c)"
+            ></div>
+          </div>
+        </div>
         <div class="variants">
-          <div v-for="v in variants" :key="v.label" class="variant" :style="{ background: v.hex }" @click="hex = v.hex; updateFromHex()">
+          <div v-for="v in variants" :key="v.label" class="variant" :style="{ background: v.hex }" @click="applyColor(v.hex)">
             <span>{{ v.label }}</span>
           </div>
         </div>
@@ -157,9 +212,10 @@ watch(hex, updateFromHex, { immediate: true })
         <div class="input-group">
           <label>HEX</label>
           <div style="display:flex;gap:8px">
-            <input v-model="hex" class="input" @blur="updateFromHex">
+            <input v-model="hex" class="input" :class="{ invalid: hexError }" @blur="updateFromHex">
             <button class="btn btn-sm btn-secondary" @click="copy('hex')">复制</button>
           </div>
+          <p v-if="hexError" class="invalid-msg">无效的 HEX 颜色</p>
         </div>
         <div class="input-group">
           <label>RGB</label>
@@ -191,6 +247,7 @@ watch(hex, updateFromHex, { immediate: true })
   border-radius: var(--radius);
   border: 1px solid var(--border);
   transition: background 0.3s;
+  cursor: pointer;
 }
 .input-group {
   display: flex;
@@ -200,6 +257,13 @@ watch(hex, updateFromHex, { immediate: true })
 .input-group label {
   font-size: 13px;
   color: var(--text-secondary);
+}
+.input.invalid {
+  border-color: var(--error);
+}
+.invalid-msg {
+  font-size: 12px;
+  color: var(--error);
 }
 .variants {
   display: flex;
@@ -225,5 +289,24 @@ watch(hex, updateFromHex, { immediate: true })
   font-size: 11px;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+.recent-palette {
+  margin-top: 12px;
+}
+.palette-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.palette-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.palette-swatch:hover {
+  transform: scale(1.1);
 }
 </style>

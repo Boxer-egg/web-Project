@@ -34,6 +34,10 @@ const {
       quote: format.value === 'quoted' ? "'" : ''
     }
     
+    if (count.value > 50) {
+      toast.warning('一次性生成超过50个可能影响性能')
+    }
+    
     if (format.value === 'array') {
       const uuids = uuidLogic.generateBatch(count.value, { quote: "'" })
       results.value = [`[${uuids.join(', ')}]`]

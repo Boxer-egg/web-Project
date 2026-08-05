@@ -6,7 +6,7 @@ import { useToast } from '../../composables/useToast'
 import * as hashLogic from '../../logic/hash'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
-const selected = useStorage('hash-selected', ['md5', 'sha256'])
+const selected = useStorage('hash-selected', ['md5', 'sha1', 'sha256', 'sha512'])
 const results = ref({})
 const fileMode = ref(false)
 const fileName = ref('')
@@ -47,6 +47,11 @@ watch(selected, () => {
 async function handleFile(e) {
   const file = e.target.files?.[0]
   if (!file) return
+  if (file.size > 100 * 1024 * 1024) {
+    toast.error('文件过大，请选择 100MB 以内的文件')
+    e.target.value = ''
+    return
+  }
   fileName.value = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`
   fileMode.value = true
   const buffer = await file.arrayBuffer()
@@ -77,6 +82,14 @@ function toggleAlgo(key) {
     if (selected.value.length > 1) selected.value.splice(idx, 1)
   } else {
     selected.value.push(key)
+  }
+}
+
+function toggleAll() {
+  if (selected.value.length === algos.length) {
+    selected.value = ['md5']
+  } else {
+    selected.value = algos.map(a => a.key)
   }
 }
 </script>

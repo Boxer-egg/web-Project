@@ -7,6 +7,7 @@ import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const language = useStorage('code-lang', 'javascript')
 const indent = useStorage('code-indent', 2)
+const showLineNumbers = useStorage('code-lines', true)
 const stats = ref({ before: 0, after: 0 })
 
 const examples = {
@@ -71,6 +72,13 @@ const compression = computed(() => {
   return Math.round((1 - stats.value.after / stats.value.before) * 100)
 })
 
+const isMinimal = computed(() => stats.value.before > 0 && compression.value <= 0)
+
+const outputLines = computed(() => {
+  if (!showLineNumbers.value || !output.value) return []
+  return output.value.split('\n')
+})
+
 function handleLoadExample() {
   input.value = examples[language.value] || examples.javascript
   format()
@@ -123,10 +131,21 @@ function handleLoadExample() {
           <span v-if="stats.before" style="color:var(--text-muted);font-size:12px;margin-left:8px">
             {{ stats.before }} → {{ stats.after }} 字符
             <span v-if="compression > 0" style="color:var(--success)">(-{{ compression }}%)</span>
+            <span v-else-if="isMinimal" style="color:var(--text-muted)">已是最小体积</span>
           </span>
         </h3>
-        <textarea v-model="output" class="textarea" placeholder="处理结果..." rows="18" readonly></textarea>
-        <button class="btn btn-sm" @click="copy" style="align-self:flex-start">{{ copyText }}</button>
+        <div class="output-box">
+          <div v-if="outputLines.length" class="line-numbers">
+            <div v-for="(_, i) in outputLines" :key="i">{{ i + 1 }}</div>
+          </div>
+          <textarea v-model="output" class="textarea" placeholder="处理结果..." rows="18" readonly></textarea>
+        </div>
+        <div class="tool-actions" style="margin-top:6px">
+          <button class="btn btn-sm btn-secondary" @click="copy" style="align-self:flex-start">{{ copyText }}</button>
+          <label style="font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer">
+            <input type="checkbox" v-model="showLineNumbers"> 显示行号
+          </label>
+        </div>
       </div>
     </div>
     <div v-if="error" class="error-msg">❌ {{ error }}</div>
@@ -147,5 +166,27 @@ function handleLoadExample() {
   border-radius: var(--radius);
   margin-top: 10px;
   font-size: 14px;
+}
+.output-box {
+  display: flex;
+  gap: 0;
+}
+.line-numbers {
+  min-width: 34px;
+  padding: 8px 6px 8px 8px;
+  text-align: right;
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: var(--radius) 0 0 var(--radius);
+  overflow: hidden;
+  user-select: none;
+}
+.output-box .textarea {
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 </style>

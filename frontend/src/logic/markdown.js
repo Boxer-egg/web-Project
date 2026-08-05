@@ -1,13 +1,41 @@
 /**
- * Markdown logic using marked and DOMPurify.
+ * Markdown logic using marked, highlight.js, and DOMPurify.
  */
 import { marked } from 'marked'
+import hljs from 'highlight.js'
 import DOMPurify from 'dompurify'
+
+function highlightCode(code, lang) {
+  try {
+    if (lang && hljs.getLanguage(lang)) {
+      return hljs.highlight(code, { language: lang }).value
+    }
+    return hljs.highlightAuto(code).value
+  } catch {
+    return code
+  }
+}
 
 export function render(markdown) {
   if (!markdown) return ''
   try {
-    return DOMPurify.sanitize(marked(markdown, { breaks: true }))
+    const renderer = new marked.Renderer()
+    renderer.code = (code, lang) => {
+      const highlighted = highlightCode(code, lang)
+      return `<pre><code class="hljs language-${lang || 'plaintext'}">${highlighted}</code></pre>`
+    }
+    renderer.link = (href, title, text) => {
+      const base = marked.Renderer.prototype.link.call(renderer, href, title, text)
+      return base.replace(/<a /, '<a target="_blank" rel="noopener noreferrer" ')
+    }
+    const html = marked(markdown, { breaks: true, renderer })
+    const sanitized = DOMPurify.sanitize(html)
+    const doc = new DOMParser().parseFromString(sanitized, 'text/html')
+    doc.querySelectorAll('a').forEach((a) => {
+      if (!a.getAttribute('rel')) a.setAttribute('rel', 'noopener noreferrer')
+      if (!a.getAttribute('target')) a.setAttribute('target', '_blank')
+    })
+    return doc.body.innerHTML
   } catch (e) {
     throw new Error('渲染错误: ' + e.message)
   }

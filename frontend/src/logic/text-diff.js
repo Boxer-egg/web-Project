@@ -11,8 +11,8 @@ function normalize(s, ignoreSpace = false) {
 }
 
 export function diffLines(oldStr, newStr, ignoreSpace = false) {
-  const oldLines = (oldStr || '').split('\n')
-  const newLines = (newStr || '').split('\n')
+  const oldLines = (oldStr || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  const newLines = (newStr || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
   const result = []
   let i = 0, j = 0
   while (i < oldLines.length || j < newLines.length) {

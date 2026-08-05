@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
 import QRCode from 'qrcode'
@@ -14,10 +14,46 @@ const margin = useStorage('qr-margin', 2)
 const qrDataUrl = ref('')
 const error = ref('')
 
+// Approximate byte-mode QR capacity per version (numeric/alphanumeric/byte), for typical byte content.
+// Version 1 ~ 40, level L/M/Q/H approximate byte capacities.
+const BYTE_CAPACITY = {
+  L: [17, 32, 53, 78, 106, 134, 154, 192, 230, 271, 321, 367, 425, 458, 520, 586, 644, 718, 792, 858, 929, 1003, 1091, 1171, 1273, 1367, 1465, 1528, 1628, 1732, 1840, 1952, 2068, 2188, 2303, 2431, 2563, 2699, 2809, 2953],
+  M: [14, 26, 42, 62, 84, 106, 122, 152, 180, 213, 251, 287, 331, 362, 412, 450, 504, 560, 624, 666, 711, 779, 857, 911, 997, 1059, 1125, 1190, 1264, 1370, 1452, 1538, 1628, 1722, 1809, 1911, 1989, 2099, 2213, 2331],
+  Q: [11, 20, 32, 46, 60, 74, 86, 108, 130, 151, 177, 203, 241, 258, 292, 322, 364, 394, 442, 482, 523, 568, 618, 664, 718, 754, 808, 871, 911, 985, 1033, 1115, 1171, 1231, 1286, 1354, 1426, 1502, 1582, 1660],
+  H: [7, 14, 24, 34, 44, 58, 64, 84, 98, 119, 137, 155, 177, 194, 220, 250, 280, 310, 338, 382, 403, 439, 461, 511, 535, 593, 625, 658, 698, 742, 790, 842, 898, 958, 983, 1054, 1096, 1142, 1222, 1276]
+}
+
+const LEVEL_LABELS = { L: 'L≈7%', M: 'M≈15%', Q: 'Q≈25%', H: 'H≈30%' }
+
+const charCount = computed(() => text.value.length)
+const capacityHint = computed(() => {
+  if (!text.value) return ''
+  const cap = BYTE_CAPACITY[level.value][39] // version 40 capacity
+  if (charCount.value > cap) return '内容过长，无法生成二维码'
+  return `字符数: ${charCount.value}（当前 ${level.value} 级最大约 ${cap} 字符）`
+})
+
+const recommendedLevel = computed(() => {
+  if (!text.value) return ''
+  const len = charCount.value
+  const best = ['L', 'M', 'Q', 'H'].find(lv => len <= BYTE_CAPACITY[lv][39]) || 'H'
+  return best
+})
 
 async function generate() {
   error.value = ''
   if (!text.value.trim()) { qrDataUrl.value = ''; return }
+  if (fgColor.value.toLowerCase() === bgColor.value.toLowerCase()) {
+    error.value = '前景色和背景色不能相同'
+    qrDataUrl.value = ''
+    return
+  }
+  const cap = BYTE_CAPACITY[level.value][39]
+  if (text.value.length > cap) {
+    error.value = `内容过长（当前 ${text.value.length} 字符，${level.value} 级最大支持 ${cap} 字符），请缩短内容或提高纠错级别`
+    qrDataUrl.value = ''
+    return
+  }
   try {
     qrDataUrl.value = await QRCode.toDataURL(text.value, {
       width: size.value,
@@ -29,6 +65,13 @@ async function generate() {
     error.value = '生成失败: ' + (e.message || '内容过长或格式错误')
     qrDataUrl.value = ''
   }
+}
+
+async function copyContent() {
+  if (!text.value) { error.value = '没有可复制的内容'; return }
+  try {
+    await navigator.clipboard.writeText(text.value)
+  } catch {}
 }
 
 function download() {
@@ -87,6 +130,12 @@ onMounted(() => {
       <div class="tool-panel">
         <h3>配置</h3>
         <textarea v-model="text" class="textarea" placeholder="输入文本或 URL..." rows="6"></textarea>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-muted)">
+          {{ capacityHint }}
+          <span v-if="text && recommendedLevel !== level" style="margin-left:8px;color:var(--warning)">
+            建议纠错级别：{{ recommendedLevel }}（{{ LEVEL_LABELS[recommendedLevel] }}）
+          </span>
+        </div>
         <div style="margin-top:12px">
           <label style="font-size:13px;color:var(--text-secondary);display:block;margin-bottom:4px">尺寸: {{ size }}px</label>
           <input type="range" v-model.number="size" min="128" max="1024" step="128" style="width:100%">
@@ -119,6 +168,7 @@ onMounted(() => {
         </div>
         <div class="tool-actions" style="margin-top:16px">
           <button class="btn" @click="generate">生成</button>
+          <button class="btn btn-secondary" @click="copyContent">复制内容</button>
           <button class="btn btn-secondary" @click="clearAll">清空</button>
           <button class="btn btn-secondary" @click="loadExample">示例</button>
         </div>

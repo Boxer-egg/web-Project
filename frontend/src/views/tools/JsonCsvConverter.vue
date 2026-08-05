@@ -9,6 +9,7 @@ import AiHelpPanel from '../../components/AiHelpPanel.vue'
 const direction = useStorage('jsoncsv-direction', 'json-to-csv')
 const delimiter = useStorage('jsoncsv-delimiter', ',')
 const includeHeader = useStorage('jsoncsv-header', true)
+const nestedMode = useStorage('jsoncsv-nested', 'serialize')
 const preview = ref([])
 const toast = useToast()
 
@@ -26,7 +27,7 @@ const {
   storageKey: 'jsoncsv',
   processor: (val) => {
     if (direction.value === 'json-to-csv') {
-      const res = jsonCsvLogic.jsonToCsv(val, delimiter.value, includeHeader.value)
+      const res = jsonCsvLogic.jsonToCsv(val, delimiter.value, includeHeader.value, nestedMode.value)
       try {
         const data = JSON.parse(val)
         preview.value = Array.isArray(data) ? data.slice(0, 5) : []
@@ -34,6 +35,12 @@ const {
       return res
     } else {
       preview.value = []
+      const mismatch = jsonCsvLogic.findColumnMismatch(val, delimiter.value)
+      if (mismatch > 0) {
+        error.value = `警告：第 ${mismatch} 行与表头的列数不一致，缺失值将补为空`
+      } else {
+        error.value = ''
+      }
       return jsonCsvLogic.csvToJson(val, delimiter.value, includeHeader.value)
     }
   },
@@ -44,7 +51,7 @@ const {
   example: JSON.stringify([{ name: '张三', age: 28, city: '北京' }, { name: '李四', age: 32, city: '上海' }], null, 2)
 })
 
-watch([direction, delimiter, includeHeader], () => {
+watch([direction, delimiter, includeHeader, nestedMode], () => {
   if (autoMode.value) convert()
 })
 
@@ -107,6 +114,11 @@ function clearAll() {
           <option value=",">逗号分隔</option>
           <option value=";">分号分隔</option>
           <option value="\t">Tab 分隔</option>
+        </select>
+        <select v-if="direction === 'json-to-csv'" v-model="nestedMode" class="input compact-select">
+          <option value="serialize">嵌套对象：序列化为 JSON</option>
+          <option value="flatten">嵌套对象：扁平化 (a.b)</option>
+          <option value="ignore">嵌套对象：忽略</option>
         </select>
         <label class="checkbox-label">
           <input type="checkbox" v-model="includeHeader"> 包含表头

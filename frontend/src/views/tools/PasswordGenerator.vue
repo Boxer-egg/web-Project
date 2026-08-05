@@ -14,6 +14,7 @@ const useNumber = useStorage('pwd-number', true)
 const useSpecial = useStorage('pwd-special', false)
 const excludeSimilar = useStorage('pwd-similar', false)
 const ensureEach = useStorage('pwd-ensure', false)
+const customCharset = useStorage('pwd-custom-charset', '')
 
 const results = ref([])
 const toast = useToast()
@@ -32,7 +33,9 @@ const {
         lower: useLower.value,
         numbers: useNumber.value,
         symbols: useSpecial.value,
-        excludeSimilar: excludeSimilar.value
+        excludeSimilar: excludeSimilar.value,
+        ensureEach: ensureEach.value,
+        customCharset: customCharset.value
       }))
     }
     results.value = res
@@ -104,7 +107,7 @@ function clearAll() {
         <h3>配置</h3>
         <div class="config-row">
           <label>长度: {{ length }}</label>
-          <input type="range" v-model.number="length" min="4" max="64" class="range-input">
+          <input type="range" v-model.number="length" min="4" max="128" class="range-input">
         </div>
         <div class="config-row">
           <label><input type="checkbox" v-model="useLower"> 小写字母 (a-z)</label>
@@ -122,8 +125,15 @@ function clearAll() {
           <label><input type="checkbox" v-model="excludeSimilar"> 排除易混淆字符 (0, O, 1, l, I)</label>
         </div>
         <div class="config-row">
+          <label><input type="checkbox" v-model="ensureEach" :disabled="!!customCharset"> 确保每类字符至少一个</label>
+        </div>
+        <div class="config-row">
+          <label style="display:block">自定义字符集（留空则使用上方字符类型组合）</label>
+          <input v-model="customCharset" class="input" placeholder="例如：Abc123!@#" style="width:100%;margin-top:4px">
+        </div>
+        <div class="config-row">
           <label>数量: {{ count }}</label>
-          <input type="range" v-model.number="count" min="1" max="20" class="range-input">
+          <input type="range" v-model.number="count" min="1" max="10" class="range-input">
         </div>
         <div class="tool-actions" style="margin-top:16px">
           <button class="btn" @click="generate">生成</button>

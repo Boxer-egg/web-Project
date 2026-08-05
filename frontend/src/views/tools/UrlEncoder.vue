@@ -1,8 +1,11 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useTool } from '../../composables/useTool'
+import { useToast } from '../../composables/useToast'
 import * as urlLogic from '../../logic/url'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+const toast = useToast()
 
 const {
   input,
@@ -16,14 +19,19 @@ const {
 } = useTool({
   storageKey: 'url',
   processor: (val) => {
-    // If input looks like encoded URL, try to decode
+    // Auto-detect: if input looks like encoded URL, try to decode per-line
     if (val.includes('%')) {
-      try {
-        const decoded = urlLogic.decode(val)
-        if (decoded !== val) return decoded
-      } catch { /* ignore */ }
+      const decoded = urlLogic.mapLines(val, (line) => {
+        try {
+          const d = urlLogic.decode(line)
+          return d !== line ? d : line
+        } catch {
+          return line
+        }
+      })
+      if (decoded !== val) return decoded
     }
-    return urlLogic.encode(val)
+    return urlLogic.mapLines(val, urlLogic.encode)
   },
   paramMapping: { text: { ref: ref('') } },
   example: 'https://example.com/search?q=你好世界&page=1'
@@ -31,10 +39,31 @@ const {
 
 function decode() {
   try {
-    output.value = urlLogic.decode(input.value)
+    output.value = urlLogic.mapLines(input.value, (line) => urlLogic.decode(line))
   } catch (e) {
     output.value = '解码失败: ' + e.message
   }
+}
+
+function encodeAll() {
+  output.value = urlLogic.mapLines(input.value, (line) => urlLogic.encodeAll(line))
+}
+
+function autoDetect() {
+  const lines = input.value.split('\n')
+  const result = lines.map((line) => {
+    if (!line.trim()) return line
+    if (line.includes('%')) {
+      try {
+        const d = urlLogic.decode(line)
+        if (d !== line) return d
+      } catch {
+        /* fall through to encode */
+      }
+    }
+    return urlLogic.encode(line)
+  })
+  output.value = result.join('\n')
 }
 
 const parsedParams = computed(() => {
@@ -48,7 +77,7 @@ const parsedParams = computed(() => {
       <h1>🔗 URL 编解码</h1>
       <AiHelpPanel
         title="URL 编解码"
-        desc="URL 编码与解码，自动识别方向，解析 URL 参数"
+        desc="URL 编码与解码，自动识别方向，支持多行处理，解析 URL 参数"
         api-tool="url"
         :params="[
           { name: 'text', desc: '要编码/解码的 URL 或文本', required: true, example: 'https://example.com?q=你好' },
@@ -59,6 +88,8 @@ const parsedParams = computed(() => {
     <div class="tool-actions">
       <button class="btn" @click="encode">编码</button>
       <button class="btn btn-secondary" @click="decode">解码</button>
+      <button class="btn btn-secondary" @click="encodeAll">全部编码</button>
+      <button class="btn btn-secondary" @click="autoDetect">自动识别</button>
       <button class="btn btn-secondary" @click="clearAll">清空</button>
       <button class="btn btn-secondary" @click="loadExample">加载示例</button>
     </div>
@@ -66,6 +97,7 @@ const parsedParams = computed(() => {
       <button class="btn btn-sm" :class="autoMode ? '' : 'btn-secondary'" @click="autoMode = !autoMode" style="font-size:11px">
         自动 {{ autoMode ? 'ON' : 'OFF' }}
       </button>
+      <span style="font-size:12px;color:var(--text-muted)">多行输入时每行独立处理</span>
     </div>
     <div class="tool-section">
       <div class="tool-panel">

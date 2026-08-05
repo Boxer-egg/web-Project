@@ -46,6 +46,10 @@ const stats = computed(() => {
   return { adds, dels }
 })
 
+const isIdentical = computed(() =>
+  (left.value || right.value) && diffResult.value.length > 0 && stats.value.adds === 0 && stats.value.dels === 0
+)
+
 function swap() {
   const tmp = left.value
   left.value = right.value
@@ -111,7 +115,8 @@ function handleLoadExample() {
         <textarea v-model="right" class="textarea" placeholder="输入对比文本..." rows="12"></textarea>
       </div>
     </div>
-    <div class="card result-card">
+      <div class="card result-card">
+      <div v-if="isIdentical" class="identical-hint">✅ 两段文本完全相同，无差异</div>
       <div class="panel-label">
         <h3 style="font-size:14px">差异结果</h3>
         <div class="stats-badge">
@@ -220,6 +225,15 @@ function handleLoadExample() {
   color: var(--text-muted);
   padding: 40px;
   text-align: center;
+}
+.identical-hint {
+  color: var(--success);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  font-size: 14px;
 }
 
 @media (max-width: 768px) {

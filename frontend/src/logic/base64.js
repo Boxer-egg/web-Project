@@ -21,3 +21,19 @@ export function detectBase64(str) {
   const s = str.trim()
   return /^[A-Za-z0-9+/]*={0,2}$/.test(s) && s.length % 4 === 0 && s.length > 4
 }
+
+/** Extract the pure Base64 part from a Data URL (e.g. data:image/png;base64,xxx). */
+export function extractDataUrl(input) {
+  if (!input) return null
+  const s = input.trim()
+  const m = /^data:([^;,]+)?(;base64)?,(.*)$/s.exec(s)
+  if (m) {
+    return { mime: m[1] || '', isBase64: !!m[2], payload: m[3] }
+  }
+  return null
+}
+
+/** Strip whitespace/linebreaks that commonly appear in wrapped Base64. */
+export function stripWhitespace(str) {
+  return str.replace(/\s+/g, '')
+}

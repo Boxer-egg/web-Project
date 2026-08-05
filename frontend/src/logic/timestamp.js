@@ -16,6 +16,7 @@ export function toDate(str) {
   return {
     iso: d.toISOString(),
     local: formatLocalDate(d),
+    friendly: friendlyFormat(d),
     unixSeconds: Math.floor(d.getTime() / 1000),
     unixMs: d.getTime(),
     relative: relativeTime(d),
@@ -32,7 +33,14 @@ export function fromDate(str) {
     unixMs: d.getTime(),
     iso: d.toISOString(),
     local: formatLocalDate(d),
+    friendly: friendlyFormat(d),
   }
+}
+
+function friendlyFormat(d) {
+  const pad = n => String(n).padStart(2, '0')
+  const weeks = ['日', '一', '二', '三', '四', '五', '六']
+  return `${d.getFullYear()}年${pad(d.getMonth() + 1)}月${pad(d.getDate())}日 星期${weeks[d.getDay()]} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
 
 function formatLocalDate(d) {

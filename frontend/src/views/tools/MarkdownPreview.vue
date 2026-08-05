@@ -5,6 +5,7 @@ import { useTool } from '../../composables/useTool'
 import { useToast } from '../../composables/useToast'
 import * as mdLogic from '../../logic/markdown'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+import 'highlight.js/styles/github.css'
 
 const layout = useStorage('markdown-layout', 'split')
 const toast = useToast()
@@ -137,7 +138,7 @@ function handleExport() {
 .markdown-body :deep(li) { margin-bottom: 4px }
 .markdown-body :deep(code) { background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: monospace; }
 .markdown-body :deep(pre) { background: var(--bg-secondary); padding: 16px; border-radius: var(--radius); overflow: auto; margin-bottom: 12px }
-.markdown-body :deep(pre code) { background: none; padding: 0 }
+.markdown-body :deep(pre code) { background: none; padding: 0; font-size: 13px }
 .markdown-body :deep(blockquote) { border-left: 4px solid var(--accent); padding-left: 16px; color: var(--text-secondary); margin: 12px 0 }
 .markdown-body :deep(table) { width: 100%; border-collapse: collapse; margin-bottom: 12px }
 .markdown-body :deep(th, td) { border: 1px solid var(--border); padding: 8px; text-align: left }

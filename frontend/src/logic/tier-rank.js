@@ -267,6 +267,9 @@ async function drawCard(ctx, item, x, y, size, style, onProgress) {
   ctx.lineWidth = 1
   roundRect(ctx, x, y, size, size, radius, true, true)
 
+  const labelHeight = item.type === 'image' && item.label ? 18 : 0
+  const drawAreaHeight = size - labelHeight
+
   if (item.type === 'image') {
     try {
       const img = new Image()
@@ -276,18 +279,18 @@ async function drawCard(ctx, item, x, y, size, style, onProgress) {
         img.onerror = () => reject(new Error('图片加载失败'))
         setTimeout(() => reject(new Error('图片加载超时')), 5000)
       })
-      const ratio = Math.min((size - 8) / img.width, (size - 8) / img.height)
+      const ratio = Math.min((drawAreaHeight - 8) / img.width, (drawAreaHeight - 8) / img.height)
       const dw = img.width * ratio
       const dh = img.height * ratio
       const dx = x + (size - dw) / 2
-      const dy = y + (size - dh) / 2
+      const dy = y + (drawAreaHeight - dh) / 2
       ctx.drawImage(img, dx, dy, dw, dh)
     } catch {
       ctx.fillStyle = style.text
       ctx.font = '12px sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
-      ctx.fillText('图片', x + size / 2, y + size / 2)
+      ctx.fillText('图片', x + size / 2, y + drawAreaHeight / 2)
     }
   } else {
     ctx.fillStyle = style.text
@@ -298,6 +301,16 @@ async function drawCard(ctx, item, x, y, size, style, onProgress) {
     const maxChars = 14
     const text = item.content.length > maxChars ? item.content.slice(0, maxChars - 1) + '…' : item.content
     ctx.fillText(text, x + size / 2, y + size / 2)
+  }
+
+  if (labelHeight) {
+    ctx.fillStyle = adjustAlpha(style.text, 0.85)
+    ctx.font = '11px "PingFang SC", sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    const maxLabelChars = Math.max(4, Math.floor(size / 12))
+    const label = item.label.length > maxLabelChars ? item.label.slice(0, maxLabelChars - 1) + '…' : item.label
+    ctx.fillText(label, x + size / 2, y + size - labelHeight / 2)
   }
 
   if (onProgress) onProgress()

@@ -30,6 +30,8 @@ const labelSize = useStorage('hang-la-label-size', 34)
 const newTextItems = ref('')
 const draggedItemId = ref(null)
 const isExporting = ref(false)
+const pendingImages = ref([])
+const imageModalOpen = ref(false)
 
 watch(() => state.value.colorScheme, (scheme) => {
   rankLogic.applyColorScheme(state.value, scheme)
@@ -107,18 +109,45 @@ function autoDistribute() {
 async function addImages(files) {
   const images = files.filter(f => f.type.startsWith('image/'))
   if (!images.length) return
-  let added = 0
+  const list = []
   for (const file of images) {
     try {
       const dataUrl = await rankLogic.readFileAsDataURL(file)
-      const item = { id: rankLogic.uid(), content: dataUrl, type: 'image', tierId: null }
-      distributeItems([item])
-      added++
+      list.push({ id: rankLogic.uid(), content: dataUrl, type: 'image', label: '', tierId: null })
     } catch (e) {
       toast.error('读取图片失败：' + e.message)
     }
   }
-  if (added) toast.success(`已添加 ${added} 张图片`)
+  if (list.length) {
+    pendingImages.value = list
+    imageModalOpen.value = true
+  }
+}
+
+function confirmImageAdd() {
+  const items = pendingImages.value.filter(img => img.content)
+  if (items.length) {
+    distributeItems(items)
+    toast.success(`已添加 ${items.length} 张图片`)
+  }
+  pendingImages.value = []
+  imageModalOpen.value = false
+}
+
+function cancelImageAdd() {
+  pendingImages.value = []
+  imageModalOpen.value = false
+}
+
+function removeFromTierOrDelete(id) {
+  const item = state.value.items.find(i => i.id === id)
+  if (!item) return
+  if (item.tierId) {
+    item.tierId = null
+    toast.success('已移回待排序')
+  } else {
+    state.value.items = state.value.items.filter(i => i.id !== id)
+  }
 }
 
 function handleImageUpload(e) {
@@ -182,10 +211,6 @@ function onDragOver(e) {
 function moveItemToTier(itemId, tierId) {
   const item = state.value.items.find(i => i.id === itemId)
   if (item) item.tierId = tierId
-}
-
-function removeItem(id) {
-  state.value.items = state.value.items.filter(i => i.id !== id)
 }
 
 function selectTier(tierId) {
@@ -324,170 +349,41 @@ onUnmounted(() => {
       />
     </div>
 
-    <div class="two-col">
-      <div class="left-panel">
-        <div class="card config-card">
-          <h3>① 基本内容</h3>
-          <label class="field-label">榜单标题</label>
-          <input v-model="state.title" class="input" placeholder="榜单标题">
-          <label class="field-label">副标题 / 说明</label>
-          <input v-model="state.subtitle" class="input" placeholder="副标题">
-
-          <label class="field-label">界面风格</label>
-          <div class="chip-row">
-            <button
-              v-for="(s, key) in rankLogic.STYLE_PRESETS"
-              :key="key"
-              class="chip"
-              :class="{ active: state.style === key }"
-              @click="applyStylePreset(key)"
-            >{{ s.name }}</button>
-          </div>
-
-          <label class="field-label">配色方案</label>
-          <div class="chip-row">
-            <button
-              v-for="(s, key) in rankLogic.COLOR_SCHEMES"
-              :key="key"
-              class="chip"
-              :class="{ active: state.colorScheme === key }"
-              @click="applyColorSchemePreset(key)"
-            >{{ s.name }}</button>
-          </div>
-
-          <label class="field-label">档位预设</label>
-          <div class="chip-row">
-            <button
-              v-for="(p, key) in rankLogic.TIER_PRESETS"
-              :key="key"
-              class="chip"
-              @click="applyTierPreset(key)"
-            >{{ p.name }}</button>
-          </div>
+    <div class="preview-card" :style="{ background: currentStyle.bg, color: currentStyle.text }">
+      <div class="preview-header">
+        <div>
+          <h2 class="preview-title" :style="{ color: currentStyle.text }">{{ state.title }}</h2>
+          <p class="preview-subtitle" :style="{ color: currentStyle.text + '99' }">{{ state.subtitle }}</p>
         </div>
-
-        <div class="card config-card">
-          <h3>② 导入素材</h3>
-          <div
-            class="drop-area"
-            @dragover="onDragOver"
-            @drop="handleDropOnUnranked"
-            @click="$refs.imageInput?.click()"
-          >
-            <p>把图片拖到这里</p>
-            <p class="sub">或点击选择图片，也可以直接 Ctrl + V 粘贴截图 / 图片 / 文字</p>
-            <input ref="imageInput" type="file" accept="image/*" multiple style="display:none" @change="handleImageUpload">
-          </div>
-          <label class="field-label">直接输入文字（一行一个卡片）</label>
-          <textarea v-model="newTextItems" class="textarea" rows="4" placeholder="每行一个卡片，例如：&#10;🍔 汉堡&#10;🍕 披萨"></textarea>
-          <div class="btn-row">
-            <button class="btn" @click="addTextItems">添加文字</button>
-            <button class="btn btn-secondary" @click="loadSample">来点示例</button>
-            <button class="btn btn-secondary" @click="autoDistribute">一键重排</button>
-          </div>
-          <p class="tip" :class="{ active: selectedTierId }">
-            {{ selectedTierId ? '已选中左侧档位，新导入素材将直接进入该档位' : '未选中行：导入后自动分配到未排序池' }}
-          </p>
-        </div>
-
-        <div class="card config-card">
-          <h3>③ 自定义左侧夯拉字</h3>
-          <div class="tier-editor">
-            <div v-for="(tier, index) in state.tiers" :key="tier.id" class="tier-edit-row">
-              <input v-model="tier.label" class="input tier-label-input">
-              <input v-model="tier.color" type="color" class="tier-color-input">
-              <button class="btn btn-sm btn-secondary" @click="moveTier(index, -1)" :disabled="index === 0">↑</button>
-              <button class="btn btn-sm btn-secondary" @click="moveTier(index, 1)" :disabled="index === state.tiers.length - 1">↓</button>
-              <button class="btn btn-sm btn-danger" @click="removeTier(tier.id)">×</button>
-            </div>
-          </div>
-          <div class="btn-row">
-            <button class="btn btn-secondary" @click="addTier">加一档</button>
-          </div>
-        </div>
-
-        <div class="card config-card">
-          <h3>④ 视觉细节</h3>
-          <div class="slider-row">
-            <label>卡片大小：{{ cardSize }}px</label>
-            <input v-model.number="cardSize" type="range" min="48" max="160" step="4">
-          </div>
-          <div class="slider-row">
-            <label>左侧文字大小：{{ labelSize }}px</label>
-            <input v-model.number="labelSize" type="range" min="16" max="64" step="2">
-          </div>
-          <div class="btn-row">
-            <button class="btn" :disabled="isExporting" @click="exportPng">导出高清 PNG</button>
-            <button class="btn btn-secondary" :disabled="isExporting" @click="copyImage">复制图片</button>
-            <button class="btn btn-secondary" @click="exportJson">导出 JSON</button>
-            <label class="btn btn-secondary" style="cursor:pointer">
-              导入 JSON
-              <input type="file" accept="application/json" style="display:none" @change="handleImportJson">
-            </label>
-            <button class="btn btn-secondary" @click="shareUrl">发布 / 分享</button>
-            <button class="btn btn-danger" @click="clearItems">清空卡片</button>
-          </div>
-        </div>
+        <span class="hang-la-badge" :style="{ color: currentStyle.text }">HANG → LA</span>
       </div>
 
-      <div class="right-panel">
-        <div class="preview-card" :style="{ background: currentStyle.bg, color: currentStyle.text }">
-          <div class="preview-header">
-            <div>
-            <h2 class="preview-title" :style="{ color: currentStyle.text }">{{ state.title }}</h2>
-            <p class="preview-subtitle" :style="{ color: currentStyle.text + '99' }">{{ state.subtitle }}</p>
-            </div>
-            <span class="hang-la-badge" :style="{ color: currentStyle.text }">HANG → LA</span>
+      <div class="tier-list">
+        <div
+          v-for="(tier) in state.tiers"
+          :key="tier.id"
+          class="tier-row"
+          :class="{ selected: selectedTierId === tier.id }"
+        >
+          <div
+            class="tier-label"
+            :style="{ background: tier.color, fontSize: labelSize + 'px' }"
+            @click="selectTier(tier.id)"
+          >
+            <input v-model="tier.label" class="tier-label-input" @click.stop>
           </div>
-
-          <div class="tier-list">
+          <div
+            class="tier-zone"
+            :style="{ background: currentStyle.cardBg, borderColor: currentStyle.cardBorder }"
+            @dragover="onDragOver"
+            @drop="handleDropOnTier($event, tier.id)"
+          >
             <div
-              v-for="(tier, index) in state.tiers"
-              :key="tier.id"
-              class="tier-row"
-              :class="{ selected: selectedTierId === tier.id }"
+              v-for="item in rankedItems[tier.id]"
+              :key="item.id"
+              class="rank-card-wrapper"
             >
               <div
-                class="tier-label"
-                :style="{ background: tier.color, fontSize: labelSize + 'px' }"
-                @click="selectTier(tier.id)"
-              >
-                <input v-model="tier.label" class="tier-label-input" @click.stop>
-              </div>
-              <div
-              class="tier-zone"
-              :style="{ background: currentStyle.cardBg, borderColor: currentStyle.cardBorder }"
-              @dragover="onDragOver"
-              @drop="handleDropOnTier($event, tier.id)"
-              >
-                <div
-                  v-for="item in rankedItems[tier.id]"
-                  :key="item.id"
-                  class="rank-card"
-                  :style="{ width: cardSize + 'px', height: cardSize + 'px', background: currentStyle.cardBg, borderColor: currentStyle.cardBorder, color: currentStyle.text }"
-                  draggable="true"
-                  @dragstart="onDragStart(item.id)"
-                >
-                  <img v-if="item.type === 'image'" :src="item.content" class="card-image">
-                  <span v-else class="card-text">{{ item.content }}</span>
-                  <button class="card-remove" @click="removeItem(item.id)">×</button>
-                </div>
-                <div v-if="!rankedItems[tier.id].length" class="zone-empty">拖拽卡片到此处</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="unranked-zone">
-            <h4>待排序（{{ unrankedItems.length }}）</h4>
-            <div
-              class="tier-zone unranked"
-              :style="{ background: currentStyle.cardBg, borderColor: currentStyle.cardBorder }"
-              @dragover="onDragOver"
-              @drop="handleDropOnUnranked"
-            >
-              <div
-                v-for="item in unrankedItems"
-                :key="item.id"
                 class="rank-card"
                 :style="{ width: cardSize + 'px', height: cardSize + 'px', background: currentStyle.cardBg, borderColor: currentStyle.cardBorder, color: currentStyle.text }"
                 draggable="true"
@@ -495,15 +391,166 @@ onUnmounted(() => {
               >
                 <img v-if="item.type === 'image'" :src="item.content" class="card-image">
                 <span v-else class="card-text">{{ item.content }}</span>
-                <button class="card-remove" @click="removeItem(item.id)">×</button>
               </div>
-              <div v-if="!unrankedItems.length" class="zone-empty">暂无卡片</div>
+              <div v-if="item.type === 'image' && item.label" class="card-label" :style="{ color: currentStyle.text }">{{ item.label }}</div>
+              <button class="card-remove" @click="removeFromTierOrDelete(item.id)">×</button>
             </div>
+            <div v-if="!rankedItems[tier.id].length" class="zone-empty">拖拽卡片到此处</div>
           </div>
+        </div>
+      </div>
 
-          <div class="preview-footer" :style="{ color: currentStyle.text + '80' }">
-            vvzzv.com · 从夯到拉排行榜
+      <div class="unranked-zone">
+        <h4>待排序（{{ unrankedItems.length }}）</h4>
+        <div
+          class="tier-zone unranked"
+          :style="{ background: currentStyle.cardBg, borderColor: currentStyle.cardBorder }"
+          @dragover="onDragOver"
+          @drop="handleDropOnUnranked"
+        >
+          <div
+            v-for="item in unrankedItems"
+            :key="item.id"
+            class="rank-card-wrapper"
+          >
+            <div
+              class="rank-card"
+              :style="{ width: cardSize + 'px', height: cardSize + 'px', background: currentStyle.cardBg, borderColor: currentStyle.cardBorder, color: currentStyle.text }"
+              draggable="true"
+              @dragstart="onDragStart(item.id)"
+            >
+              <img v-if="item.type === 'image'" :src="item.content" class="card-image">
+              <span v-else class="card-text">{{ item.content }}</span>
+            </div>
+            <div v-if="item.type === 'image' && item.label" class="card-label" :style="{ color: currentStyle.text }">{{ item.label }}</div>
+            <button class="card-remove" @click="removeFromTierOrDelete(item.id)">×</button>
           </div>
+          <div v-if="!unrankedItems.length" class="zone-empty">暂无卡片</div>
+        </div>
+      </div>
+
+      <div class="preview-footer" :style="{ color: currentStyle.text + '80' }">
+        vvzzv.com · 从夯到拉排行榜
+      </div>
+    </div>
+
+    <div class="config-grid">
+      <div class="card config-card">
+        <h3>① 基本内容</h3>
+        <label class="field-label">榜单标题</label>
+        <input v-model="state.title" class="input" placeholder="榜单标题">
+        <label class="field-label">副标题 / 说明</label>
+        <input v-model="state.subtitle" class="input" placeholder="副标题">
+
+        <label class="field-label">界面风格</label>
+        <div class="chip-row">
+          <button
+            v-for="(s, key) in rankLogic.STYLE_PRESETS"
+            :key="key"
+            class="chip"
+            :class="{ active: state.style === key }"
+            @click="applyStylePreset(key)"
+          >{{ s.name }}</button>
+        </div>
+
+        <label class="field-label">配色方案</label>
+        <div class="chip-row">
+          <button
+            v-for="(s, key) in rankLogic.COLOR_SCHEMES"
+            :key="key"
+            class="chip"
+            :class="{ active: state.colorScheme === key }"
+            @click="applyColorSchemePreset(key)"
+          >{{ s.name }}</button>
+        </div>
+
+        <label class="field-label">档位预设</label>
+        <div class="chip-row">
+          <button
+            v-for="(p, key) in rankLogic.TIER_PRESETS"
+            :key="key"
+            class="chip"
+            @click="applyTierPreset(key)"
+          >{{ p.name }}</button>
+        </div>
+      </div>
+
+      <div class="card config-card">
+        <h3>② 导入素材</h3>
+        <div
+          class="drop-area"
+          @dragover="onDragOver"
+          @drop="handleDropOnUnranked"
+          @click="$refs.imageInput?.click()"
+        >
+          <p>把图片拖到这里</p>
+          <p class="sub">或点击选择图片，也可以直接 Ctrl + V 粘贴截图 / 图片 / 文字</p>
+          <input ref="imageInput" type="file" accept="image/*" multiple style="display:none" @change="handleImageUpload">
+        </div>
+        <label class="field-label">直接输入文字（一行一个卡片）</label>
+        <textarea v-model="newTextItems" class="textarea" rows="4" placeholder="每行一个卡片，例如：&#10;🍔 汉堡&#10;🍕 披萨"></textarea>
+        <div class="btn-row">
+          <button class="btn" @click="addTextItems">添加文字</button>
+          <button class="btn btn-secondary" @click="loadSample">来点示例</button>
+          <button class="btn btn-secondary" @click="autoDistribute">一键重排</button>
+        </div>
+        <p class="tip" :class="{ active: selectedTierId }">
+          {{ selectedTierId ? '已选中左侧档位，新导入素材将直接进入该档位' : '未选中行：导入后自动分配到未排序池' }}
+        </p>
+      </div>
+
+      <div class="card config-card">
+        <h3>③ 自定义左侧夯拉字</h3>
+        <div class="tier-editor">
+          <div v-for="(tier, index) in state.tiers" :key="tier.id" class="tier-edit-row">
+            <input v-model="tier.label" class="input tier-label-input">
+            <input v-model="tier.color" type="color" class="tier-color-input">
+            <button class="btn btn-sm btn-secondary" @click="moveTier(index, -1)" :disabled="index === 0">↑</button>
+            <button class="btn btn-sm btn-secondary" @click="moveTier(index, 1)" :disabled="index === state.tiers.length - 1">↓</button>
+            <button class="btn btn-sm btn-danger" @click="removeTier(tier.id)">×</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" @click="addTier">加一档</button>
+        </div>
+      </div>
+
+      <div class="card config-card">
+        <h3>④ 视觉细节</h3>
+        <div class="slider-row">
+          <label>卡片大小：{{ cardSize }}px</label>
+          <input v-model.number="cardSize" type="range" min="48" max="160" step="4">
+        </div>
+        <div class="slider-row">
+          <label>左侧文字大小：{{ labelSize }}px</label>
+          <input v-model.number="labelSize" type="range" min="16" max="64" step="2">
+        </div>
+        <div class="btn-row">
+          <button class="btn" :disabled="isExporting" @click="exportPng">导出高清 PNG</button>
+          <button class="btn btn-secondary" :disabled="isExporting" @click="copyImage">复制图片</button>
+          <button class="btn btn-secondary" @click="exportJson">导出 JSON</button>
+          <label class="btn btn-secondary" style="cursor:pointer">
+            导入 JSON
+            <input type="file" accept="application/json" style="display:none" @change="handleImportJson">
+          </label>
+          <button class="btn btn-secondary" @click="shareUrl">发布 / 分享</button>
+          <button class="btn btn-danger" @click="clearItems">清空卡片</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="imageModalOpen" class="modal-backdrop" @click.self="cancelImageAdd">
+      <div class="modal-card">
+        <h3>命名导入的图片</h3>
+        <div class="image-modal-list">
+          <div v-for="(img, idx) in pendingImages" :key="img.id" class="image-modal-item">
+            <img :src="img.content" class="image-modal-thumb">
+            <input v-model="pendingImages[idx].label" class="input" placeholder="给图片起个名字">
+          </div>
+        </div>
+        <div class="btn-row modal-actions">
+          <button class="btn" @click="confirmImageAdd">确认添加</button>
+          <button class="btn btn-secondary" @click="cancelImageAdd">取消</button>
         </div>
       </div>
     </div>
@@ -519,20 +566,16 @@ onUnmounted(() => {
   flex-wrap: wrap;
   gap: 12px;
 }
-.two-col {
+.config-grid {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
+  margin-top: 20px;
 }
-@media (max-width: 900px) {
-  .two-col {
+@media (max-width: 720px) {
+  .config-grid {
     grid-template-columns: 1fr;
   }
-}
-.left-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 .config-card {
   padding: 16px;
@@ -749,14 +792,20 @@ onUnmounted(() => {
   padding: 20px 0;
   pointer-events: none;
 }
-.rank-card {
+.rank-card-wrapper {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 2px 2px;
+}
+.rank-card {
   border-radius: var(--radius);
   border: 1px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   cursor: grab;
   user-select: none;
 }
@@ -767,6 +816,7 @@ onUnmounted(() => {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  border-radius: var(--radius);
 }
 .card-text {
   font-size: 13px;
@@ -776,25 +826,42 @@ onUnmounted(() => {
   word-break: break-word;
   line-height: 1.2;
 }
+.card-label {
+  font-size: 11px;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.8;
+}
 .card-remove {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 18px;
-  height: 18px;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
   border: none;
   border-radius: 50%;
   background: var(--error);
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
   cursor: pointer;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 2;
 }
-.rank-card:hover .card-remove {
-  display: flex;
+.rank-card-wrapper:hover .card-remove {
+  opacity: 1;
+}
+@media (hover: none) {
+  .card-remove {
+    opacity: 1;
+  }
 }
 .unranked-zone {
   margin-top: 16px;
@@ -808,6 +875,56 @@ onUnmounted(() => {
   text-align: right;
   font-size: 12px;
   margin-top: 16px;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+.modal-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.modal-card h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+}
+.image-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.image-modal-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.image-modal-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+}
+.image-modal-item input {
+  flex: 1;
+}
+.modal-actions {
+  justify-content: flex-end;
+  margin-top: 0;
 }
 @media (max-width: 640px) {
   .tier-row {

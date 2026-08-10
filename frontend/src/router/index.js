@@ -522,6 +522,16 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/hang-la',
+      name: 'hang-la',
+      component: () => import('../views/tools/TierRank.vue'),
+      meta: {
+        title: '从夯到拉排行榜 - 拖拽图片文字生成夯拉梗图',
+        description: '从夯到拉排行榜生成器，拖拽图片或文字卡片到不同档位，自定义档位和风格，一键导出高清 PNG 分享。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

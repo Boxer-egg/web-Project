@@ -121,6 +121,12 @@ const groups = [
     ]
   },
   {
+    title: '趣味工具',
+    tools: [
+      { path: '/tools/hang-la', name: '从夯到拉', icon: '🏆', keywords: ['hang', 'la', 'tier', 'rank', 'paihang', 'paiming', 'hangla', 'chengdu'] },
+    ]
+  },
+  {
     title: '健康生活',
     tools: [
       { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️', keywords: ['bmi', 'shengao', 'tizhong', 'body', 'mass', 'index', 'jisuan'] },

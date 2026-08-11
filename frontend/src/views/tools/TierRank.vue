@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useToast } from '../../composables/useToast'
-import AiHelpPanel from '../../components/AiHelpPanel.vue'
 import * as rankLogic from '../../logic/tier-rank'
 
 const toast = useToast()
@@ -339,14 +338,6 @@ onUnmounted(() => {
   <div class="tool-page">
     <div class="tool-header">
       <h1>🏆 从夯到拉排行榜</h1>
-      <AiHelpPanel
-        title="从夯到拉排行榜"
-        desc="拖拽图片/文字卡片到不同档位，生成可分享的夯拉梗图。支持 Ctrl+V 粘贴图片或文字、高清 PNG 导出。"
-        api-tool="tier_rank"
-        :params="[
-          { name: 'data', desc: 'base64 编码的排行榜数据', required: false, example: 'eyJ0a...' },
-        ]"
-      />
     </div>
 
     <div class="preview-card" :style="{ background: currentStyle.bg, color: currentStyle.text }">

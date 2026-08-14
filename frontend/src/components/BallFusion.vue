@@ -97,11 +97,16 @@ function uniqueSortedResults(recipes) {
             </div>
           </div>
           <div class="recipe-arrow">➜</div>
-          <div class="recipe-result">
-            <img :src="imgUrl(ball(recipe.result).img)" :alt="displayName(ball(recipe.result))" class="recipe-icon" />
-            <span class="recipe-name">{{ displayName(ball(recipe.result)) }}</span>
-            <div v-if="ball(recipe.result).tags.length" class="recipe-tags">
-              <span v-for="tag in ball(recipe.result).tags" :key="tag" class="mini-tag">{{ tagDisplay(tag) }}</span>
+          <div class="recipe-result-block">
+            <div class="recipe-result">
+              <img :src="imgUrl(ball(recipe.result).img)" :alt="displayName(ball(recipe.result))" class="recipe-icon" />
+              <span class="recipe-name">{{ displayName(ball(recipe.result)) }}</span>
+              <div v-if="ball(recipe.result).tags.length" class="recipe-tags">
+                <span v-for="tag in ball(recipe.result).tags" :key="tag" class="mini-tag">{{ tagDisplay(tag) }}</span>
+              </div>
+            </div>
+            <div v-if="effectDisplay(ball(recipe.result))" class="recipe-effect">
+              {{ effectDisplay(ball(recipe.result)) }}
             </div>
           </div>
         </div>
@@ -136,11 +141,16 @@ function uniqueSortedResults(recipes) {
             </div>
           </div>
           <div class="recipe-arrow">➜</div>
-          <div class="recipe-result">
-            <img :src="imgUrl(ball(recipe.result).img)" :alt="displayName(ball(recipe.result))" class="recipe-icon" />
-            <span class="recipe-name">{{ displayName(ball(recipe.result)) }}</span>
-            <div v-if="ball(recipe.result).tags.length" class="recipe-tags">
-              <span v-for="tag in ball(recipe.result).tags" :key="tag" class="mini-tag">{{ tagDisplay(tag) }}</span>
+          <div class="recipe-result-block">
+            <div class="recipe-result">
+              <img :src="imgUrl(ball(recipe.result).img)" :alt="displayName(ball(recipe.result))" class="recipe-icon" />
+              <span class="recipe-name">{{ displayName(ball(recipe.result)) }}</span>
+              <div v-if="ball(recipe.result).tags.length" class="recipe-tags">
+                <span v-for="tag in ball(recipe.result).tags" :key="tag" class="mini-tag">{{ tagDisplay(tag) }}</span>
+              </div>
+            </div>
+            <div v-if="effectDisplay(ball(recipe.result))" class="recipe-effect">
+              {{ effectDisplay(ball(recipe.result)) }}
             </div>
           </div>
         </div>
@@ -259,6 +269,22 @@ function uniqueSortedResults(recipes) {
   border: 1px solid var(--accent);
   border-radius: var(--radius);
   min-width: 140px;
+}
+.recipe-result-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+  flex: 1;
+}
+.recipe-result-block .recipe-result {
+  width: 100%;
+}
+.recipe-effect {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding: 0 4px;
 }
 .empty {
   text-align: center;

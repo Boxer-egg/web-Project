@@ -29,8 +29,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BLEED"
       ],
-      "effect": "Inflicts {[bleed_amt]} stacks of bleed. Bleeding enemies receive 1 damage per stack when hit by a ball (Max {[bleed_max_stacks]} stacks)",
-      "effectCn": "施加{[bleed_amt]}层流血。每层流血将使敌人在受到弹珠攻击时额外承受1点伤害（最高{[bleed_max_stacks]}层）"
+      "effect": "Inflicts 2 stacks of bleed. Bleeding enemies receive 1 damage per stack when hit by a ball (Max 8 stacks)",
+      "effectCn": "施加2层流血。每层流血将使敌人在受到弹珠攻击时额外承受1点伤害（最高8层）"
     },
     "Brood Mother": {
       "id": "Brood Mother",
@@ -55,8 +55,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Has a {[birth_chance]} chance of birthing a baby ball each time it hits an enemy",
-      "effectCn": "每次命中敌人时有{[birth_chance]}几率创造1颗迷你弹珠"
+      "effect": "Has a 25 chance of birthing a baby ball each time it hits an enemy",
+      "effectCn": "每次命中敌人时有25几率创造1颗迷你弹珠"
     },
     "Burn": {
       "id": "Burn",
@@ -88,8 +88,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BURN"
       ],
-      "effect": "Add 1 stack of burn on hit for {[burn_length]} seconds (max {[max_burn_stacks]} stacks). Burnt units are dealt {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second.",
-      "effectCn": "命中时施加1层燃烧，效果持续{[burn_length]}秒（最高{[max_burn_stacks]}层）。每层燃烧每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害。"
+      "effect": "Add 1 stack of burn on hit for 3 seconds (max 3 stacks). Burnt units are dealt 4-8 damage per stack per second.",
+      "effectCn": "命中时施加1层燃烧，效果持续3秒（最高3层）。每层燃烧每秒造成4-8伤害。"
     },
     "Cell": {
       "id": "Cell",
@@ -115,8 +115,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Splits into a clone on hit {[cell_limit]} times.",
-      "effectCn": "被击中{[cell_limit]}次后分裂出1颗相同的弹珠。"
+      "effect": "Splits into a clone on hit 2 times.",
+      "effectCn": "被击中2次后分裂出1颗相同的弹珠。"
     },
     "Charm": {
       "id": "Charm",
@@ -143,8 +143,8 @@
       "statusEffects": [
         "STATUS_EFFECT.CHARM"
       ],
-      "effect": "Each hit has a {[charm_chance]} chance of charming the enemy for {[charm_length]} seconds. Charmed units walk up the board and attack enemies.",
-      "effectCn": "每次命中时有{[charm_chance]}几率魅惑敌人，效果持续{[charm_length]}秒。被魅惑的单位将会转而向上方移动并攻击其他敌人。"
+      "effect": "Each hit has a 40 chance of charming the enemy for 5 seconds. Charmed units walk up the board and attack enemies.",
+      "effectCn": "每次命中时有40几率魅惑敌人，效果持续5秒。被魅惑的单位将会转而向上方移动并攻击其他敌人。"
     },
     "Dark": {
       "id": "Dark",
@@ -175,8 +175,8 @@
       "statusEffects": [
         "STATUS_EFFECT.CURSE"
       ],
-      "effect": "Deals {[damage_multiplier]}x damage but destroys itself after hitting an enemy. Has a {[cooldown_length]} second cooldown before it can be shot again.",
-      "effectCn": "造成{[damage_multiplier]}x伤害，但是在命中敌人后将自毁。每次发射后需要等待{[cooldown_length]}秒冷却时间。"
+      "effect": "Deals 300x damage but destroys itself after hitting an enemy. Has a 3 second cooldown before it can be shot again.",
+      "effectCn": "造成300x伤害，但是在命中敌人后将自毁。每次发射后需要等待3秒冷却时间。"
     },
     "Earthquake": {
       "id": "Earthquake",
@@ -203,8 +203,8 @@
         "DAMAGE_TYPE.EARTHQUAKE"
       ],
       "statusEffects": [],
-      "effect": "Deals {[min_earthquake_damage]}-{[max_earthquake_damage]} damage to nearby units in a {[range]}x{[range]} tile square",
-      "effectCn": "对{[range]}x{[range]}格范围内的单位造成{[min_earthquake_damage]}-{[max_earthquake_damage]}伤害"
+      "effect": "Deals 5-13 damage to nearby units in a 3x3 tile square",
+      "effectCn": "对3x3格范围内的单位造成5-13伤害"
     },
     "Egg Sac": {
       "id": "Egg Sac",
@@ -231,8 +231,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Explodes into {[min_babies]}-{[max_babies]} baby balls on hitting an enemy. Has a {[cooldown_length]} second cooldown before it can be shot again.",
-      "effectCn": "命中敌人时分裂出{[min_babies]}-{[max_babies]}颗迷你弹珠。每次发射后需要等待{[cooldown_length]}秒冷却时间。"
+      "effect": "Explodes into 2-4 baby balls on hitting an enemy. Has a 3 second cooldown before it can be shot again.",
+      "effectCn": "命中敌人时分裂出2-4颗迷你弹珠。每次发射后需要等待3秒冷却时间。"
     },
     "Freeze": {
       "id": "Freeze",
@@ -263,8 +263,8 @@
         "STATUS_EFFECT.FROZEN",
         "STATUS_EFFECT.SLOW"
       ],
-      "effect": "Has a {[freeze_pct]} chance to freeze enemies for {[freeze_length]} seconds. Frozen enemies receive {[freeze_damage_pct]} more damage",
-      "effectCn": "有{[freeze_pct]}几率冰冻敌人，效果持续{[freeze_length]}秒。被冰冻的敌人将额外承受{[freeze_damage_pct]}伤害"
+      "effect": "Has a 4 chance to freeze enemies for 50 seconds. Frozen enemies receive 25 more damage",
+      "effectCn": "有4几率冰冻敌人，效果持续50秒。被冰冻的敌人将额外承受25伤害"
     },
     "Ghost": {
       "id": "Ghost",
@@ -317,8 +317,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Deals double damage but moves {[reduce_speed_pct]} slower",
-      "effectCn": "造成双倍伤害，但是移动速度减慢{[reduce_speed_pct]}"
+      "effect": "Deals double damage but moves 40 slower",
+      "effectCn": "造成双倍伤害，但是移动速度减慢40"
     },
     "Laser (Horizontal)": {
       "id": "Laser (Horizontal)",
@@ -344,8 +344,8 @@
         "DAMAGE_TYPE.LASER"
       ],
       "statusEffects": [],
-      "effect": "Deals {[min_laser_damage]}-{[max_laser_damage]} damage to all enemies in the same row",
-      "effectCn": "对同一行的所有敌人造成{[min_laser_damage]}-{[max_laser_damage]}伤害。"
+      "effect": "Deals 9-18 damage to all enemies in the same row",
+      "effectCn": "对同一行的所有敌人造成9-18伤害。"
     },
     "Laser (Vertical)": {
       "id": "Laser (Vertical)",
@@ -371,8 +371,8 @@
         "DAMAGE_TYPE.LASER"
       ],
       "statusEffects": [],
-      "effect": "Deals {[min_laser_damage]}-{[max_laser_damage]} damage to all enemies in the same column",
-      "effectCn": "对同一列的所有敌人造成{[min_laser_damage]}-{[max_laser_damage]}伤害。"
+      "effect": "Deals 9-18 damage to all enemies in the same column",
+      "effectCn": "对同一列的所有敌人造成9-18伤害。"
     },
     "Light": {
       "id": "Light",
@@ -400,8 +400,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BLIND"
       ],
-      "effect": "Blinds enemies on hit for {[blind_length]} seconds. Blinded units have a hard time detecting you and have a 50% chance of missing when they attack.",
-      "effectCn": "命中时使敌人致盲，效果持续{[blind_length]}秒。致盲的敌人将难以察觉到你的存在，并且攻击时有50%几率失手。"
+      "effect": "Blinds enemies on hit for 3 seconds. Blinded units have a hard time detecting you and have a 50% chance of missing when they attack.",
+      "effectCn": "命中时使敌人致盲，效果持续3秒。致盲的敌人将难以察觉到你的存在，并且攻击时有50%几率失手。"
     },
     "Lightning": {
       "id": "Lightning",
@@ -427,8 +427,8 @@
         "DAMAGE_TYPE.LIGHTNING"
       ],
       "statusEffects": [],
-      "effect": "Deals {[min_lightning_damage]}-{[max_lightning_damage]} damage to up to {[lightning_limit]} nearby enemies",
-      "effectCn": "对附近至多{[lightning_limit]}名敌人造成{[min_lightning_damage]}-{[max_lightning_damage]}伤害"
+      "effect": "Deals 1-20 damage to up to 3 nearby enemies",
+      "effectCn": "对附近至多3名敌人造成1-20伤害"
     },
     "Poison": {
       "id": "Poison",
@@ -457,8 +457,8 @@
       "statusEffects": [
         "STATUS_EFFECT.POISON"
       ],
-      "effect": "Applies 1 stack of poison on hit (max {[max_poison_stacks]} stacks). Poison lasts for {[poison_length]} seconds and each stack deals {[min_poison_damage]}-{[max_poison_damage]} damage per second",
-      "effectCn": "命中时施加1层中毒（最高{[max_poison_stacks]}层）。中毒持续{[poison_length]}秒，每层中毒每秒造成{[min_poison_damage]}-{[max_poison_damage]}伤害。"
+      "effect": "Applies 1 stack of poison on hit (max 5 stacks). Poison lasts for 6 seconds and each stack deals 1-4 damage per second",
+      "effectCn": "命中时施加1层中毒（最高5层）。中毒持续6秒，每层中毒每秒造成1-4伤害。"
     },
     "Vampire": {
       "id": "Vampire",
@@ -484,8 +484,8 @@
         "DAMAGE_TYPE.VAMPIRE"
       ],
       "statusEffects": [],
-      "effect": "Each hit has a {[lifesteal_chance]} chance of healing {[lifesteal_heal]} health",
-      "effectCn": "每次命中时有{[lifesteal_chance]}几率恢复{[lifesteal_heal]}点生命值"
+      "effect": "Each hit has a 45 chance of healing 1 health",
+      "effectCn": "每次命中时有45几率恢复1点生命值"
     },
     "Wind": {
       "id": "Wind",
@@ -513,8 +513,8 @@
         "DAMAGE_TYPE.WIND"
       ],
       "statusEffects": [],
-      "effect": "Passes through enemies and slows them down by {[slow_pct]} for {[slow_len]} seconds, but deals 25% less damage.",
-      "effectCn": "仅造成75%伤害，但是能够穿过敌人并使其减速{[slow_pct]}，效果持续{[slow_len]}秒。"
+      "effect": "Passes through enemies and slows them down by 30 for 5 seconds, but deals 25% less damage.",
+      "effectCn": "仅造成75%伤害，但是能够穿过敌人并使其减速30，效果持续5秒。"
     },
     "Stone": {
       "id": "Stone",
@@ -539,8 +539,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Initially deals {[damage_pct]} damage. Damage erodes by {[reduce_dmg_pct]} each time hitting an enemy (minimum {[min_damage_pct]}).",
-      "effectCn": "最初造成{[damage_pct]}伤害。每次命中敌人时伤害降低{[reduce_dmg_pct]}（最低{[min_damage_pct]}）。"
+      "effect": "Initially deals 300 damage. Damage erodes by 40 each time hitting an enemy (minimum 50).",
+      "effectCn": "最初造成300伤害。每次命中敌人时伤害降低40（最低50）。"
     },
     "Time": {
       "id": "Time",
@@ -570,8 +570,8 @@
       "statusEffects": [
         "STATUS_EFFECT.FROZEN"
       ],
-      "effect": "Explodes into a time snare upon hitting an enemy, which stays on the field for {[time_snare_length]} seconds and freezes enemies inside it.",
-      "effectCn": "命中敌人时爆炸并展开一片时间陷阱，陷阱将在场上停留{[time_snare_length]}秒，并且冻结范围内的所有敌人。"
+      "effect": "Explodes into a time snare upon hitting an enemy, which stays on the field for 20 seconds and freezes enemies inside it.",
+      "effectCn": "命中敌人时爆炸并展开一片时间陷阱，陷阱将在场上停留20秒，并且冻结范围内的所有敌人。"
     },
     "Flesh": {
       "id": "Flesh",
@@ -594,8 +594,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Speed increases by {[acceleration]} per bounce",
-      "effectCn": "每次反弹后速度加快{[acceleration]}"
+      "effect": "Speed increases by 25 per bounce",
+      "effectCn": "每次反弹后速度加快25"
     },
     "Leech": {
       "id": "Leech",
@@ -629,8 +629,8 @@
         "STATUS_EFFECT.LEECH",
         "STATUS_EFFECT.BLEED"
       ],
-      "effect": "Attaches up to 1 leech onto enemies it hits, which adds {[bleed_amt]} stacks of bleed per second (Max {[bleed_max_stacks]} stacks)",
-      "effectCn": "命中时对敌人施加至多1层吸血水蛭，吸血水蛭每秒施加{[bleed_amt]}层流血（最高{[bleed_max_stacks]}层流血）"
+      "effect": "Attaches up to 1 leech onto enemies it hits, which adds 2 stacks of bleed per second (Max 24 stacks)",
+      "effectCn": "命中时对敌人施加至多1层吸血水蛭，吸血水蛭每秒施加2层流血（最高24层流血）"
     },
     "Berserk": {
       "id": "Berserk",
@@ -673,8 +673,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BERSERK"
       ],
-      "effect": "Each hit has a {[berserk_chance]} chance of causing enemies to go berserk for {[berserk_length]} seconds. Berserk enemies deal {[min_berserk_damage]}-{[max_berserk_damage]} damage to adjacent enemies every second.",
-      "effectCn": "每次命中有{[berserk_chance]}几率使敌人狂暴，效果持续{[berserk_length]}秒。狂暴的敌人将对毗邻的其他敌人造成每秒{[min_berserk_damage]}-{[max_berserk_damage]}伤害。"
+      "effect": "Each hit has a 30 chance of causing enemies to go berserk for 6 seconds. Berserk enemies deal 15-24 damage to adjacent enemies every second.",
+      "effectCn": "每次命中有30几率使敌人狂暴，效果持续6秒。狂暴的敌人将对毗邻的其他敌人造成每秒15-24伤害。"
     },
     "Sacrifice": {
       "id": "Sacrifice",
@@ -710,8 +710,8 @@
         "STATUS_EFFECT.BLEED",
         "STATUS_EFFECT.CURSE"
       ],
-      "effect": "Inflicts {[bleed_amt]} stacks of bleed (Max {[bleed_max_stacks]} stacks) and applies curse to hit enemies. Cursed enemies are dealt {[min_curse_damage]}-{[max_curse_damage]} after being hit {[curse_delay]} times.",
-      "effectCn": "命中时施加{[bleed_amt]}层流血（最高{[bleed_max_stacks]}层）以及诅咒。被诅咒的敌人在受到{[curse_delay]}次攻击后将承受{[min_curse_damage]}-{[max_curse_damage]}伤害。"
+      "effect": "Inflicts 4 stacks of bleed (Max 15 stacks) and applies curse to hit enemies. Cursed enemies are dealt 50-100 after being hit 5 times.",
+      "effectCn": "命中时施加4层流血（最高15层）以及诅咒。被诅咒的敌人在受到5次攻击后将承受50-100伤害。"
     },
     "Hemorrhage": {
       "id": "Hemorrhage",
@@ -745,8 +745,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BLEED"
       ],
-      "effect": "Inflicts {[bleed_amt]} stacks of bleed. When hitting an enemy with {[bleed_max_stacks]} stacks of bleed or more, consumes all stacks of bleed to deal {[hemorrhage_pct]} of their current health.",
-      "effectCn": "施加{[bleed_amt]}层流血。如果敌人身上的流血效果有{[bleed_max_stacks]}层或以上，击中敌人时将消耗所有流血层数，并造成等同于敌人最大生命值{[hemorrhage_pct]}的伤害。"
+      "effect": "Inflicts 3 stacks of bleed. When hitting an enemy with 12 stacks of bleed or more, consumes all stacks of bleed to deal 20 of their current health.",
+      "effectCn": "施加3层流血。如果敌人身上的流血效果有12层或以上，击中敌人时将消耗所有流血层数，并造成等同于敌人最大生命值20的伤害。"
     },
     "Vampire Lord": {
       "id": "Vampire Lord",
@@ -793,8 +793,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BLEED"
       ],
-      "effect": "Each hit inflicts {[bleed_amt]} stacks of bleed. Heals {[lifesteal_heal]} health and consumes all stacks when hitting an enemy with at least {[lifesteal_bleed_stacks]} stacks of bleed.",
-      "effectCn": "每次命中时施加{[bleed_amt]}层流血。如果敌人身上有{[lifesteal_bleed_stacks]}层流血效果或以上，击中敌人时将消耗所有流血层数，并为你恢复{[lifesteal_heal]}点生命值。"
+      "effect": "Each hit inflicts 3 stacks of bleed. Heals 1 health and consumes all stacks when hitting an enemy with at least 10 stacks of bleed.",
+      "effectCn": "每次命中时施加3层流血。如果敌人身上有10层流血效果或以上，击中敌人时将消耗所有流血层数，并为你恢复1点生命值。"
     },
     "Maggot": {
       "id": "Maggot",
@@ -827,8 +827,8 @@
       "statusEffects": [
         "STATUS_EFFECT.MAGGOT"
       ],
-      "effect": "Infest enemies on hit with maggots. When they die, they explode into {[min_babies]}-{[max_babies]} baby balls",
-      "effectCn": "命中时将使敌人被蛆虫缠身。这些敌人死亡时将会分裂出{[min_babies]}-{[max_babies]}颗迷你弹珠"
+      "effect": "Infest enemies on hit with maggots. When they die, they explode into 1-2 baby balls",
+      "effectCn": "命中时将使敌人被蛆虫缠身。这些敌人死亡时将会分裂出1-2颗迷你弹珠"
     },
     "Spider Queen": {
       "id": "Spider Queen",
@@ -861,8 +861,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Has a {[birth_chance]} chance of birthing an Egg Sac each time it hits an enemy",
-      "effectCn": "每次命中敌人时有{[birth_chance]}几率创造1颗巢囊"
+      "effect": "Has a 25 chance of birthing an Egg Sac each time it hits an enemy",
+      "effectCn": "每次命中敌人时有25几率创造1颗巢囊"
     },
     "Mosquito King": {
       "id": "Mosquito King",
@@ -896,8 +896,8 @@
         "DAMAGE_TYPE.VAMPIRE"
       ],
       "statusEffects": [],
-      "effect": "Spawns a mosquito each time it hits an enemy. Mosquitos attack a random enemy, dealing {[min_mosquito_damage]} - {[max_mosquito_damage]} damage each. If a mosquito kills an enemy, they steal {[lifesteal_heal]} health.",
-      "effectCn": "每次命中敌人时生成1只蚊子。蚊子将会对随机敌人发起攻击，并造成{[min_mosquito_damage]}-{[max_mosquito_damage]}伤害。如果蚊子成功杀死敌人，它们将能够为你窃取{[lifesteal_heal]}点生命值。"
+      "effect": "Spawns a mosquito each time it hits an enemy. Mosquitos attack a random enemy, dealing 80 - 120 damage each. If a mosquito kills an enemy, they steal 1 health.",
+      "effectCn": "每次命中敌人时生成1只蚊子。蚊子将会对随机敌人发起攻击，并造成80-120伤害。如果蚊子成功杀死敌人，它们将能够为你窃取1点生命值。"
     },
     "Magma": {
       "id": "Magma",
@@ -932,8 +932,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BURN"
       ],
-      "effect": "Emits lava blobs over time. Enemies who walk into lava blobs are dealt {[min_magma_damage]} - {[max_magma_damage]} damage and gain 1 stack of burn (max {[max_burn_stacks]} stacks). Burn lasts for {[burn_length]} seconds, dealing  {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second.  This ball and its lava blobs also deal {[min_earthquake_damage]}-{[max_earthquake_damage]} damage to nearby units.",
-      "effectCn": "持续释放岩浆池。经过岩浆池的敌人将承受{[min_magma_damage]}-{[max_magma_damage]}伤害以及1层燃烧（最高{[max_burn_stacks]}层）。燃烧持续{[burn_length]}秒，每层燃烧每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害。除此以外，此弹珠与释放的岩浆池在命中时还会对周遭敌人造成{[min_earthquake_damage]}-{[max_earthquake_damage]}伤害。"
+      "effect": "Emits lava blobs over time. Enemies who walk into lava blobs are dealt 15 - 30 damage and gain 1 stack of burn (max 3 stacks). Burn lasts for 3 seconds, dealing  3-8 damage per stack per second.  This ball and its lava blobs also deal 6-12 damage to nearby units.",
+      "effectCn": "持续释放岩浆池。经过岩浆池的敌人将承受15-30伤害以及1层燃烧（最高3层）。燃烧持续3秒，每层燃烧每秒造成3-8伤害。除此以外，此弹珠与释放的岩浆池在命中时还会对周遭敌人造成6-12伤害。"
     },
     "Frozen Flame": {
       "id": "Frozen Flame",
@@ -970,8 +970,8 @@
         "STATUS_EFFECT.FROZEN",
         "STATUS_EFFECT.FROSTBURN"
       ],
-      "effect": "Add 1 stack of frostburn on hit for {[frostburn_length]} seconds (max {[max_frostburn_stacks]} stacks). Frostburnt units are dealt {[min_frostburn_damage]}-{[max_frostburn_damage]} damage per stack per second and receive {[freeze_damage_pct]} more damage from other sources.",
-      "effectCn": "命中时施加1层霜燃，效果持续{[frostburn_length]}秒（最高{[max_frostburn_stacks]}层）。每层霜燃每秒造成{[min_frostburn_damage]}-{[max_frostburn_damage]}伤害，并且使目标敌人承受的其他伤害提高{[freeze_damage_pct]}。"
+      "effect": "Add 1 stack of frostburn on hit for 20 seconds (max 4 stacks). Frostburnt units are dealt 8-12 damage per stack per second and receive 25 more damage from other sources.",
+      "effectCn": "命中时施加1层霜燃，效果持续20秒（最高4层）。每层霜燃每秒造成8-12伤害，并且使目标敌人承受的其他伤害提高25。"
     },
     "Bomb": {
       "id": "Bomb",
@@ -1005,8 +1005,8 @@
         "DAMAGE_TYPE.BOMB"
       ],
       "statusEffects": [],
-      "effect": "Explodes when hitting an enemy, dealing {[min_bomb_damage]}-{[max_bomb_damage]} damage to nearby enemies. Has a {[cooldown_length]} second cooldown before it can be shot again.",
-      "effectCn": "命中敌人时爆炸，对周遭敌人造成{[min_bomb_damage]}-{[max_bomb_damage]}伤害。每次发射后需要等待{[cooldown_length]}秒冷却时间。"
+      "effect": "Explodes when hitting an enemy, dealing 150-300 damage to nearby enemies. Has a 3 second cooldown before it can be shot again.",
+      "effectCn": "命中敌人时爆炸，对周遭敌人造成150-300伤害。每次发射后需要等待3秒冷却时间。"
     },
     "Sun": {
       "id": "Sun",
@@ -1043,8 +1043,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BURN"
       ],
-      "effect": "Blind all enemies in view and add 1 stack of burn every second (max {[max_burn_stacks]} stacks). Burn lasts for {[burn_length]} seconds and deals {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second.",
-      "effectCn": "使视野中的所有敌人致盲，并且每秒施加1层燃烧（最高{[max_burn_stacks]}层）。燃烧持续{[burn_length]}秒，每层燃烧每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害。"
+      "effect": "Blind all enemies in view and add 1 stack of burn every second (max 5 stacks). Burn lasts for 6 seconds and deals 6-12 damage per stack per second.",
+      "effectCn": "使视野中的所有敌人致盲，并且每秒施加1层燃烧（最高5层）。燃烧持续6秒，每层燃烧每秒造成6-12伤害。"
     },
     "Inferno": {
       "id": "Inferno",
@@ -1088,8 +1088,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BURN"
       ],
-      "effect": "Applies 1 stack of burn every second to all enemies within a {[range]} tile radius. Burn lasts for {[burn_length]} seconds, dealing {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second.",
-      "effectCn": "每秒对{[range]}格范围内的敌人施加1层燃烧。燃烧效果持续{[burn_length]}秒，每层燃烧每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害。"
+      "effect": "Applies 1 stack of burn every second to all enemies within a 2 tile radius. Burn lasts for 6 seconds, dealing 3-7 damage per stack per second.",
+      "effectCn": "每秒对2格范围内的敌人施加1层燃烧。燃烧效果持续6秒，每层燃烧每秒造成3-7伤害。"
     },
     "Overgrowth": {
       "id": "Overgrowth",
@@ -1123,8 +1123,8 @@
       "statusEffects": [
         "STATUS_EFFECT.OVERGROWTH"
       ],
-      "effect": "Applies 1 stack of overgrowth. Upon reaching {[max_overgrowth_stacks]}, consume all stacks and deal {[min_overgrowth_damage]}-{[max_overgrowth_damage]} damage to all enemies in a {[range]}x{[range]} tile square.",
-      "effectCn": "施加1层蔓延。堆叠{[max_overgrowth_stacks]}层后，消耗所有层数并对{[range]}x{[range]}格范围内的所有敌人造成{[min_overgrowth_damage]}-{[max_overgrowth_damage]}伤害。"
+      "effect": "Applies 1 stack of overgrowth. Upon reaching 3, consume all stacks and deal 150-200 damage to all enemies in a 3x3 tile square.",
+      "effectCn": "施加1层蔓延。堆叠3层后，消耗所有层数并对3x3格范围内的所有敌人造成150-200伤害。"
     },
     "Radiation Beam": {
       "id": "Radiation Beam",
@@ -1187,8 +1187,8 @@
       "statusEffects": [
         "STATUS_EFFECT.RADIATION"
       ],
-      "effect": "Emit a radiation beam on hit that deals {[min_laser_damage]}-{[max_laser_damage]} damage and applies 1 stack of radiation (max {[max_radiation_stacks]} stacks). Radiation lasts for {[radiation_length]} seconds and cause enemies to receive {[radiation_pct]} more damage from all sources per stack.",
-      "effectCn": "命中时释放一道辐射光束，造成{[min_laser_damage]}-{[max_laser_damage]}伤害并施加1层核辐射（最高{[max_radiation_stacks]}层）。核辐射持续{[radiation_length]}秒，每层核辐射使敌人额外承受{[radiation_pct]}的所有来源伤害。"
+      "effect": "Emit a radiation beam on hit that deals 24-48 damage and applies 1 stack of radiation (max 5 stacks). Radiation lasts for 15 seconds and cause enemies to receive 10 more damage from all sources per stack.",
+      "effectCn": "命中时释放一道辐射光束，造成24-48伤害并施加1层核辐射（最高5层）。核辐射持续15秒，每层核辐射使敌人额外承受10的所有来源伤害。"
     },
     "Virus": {
       "id": "Virus",
@@ -1240,8 +1240,8 @@
       "statusEffects": [
         "STATUS_EFFECT.DISEASE"
       ],
-      "effect": "Applies 1 stack of disease to units it hits (max {[max_disease_stacks]} stacks). Disease lasts for {[disease_length]} seconds. Each stack of disease deals {[min_disease_damage]}-{[max_disease_damage]} damage per second and diseased units have a {[disease_chance]} chance of passing a stack to undiseased nearby enemies each second.",
-      "effectCn": "命中时施加1层瘟疫（最高{[max_disease_stacks]}层）。瘟疫持续{[disease_length]}秒。每层瘟疫每秒造成{[min_disease_damage]}-{[max_disease_damage]}伤害，除此以外，承受瘟疫的敌人每秒有{[disease_chance]}%几率向周遭的健康敌人传染1层瘟疫。"
+      "effect": "Applies 1 stack of disease to units it hits (max 8 stacks). Disease lasts for 6 seconds. Each stack of disease deals 3-6 damage per second and diseased units have a 15 chance of passing a stack to undiseased nearby enemies each second.",
+      "effectCn": "命中时施加1层瘟疫（最高8层）。瘟疫持续6秒。每层瘟疫每秒造成3-6伤害，除此以外，承受瘟疫的敌人每秒有15%几率向周遭的健康敌人传染1层瘟疫。"
     },
     "Incubus": {
       "id": "Incubus",
@@ -1277,8 +1277,8 @@
       "statusEffects": [
         "STATUS_EFFECT.CHARM"
       ],
-      "effect": "Each hit has a {[charm_chance]} chance of charming the enemy for {[charm_length]} seconds. Charmed enemies curse nearby enemies. Cursed enemies are dealt {[min_curse_damage]}-{[max_curse_damage]} after being hit {[curse_delay]} times.",
-      "effectCn": "每次命中时有{[charm_chance]}几率魅惑敌人，效果持续{[charm_length]}秒。被魅惑的敌人将诅咒周遭的敌人。被诅咒的敌人在受到{[curse_delay]}次攻击后将承受{[min_curse_damage]}-{[max_curse_damage]}伤害。"
+      "effect": "Each hit has a 40 chance of charming the enemy for 9 seconds. Charmed enemies curse nearby enemies. Cursed enemies are dealt 100-200 after being hit 5 times.",
+      "effectCn": "每次命中时有40几率魅惑敌人，效果持续9秒。被魅惑的敌人将诅咒周遭的敌人。被诅咒的敌人在受到5次攻击后将承受100-200伤害。"
     },
     "Lovestruck": {
       "id": "Lovestruck",
@@ -1331,8 +1331,8 @@
       "statusEffects": [
         "STATUS_EFFECT.LOVESTRUCK"
       ],
-      "effect": "Inflicts lovestruck on hit enemies for {[lovestruck_length]} seconds. Lovestruck units have a 50% chance of healing you for {[lovestruck_heal]} health when they attack.",
-      "effectCn": "对命中的敌人施加热恋，效果持续{[lovestruck_length]}秒。陷入热恋的单位在发起攻击时将有50%几率转而为你恢复{[lovestruck_heal]}点生命值。"
+      "effect": "Inflicts lovestruck on hit enemies for 20 seconds. Lovestruck units have a 50% chance of healing you for 5 health when they attack.",
+      "effectCn": "对命中的敌人施加热恋，效果持续20秒。陷入热恋的单位在发起攻击时将有50%几率转而为你恢复5点生命值。"
     },
     "Succubus": {
       "id": "Succubus",
@@ -1369,8 +1369,8 @@
       "statusEffects": [
         "STATUS_EFFECT.CHARM"
       ],
-      "effect": "Each hit has a {[charm_chance]} chance of charming the enemy for {[charm_length]} seconds. Heals {[lifesteal_heal]} when hitting a charmed enemy.",
-      "effectCn": "每次命中时有{[charm_chance]}几率魅惑敌人，效果持续{[charm_length]}秒。命中被魅惑的敌人时恢复{[lifesteal_heal]}点生命值。"
+      "effect": "Each hit has a 40 chance of charming the enemy for 9 seconds. Heals 1 when hitting a charmed enemy.",
+      "effectCn": "每次命中时有40几率魅惑敌人，效果持续9秒。命中被魅惑的敌人时恢复1点生命值。"
     },
     "Phantom": {
       "id": "Phantom",
@@ -1404,8 +1404,8 @@
         "DAMAGE_TYPE.DARK"
       ],
       "statusEffects": [],
-      "effect": "Curse enemies on hit. Cursed enemies are dealt {[min_curse_damage]}-{[max_curse_damage]} damage after being hit {[curse_delay]} times.",
-      "effectCn": "命中时施加诅咒。被诅咒的敌人在受到{[curse_delay]}次攻击后将承受{[min_curse_damage]}-{[max_curse_damage]}伤害。"
+      "effect": "Curse enemies on hit. Cursed enemies are dealt 100-200 damage after being hit 5 times.",
+      "effectCn": "命中时施加诅咒。被诅咒的敌人在受到5次攻击后将承受100-200伤害。"
     },
     "Assassin": {
       "id": "Assassin",
@@ -1448,8 +1448,8 @@
         "DAMAGE_TYPE.INSTANT_KILL"
       ],
       "statusEffects": [],
-      "effect": "Passes through the front of enemies, but not the back. Backstabs deal {[damage_pct]} bonus damage.",
-      "effectCn": "从正面穿过敌人，但是不会穿过敌人的后背。背刺造成{[damage_pct]}额外伤害。"
+      "effect": "Passes through the front of enemies, but not the back. Backstabs deal 30 bonus damage.",
+      "effectCn": "从正面穿过敌人，但是不会穿过敌人的后背。背刺造成30额外伤害。"
     },
     "Flicker": {
       "id": "Flicker",
@@ -1481,8 +1481,8 @@
         "DAMAGE_TYPE.LIGHT"
       ],
       "statusEffects": [],
-      "effect": "Deals {[min_flicker_damage]}-{[max_flicker_damage]} damage to every enemy on screen every {[flicker_cycle]} seconds.",
-      "effectCn": "每隔{[flicker_cycle]}秒对场上的所有敌人造成{[min_flicker_damage]}-{[max_flicker_damage]}伤害。"
+      "effect": "Deals 1-7 damage to every enemy on screen every 14 seconds.",
+      "effectCn": "每隔14秒对场上的所有敌人造成1-7伤害。"
     },
     "Noxious": {
       "id": "Noxious",
@@ -1526,8 +1526,8 @@
       "statusEffects": [
         "STATUS_EFFECT.POISON"
       ],
-      "effect": "Passes through enemies and applies {[max_poison_stacks]} stacks of poison to nearby enemies within a {[range]} tile radius. Poison lasts for {[poison_length]} seconds and each stack deals {[min_poison_damage]}-{[max_poison_damage]} damage per second.",
-      "effectCn": "穿过敌人，并且对其周遭{[max_poison_stacks]}格范围内的所有敌人施加{[range]}层中毒。中毒持续{[poison_length]}秒，每层中毒每秒造成{[min_poison_damage]}-{[max_poison_damage]}伤害。"
+      "effect": "Passes through enemies and applies 3 stacks of poison to nearby enemies within a 2 tile radius. Poison lasts for 4 seconds and each stack deals 1-3 damage per second.",
+      "effectCn": "穿过敌人，并且对其周遭3格范围内的所有敌人施加2层中毒。中毒持续4秒，每层中毒每秒造成1-3伤害。"
     },
     "Glacier": {
       "id": "Glacier",
@@ -1571,8 +1571,8 @@
       "statusEffects": [
         "STATUS_EFFECT.FROZEN"
       ],
-      "effect": "Releases glacial spikes over time that deal {[min_glacier_damage]}-{[max_glacier_damage]} to enemies that touch them and freeze them for {[freeze_length]} seconds. This ball and its glacial spikes also deal {[min_earthquake_damage]}-{[max_earthquake_damage]} damage to nearby units.",
-      "effectCn": "持续释放冰刺，对触碰冰刺的敌人造成{[min_glacier_damage]}-{[max_glacier_damage]}伤害，并且施加冰冻，持续{[freeze_length]}秒。除此以外，此弹珠与释放的冰刺在命中时还会对周遭敌人造成{[min_earthquake_damage]}-{[max_earthquake_damage]}伤害。"
+      "effect": "Releases glacial spikes over time that deal 15-30 to enemies that touch them and freeze them for 20 seconds. This ball and its glacial spikes also deal 6-12 damage to nearby units.",
+      "effectCn": "持续释放冰刺，对触碰冰刺的敌人造成15-30伤害，并且施加冰冻，持续20秒。除此以外，此弹珠与释放的冰刺在命中时还会对周遭敌人造成6-12伤害。"
     },
     "Swamp": {
       "id": "Swamp",
@@ -1609,8 +1609,8 @@
         "STATUS_EFFECT.POISON",
         "STATUS_EFFECT.SLOW"
       ],
-      "effect": "Leaves behind tar blobs over time. Enemies who walk into tar blobs are dealt {[min_tar_damage]} - {[max_tar_damage]}, are slowed by {[slow_pct]} for {[slow_len]} seconds and gain 1 stack of poison (max {[max_poison_stacks]} stacks). Each stack of poison deals  {[min_poison_damage]}-{[max_poison_damage]} damage per second.  This ball and its tar blobs also deal {[min_earthquake_damage]}-{[max_earthquake_damage]} damage to nearby units.",
-      "effectCn": "持续释放焦油池。焦油池将对经过的敌人造成{[min_tar_damage]}-{[max_tar_damage]}伤害，持续{[slow_len]}秒的{[slow_pct]}减速，以及1层中毒（最高{[max_poison_stacks]}层）每层中毒每秒造成{[min_poison_damage]}-{[max_poison_damage]}伤害。除此以外，此弹珠与释放的焦油池在命中时还会对周遭敌人造成{[min_earthquake_damage]}-{[max_earthquake_damage]}伤害。"
+      "effect": "Leaves behind tar blobs over time. Enemies who walk into tar blobs are dealt 15 - 30, are slowed by 50 for 7 seconds and gain 1 stack of poison (max 8 stacks). Each stack of poison deals  1-3 damage per second.  This ball and its tar blobs also deal 6-12 damage to nearby units.",
+      "effectCn": "持续释放焦油池。焦油池将对经过的敌人造成15-30伤害，持续7秒的50减速，以及1层中毒（最高8层）每层中毒每秒造成1-3伤害。除此以外，此弹珠与释放的焦油池在命中时还会对周遭敌人造成6-12伤害。"
     },
     "Sandstorm": {
       "id": "Sandstorm",
@@ -1653,8 +1653,8 @@
         "DAMAGE_TYPE.WIND"
       ],
       "statusEffects": [],
-      "effect": "Goes through enemies and is surrounded by a raging storm dealing {[min_sandstorm_damage]}-{[max_sandstorm_damage]} damage per second and blinding nearby enemies for {[blind_length]} seconds.",
-      "effectCn": "穿过敌人，此弹珠受到沙暴笼罩，每秒造成{[min_sandstorm_damage]}-{[max_sandstorm_damage]}伤害并使敌人致盲，效果持续{[blind_length]}秒。"
+      "effect": "Goes through enemies and is surrounded by a raging storm dealing 10-20 damage per second and blinding nearby enemies for 3 seconds.",
+      "effectCn": "穿过敌人，此弹珠受到沙暴笼罩，每秒造成10-20伤害并使敌人致盲，效果持续3秒。"
     },
     "Shotgun": {
       "id": "Shotgun",
@@ -1687,8 +1687,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Shoots {[min_babies]}-{[max_babies]} iron baby balls after hitting a wall. Iron baby balls move at {[base_speed]} speed but are destroyed upon hitting anything.",
-      "effectCn": "每次命中墙壁时发射{[min_babies]}-{[max_babies]}颗迷你黑铁弹珠。迷你黑铁弹珠的移动速度高达{[base_speed]}，但是命中任意敌人后将自毁。"
+      "effect": "Shoots 3-7 iron baby balls after hitting a wall. Iron baby balls move at 200 speed but are destroyed upon hitting anything.",
+      "effectCn": "每次命中墙壁时发射3-7颗迷你黑铁弹珠。迷你黑铁弹珠的移动速度高达200，但是命中任意敌人后将自毁。"
     },
     "Wraith": {
       "id": "Wraith",
@@ -1725,8 +1725,8 @@
       "statusEffects": [
         "STATUS_EFFECT.FROZEN"
       ],
-      "effect": "Freezes any enemy it passes through for {[freeze_length]} seconds",
-      "effectCn": "冰冻经过的敌人，效果持续{[freeze_length]}秒"
+      "effect": "Freezes any enemy it passes through for 8 seconds",
+      "effectCn": "冰冻经过的敌人，效果持续8秒"
     },
     "Freeze Ray": {
       "id": "Freeze Ray",
@@ -1771,8 +1771,8 @@
       "statusEffects": [
         "STATUS_EFFECT.FROZEN"
       ],
-      "effect": "Emits a freeze ray when hitting an enemy, dealing  {[min_laser_damage]}-{[max_laser_damage]} to all enemies in its path, with a {[freeze_pct]} chance of freezing them for {[freeze_length]} seconds",
-      "effectCn": "命中敌人时发射一道冰冻射线，射线将对路径上的所有敌人造成{[min_laser_damage]}-{[max_laser_damage]}伤害，并且有{[freeze_pct]}几率冰冻敌人，效果持续{[freeze_length]}秒"
+      "effect": "Emits a freeze ray when hitting an enemy, dealing  20-50 to all enemies in its path, with a 10 chance of freezing them for 100 seconds",
+      "effectCn": "命中敌人时发射一道冰冻射线，射线将对路径上的所有敌人造成20-50伤害，并且有10几率冰冻敌人，效果持续100秒"
     },
     "Blizzard": {
       "id": "Blizzard",
@@ -1816,8 +1816,8 @@
       "statusEffects": [
         "STATUS_EFFECT.FROZEN"
       ],
-      "effect": "Freezes all enemies within a {[range]} tile radius for {[freeze_length]} seconds, dealing {[min_lightning_damage]}-{[max_lightning_damage]} damage.",
-      "effectCn": "冰冻{[range]}格范围内的所有敌人并造成{[min_lightning_damage]}-{[max_lightning_damage]}伤害，冰冻效果持续{[freeze_length]}秒。"
+      "effect": "Freezes all enemies within a 2 tile radius for 8 seconds, dealing 1-50 damage.",
+      "effectCn": "冰冻2格范围内的所有敌人并造成1-50伤害，冰冻效果持续8秒。"
     },
     "Soul Sucker": {
       "id": "Soul Sucker",
@@ -1852,8 +1852,8 @@
         "DAMAGE_TYPE.VAMPIRE"
       ],
       "statusEffects": [],
-      "effect": "Passes through enemies and saps them, with a {[lifesteal_chance]} chance of stealing {[lifesteal_heal]} health and reducing their attack damage by {[reduce_dmg_pct]}. Lifesteal chance only applies once per enemy.",
-      "effectCn": "穿过敌人，有{[lifesteal_chance]}几率窃取{[lifesteal_heal]}生命值并且使敌人的攻击伤害降低{[reduce_dmg_pct]}。吸血几率只能对每名敌人作用1次。"
+      "effect": "Passes through enemies and saps them, with a 300 chance of stealing 1 health and reducing their attack damage by 20. Lifesteal chance only applies once per enemy.",
+      "effectCn": "穿过敌人，有300几率窃取1生命值并且使敌人的攻击伤害降低20。吸血几率只能对每名敌人作用1次。"
     },
     "Holy Laser": {
       "id": "Holy Laser",
@@ -1888,8 +1888,8 @@
         "DAMAGE_TYPE.LIGHT"
       ],
       "statusEffects": [],
-      "effect": "Deals {[min_laser_damage]}-{[max_laser_damage]} damage to all enemies in the same row and column",
-      "effectCn": "对同一行同一列的所有敌人造成{[min_laser_damage]}-{[max_laser_damage]}伤害。"
+      "effect": "Deals 24-36 damage to all enemies in the same row and column",
+      "effectCn": "对同一行同一列的所有敌人造成24-36伤害。"
     },
     "Laser Beam": {
       "id": "Laser Beam",
@@ -1936,8 +1936,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BURN"
       ],
-      "effect": "Emit a laser beam on hit that deals {[min_laser_damage]}-{[max_laser_damage]} damage and blinds enemies for {[blind_length]} seconds.",
-      "effectCn": "命中时发射一道激光束，造成{[min_laser_damage]}-{[max_laser_damage]}伤害并且使敌人致盲，效果持续{[blind_length]}秒。"
+      "effect": "Emit a laser beam on hit that deals 30-42 damage and blinds enemies for 8 seconds.",
+      "effectCn": "命中时发射一道激光束，造成30-42伤害并且使敌人致盲，效果持续8秒。"
     },
     "Flash": {
       "id": "Flash",
@@ -1969,8 +1969,8 @@
         "DAMAGE_TYPE.LIGHTNING"
       ],
       "statusEffects": [],
-      "effect": "Damage all enemies on screen for {[min_flash_damage]} - {[max_flash_damage]} damage after hitting an enemy and blind them for {[blind_length]} seconds.",
-      "effectCn": "命中一名敌人后对场上的所有敌人造成{[min_flash_damage]}-{[max_flash_damage]}伤害，并使其致盲，效果持续{[blind_length]}秒。"
+      "effect": "Damage all enemies on screen for 1 - 3 damage after hitting an enemy and blind them for 2 seconds.",
+      "effectCn": "命中一名敌人后对场上的所有敌人造成1-3伤害，并使其致盲，效果持续2秒。"
     },
     "Lightning Rod": {
       "id": "Lightning Rod",
@@ -2004,8 +2004,8 @@
       "statusEffects": [
         "STATUS_EFFECT.LIGHTNING_ROD"
       ],
-      "effect": "Plants a lightning rod into enemies it hits. These enemies are struck by lightning every {[lightning_rod_length]} seconds, dealing {[min_lightning_damage]}-{[max_lightning_damage]} damage to up to {[lightning_limit]} nearby enemies",
-      "effectCn": "命中时在敌人身上放置1个避雷针。被插上避雷针的敌人将每隔{[lightning_rod_length]}秒被闪电击中，并且对其周遭至多{[lightning_limit]}名敌人造成{[min_lightning_damage]}-{[max_lightning_damage]}伤害"
+      "effect": "Plants a lightning rod into enemies it hits. These enemies are struck by lightning every 30 seconds, dealing 1-30 damage to up to 8 nearby enemies",
+      "effectCn": "命中时在敌人身上放置1个避雷针。被插上避雷针的敌人将每隔30秒被闪电击中，并且对其周遭至多8名敌人造成1-30伤害"
     },
     "Storm": {
       "id": "Storm",
@@ -2038,8 +2038,8 @@
         "DAMAGE_TYPE.WIND"
       ],
       "statusEffects": [],
-      "effect": "Emits lightning to strike nearby enemies every second, dealing {[min_lightning_damage]}-{[max_lightning_damage]} damage.",
-      "effectCn": "释放闪电打击周围的敌人，每秒造成{[min_lightning_damage]}-{[max_lightning_damage]}伤害。"
+      "effect": "Emits lightning to strike nearby enemies every second, dealing 1-40 damage.",
+      "effectCn": "释放闪电打击周围的敌人，每秒造成1-40伤害。"
     },
     "Mosquito Swarm": {
       "id": "Mosquito Swarm",
@@ -2072,8 +2072,8 @@
         "DAMAGE_TYPE.VAMPIRE"
       ],
       "statusEffects": [],
-      "effect": "Explodes into {[min_mosquitos]}-{[max_mosquitos]} mosquitos. Mosquitos attack random enemies, dealing {[min_mosquito_damage]} - {[max_mosquito_damage]} damage each. If a mosquito kills an enemy, they steal {[lifesteal_heal]} health.",
-      "effectCn": "分裂出{[min_mosquitos]}-{[max_mosquitos]}只蚊子。蚊子将会对随机敌人发起攻击，并造成{[min_mosquito_damage]}-{[max_mosquito_damage]}伤害。如果蚊子成功杀死敌人，它们将能够为你窃取{[lifesteal_heal]}点生命值。"
+      "effect": "Explodes into 3-6 mosquitos. Mosquitos attack random enemies, dealing 80 - 120 damage each. If a mosquito kills an enemy, they steal 1 health.",
+      "effectCn": "分裂出3-6只蚊子。蚊子将会对随机敌人发起攻击，并造成80-120伤害。如果蚊子成功杀死敌人，它们将能够为你窃取1点生命值。"
     },
     "Voluptuous Egg Sac": {
       "id": "Voluptuous Egg Sac",
@@ -2105,8 +2105,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Explodes into {[min_egg_sacs]}-{[max_egg_sacs]} egg sacs on hitting an enemy. Has a {[cooldown_length]} second cooldown before it can be shot again.",
-      "effectCn": "命中敌人时分裂出{[min_egg_sacs]}-{[max_egg_sacs]}颗巢囊每次发射后需要等待{[cooldown_length]}秒冷却时间。"
+      "effect": "Explodes into 2-3 egg sacs on hitting an enemy. Has a 3 second cooldown before it can be shot again.",
+      "effectCn": "命中敌人时分裂出2-3颗巢囊每次发射后需要等待3秒冷却时间。"
     },
     "Steel": {
       "id": "Steel",
@@ -2139,8 +2139,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Initially deals double damage but moves {[reduce_speed_pct]} slower. Damage increases by {[damage_pct]} each time it hits an enemy (max {[max_damage_pct]}).",
-      "effectCn": "最初造成双倍伤害，但是移动速度减慢{[reduce_speed_pct]}。每次命中敌人时伤害提高{[damage_pct]}（最高{[max_damage_pct]}）。"
+      "effect": "Initially deals double damage but moves 50 slower. Damage increases by 10 each time it hits an enemy (max 300).",
+      "effectCn": "最初造成双倍伤害，但是移动速度减慢50。每次命中敌人时伤害提高10（最高300）。"
     },
     "Catapult": {
       "id": "Catapult",
@@ -2171,8 +2171,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Launches {[min_babies]}-{[max_babies]} stone baby balls every {[spawn_rate]} seconds, which are destroyed after hitting anything.",
-      "effectCn": "每隔{[spawn_rate]}秒发射{[min_babies]}-{[max_babies]}迷你岩石弹珠，岩石弹珠在命中任意敌人后将自毁。"
+      "effect": "Launches 3-5 stone baby balls every 15 seconds, which are destroyed after hitting anything.",
+      "effectCn": "每隔15秒发射3-5迷你岩石弹珠，岩石弹珠在命中任意敌人后将自毁。"
     },
     "Landslide": {
       "id": "Landslide",
@@ -2204,8 +2204,8 @@
         "DAMAGE_TYPE.EARTHQUAKE"
       ],
       "statusEffects": [],
-      "effect": "Creates a landslide and destroys self upon hitting an enemy. The landslide lasts for {[landslide_len]} seconds and deals {[min_landslide_damage]}-{[max_landslide_damage]} damage / second to enemies within a {[range]} tile radius.",
-      "effectCn": "命中敌人时自爆并创造一片地裂区域。地裂区域将持续{[landslide_len]}秒，并且每秒对{[range]}格范围内的敌人造成{[min_landslide_damage]}-{[max_landslide_damage]}伤害。"
+      "effect": "Creates a landslide and destroys self upon hitting an enemy. The landslide lasts for 5 seconds and deals 20-30 damage / second to enemies within a 2 tile radius.",
+      "effectCn": "命中敌人时自爆并创造一片地裂区域。地裂区域将持续5秒，并且每秒对2格范围内的敌人造成20-30伤害。"
     },
     "Brimstone": {
       "id": "Brimstone",
@@ -2250,8 +2250,8 @@
         "STATUS_EFFECT.BURN",
         "STATUS_EFFECT.POISON"
       ],
-      "effect": "Applies 1 stack of burn and poison every second to all enemies within a {[range]} tile radius (max {[max_burn_stacks]} stacks). Burn deals {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second and poison deals {[min_poison_damage]}-{[max_poison_damage]} damage per stack per second.",
-      "effectCn": "每秒对{[range]}格范围内的敌人施加1层燃烧与中毒（最高{[max_burn_stacks]}层）。每层燃烧每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害，每层中毒每秒造成{[min_poison_damage]}-{[max_poison_damage]}伤害。"
+      "effect": "Applies 1 stack of burn and poison every second to all enemies within a 2 tile radius (max 4 stacks). Burn deals 1-4 damage per stack per second and poison deals 2-3 damage per stack per second.",
+      "effectCn": "每秒对2格范围内的敌人施加1层燃烧与中毒（最高4层）。每层燃烧每秒造成1-4伤害，每层中毒每秒造成2-3伤害。"
     },
     "Petrify": {
       "id": "Petrify",
@@ -2282,8 +2282,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Petrifies all enemies within its sightline for {[petrify_len]} seconds when first launched, dealing {[min_petrify_damage]}-{[max_petrify_damage]}.",
-      "effectCn": "使发射时位于弹珠视野范围内的所有敌人石化并造成{[min_petrify_damage]}-{[max_petrify_damage]}伤害，效果持续{[petrify_len]}秒。"
+      "effect": "Petrifies all enemies within its sightline for 15 seconds when first launched, dealing 50-120.",
+      "effectCn": "使发射时位于弹珠视野范围内的所有敌人石化并造成50-120伤害，效果持续15秒。"
     },
     "Fireworks": {
       "id": "Fireworks",
@@ -2317,8 +2317,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BURN"
       ],
-      "effect": "Explodes into {[min_fireworks]}-{[max_fireworks]} fireworks. Fireworks target random enemies, dealing {[min_firework_damage]} - {[max_firework_damage]} damage and applying 1 stack of burn. Burnt units are dealt {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second.",
-      "effectCn": "命中敌人时分裂出{[min_fireworks]}-{[max_fireworks]}颗烟花。分裂出的烟花将追踪随机敌人，造成{[min_firework_damage]}-{[max_firework_damage]}伤害并施加1层燃烧。每层燃烧每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害。"
+      "effect": "Explodes into 3-6 fireworks. Fireworks target random enemies, dealing 20 - 30 damage and applying 1 stack of burn. Burnt units are dealt 7-11 damage per stack per second.",
+      "effectCn": "命中敌人时分裂出3-6颗烟花。分裂出的烟花将追踪随机敌人，造成20-30伤害并施加1层燃烧。每层燃烧每秒造成7-11伤害。"
     },
     "Venom": {
       "id": "Venom",
@@ -2354,8 +2354,8 @@
         "STATUS_EFFECT.POISON",
         "STATUS_EFFECT.SLOW"
       ],
-      "effect": "Applies 1 stack of venom on hit (max {[max_venom_stacks]} stacks). Each stack deals {[min_venom_damage]}-{[max_venom_damage]} damage per second and slows down enemies.",
-      "effectCn": "命中时施加1层剧毒（最高{[max_venom_stacks]}层）。每层剧毒每秒造成{[min_venom_damage]}-{[max_venom_damage]}伤害，并且使敌人减速。"
+      "effect": "Applies 1 stack of venom on hit (max 8 stacks). Each stack deals 3-6 damage per second and slows down enemies.",
+      "effectCn": "命中时施加1层剧毒（最高8层）。每层剧毒每秒造成3-6伤害，并且使敌人减速。"
     },
     "Heart Swallower": {
       "id": "Heart Swallower",
@@ -2391,8 +2391,8 @@
         "DAMAGE_TYPE.BLEED"
       ],
       "statusEffects": [],
-      "effect": "Saps enemies on hit, with a {[lifesteal_chance]} chance of stealing {[lifesteal_heal]} health and reducing their attack damage by {[reduce_dmg_pct]}. Lifesteal chance only applies once per enemy.",
-      "effectCn": "命中敌人时，有{[lifesteal_chance]}几率窃取{[lifesteal_heal]}点生命值，并使敌人的攻击伤害降低{[reduce_dmg_pct]}。吸血几率只能对每名敌人作用1次。"
+      "effect": "Saps enemies on hit, with a 400 chance of stealing 1 health and reducing their attack damage by 20. Lifesteal chance only applies once per enemy.",
+      "effectCn": "命中敌人时，有400几率窃取1点生命值，并使敌人的攻击伤害降低20。吸血几率只能对每名敌人作用1次。"
     },
     "Banished Flame": {
       "id": "Banished Flame",
@@ -2426,8 +2426,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BURN"
       ],
-      "effect": "Add 1 stack of darkflame on hit for {[burn_length]} seconds (max {[max_burn_stacks]} stacks). Darkflame deals {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second. When the darkflame goes out, it deals {[min_darkflame_burst]}-{[max_darkflame_burst]} to the enemy.",
-      "effectCn": "命中时施加1层暗焰，效果持续{[burn_length]}秒（最高{[max_burn_stacks]}层）。每层暗焰每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害。暗焰熄灭时将对敌人造成{[min_darkflame_burst]}-{[max_darkflame_burst]}伤害。"
+      "effect": "Add 1 stack of darkflame on hit for 2 seconds (max 6 stacks). Darkflame deals 1-30 damage per stack per second. When the darkflame goes out, it deals 1-100 to the enemy.",
+      "effectCn": "命中时施加1层暗焰，效果持续2秒（最高6层）。每层暗焰每秒造成1-30伤害。暗焰熄灭时将对敌人造成1-100伤害。"
     },
     "Timestop": {
       "id": "Timestop",
@@ -2461,8 +2461,8 @@
       "statusEffects": [
         "STATUS_EFFECT.FROZEN"
       ],
-      "effect": "Freezes everything on the field for {[time_snare_length]} seconds but destroys itself after hitting an enemy. Has a {[cooldown_length]} second cooldown before it can be shot again.",
-      "effectCn": "使场上的所有目标冻结{[time_snare_length]}秒，但是弹珠将在命中敌人后自毁。每次发射后需要等待{[cooldown_length]}秒冷却时间。"
+      "effect": "Freezes everything on the field for 50 seconds but destroys itself after hitting an enemy. Has a 30 second cooldown before it can be shot again.",
+      "effectCn": "使场上的所有目标冻结50秒，但是弹珠将在命中敌人后自毁。每次发射后需要等待30秒冷却时间。"
     },
     "Warp": {
       "id": "Warp",
@@ -2495,8 +2495,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BLIND"
       ],
-      "effect": "After each hit, warps to a random spot on the field and speeds up by {[base_speed]}",
-      "effectCn": "每次命中敌人后，弹珠将跃迁至场上的随机位置并获得{[base_speed]}速度提升。"
+      "effect": "After each hit, warps to a random spot on the field and speeds up by 5",
+      "effectCn": "每次命中敌人后，弹珠将跃迁至场上的随机位置并获得5速度提升。"
     },
     "Erosion": {
       "id": "Erosion",
@@ -2528,8 +2528,8 @@
         "DAMAGE_TYPE.WIND"
       ],
       "statusEffects": [],
-      "effect": "Passes through enemies. Deals {[damage_pct]} of enemy's current health as bonus damage on hit.",
-      "effectCn": "穿过敌人。命中时造成等同于敌人当前生命值的{[damage_pct]}的额外伤害。"
+      "effect": "Passes through enemies. Deals 3 of enemy's current health as bonus damage on hit.",
+      "effectCn": "穿过敌人。命中时造成等同于敌人当前生命值的3的额外伤害。"
     },
     "Offspring": {
       "id": "Offspring",
@@ -2560,8 +2560,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Splits into a clone on hit {[cell_limit]} times.",
-      "effectCn": "被击中{[cell_limit]}次后分裂出1颗相同的弹珠。"
+      "effect": "Splits into a clone on hit 4 times.",
+      "effectCn": "被击中4次后分裂出1颗相同的弹珠。"
     },
     "Flesh Mound": {
       "id": "Flesh Mound",
@@ -2592,8 +2592,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Emits a fleshy baby ball in a random direction every {[spawn_rate]} seconds.",
-      "effectCn": "每隔{[spawn_rate]}秒朝随机方向发射一颗肉块迷你弹珠。"
+      "effect": "Emits a fleshy baby ball in a random direction every 10 seconds.",
+      "effectCn": "每隔10秒朝随机方向发射一颗肉块迷你弹珠。"
     },
     "Zombie": {
       "id": "Zombie",
@@ -2624,8 +2624,8 @@
         "DAMAGE_TYPE.VAMPIRE"
       ],
       "statusEffects": [],
-      "effect": "Infects enemies on hit, giving them a {[zombie_chance]} chance to turn into a friendly zombie on death",
-      "effectCn": "命中时感染敌人，被感染的敌人在死亡时有{[zombie_chance]}几率转化为1个友方僵尸。"
+      "effect": "Infects enemies on hit, giving them a 40 chance to turn into a friendly zombie on death",
+      "effectCn": "命中时感染敌人，被感染的敌人在死亡时有40几率转化为1个友方僵尸。"
     },
     "Nuclear Bomb": {
       "id": "Nuclear Bomb",
@@ -2660,8 +2660,8 @@
       "statusEffects": [
         "STATUS_EFFECT.RADIATION"
       ],
-      "effect": "Explodes when hitting an enemy, dealing {[min_bomb_damage]}-{[max_bomb_damage]} damage to nearby enemies and applying 1 stack of radiation to everyone present indefinitely (max {[max_radiation_stacks]} stacks). Each stack of radiation increases damage received by {[radiation_pct]}. Has a {[cooldown_length]} second cooldown.",
-      "effectCn": "命中敌人时爆炸，对周遭敌人造成{[min_bomb_damage]}-{[max_bomb_damage]}伤害，并且对场上所有人施加1层核辐射，核辐射效果将永久持续（最高{[max_radiation_stacks]}层）。每层核辐射使敌人额外承受{[radiation_pct]}伤害。发射后有{[cooldown_length]}秒冷却时间。"
+      "effect": "Explodes when hitting an enemy, dealing 300-500 damage to nearby enemies and applying 1 stack of radiation to everyone present indefinitely (max 5 stacks). Each stack of radiation increases damage received by 10. Has a 3 second cooldown.",
+      "effectCn": "命中敌人时爆炸，对周遭敌人造成300-500伤害，并且对场上所有人施加1层核辐射，核辐射效果将永久持续（最高5层）。每层核辐射使敌人额外承受10伤害。发射后有3秒冷却时间。"
     },
     "Black Hole": {
       "id": "Black Hole",
@@ -2702,8 +2702,8 @@
         "DAMAGE_TYPE.DARK"
       ],
       "statusEffects": [],
-      "effect": "Instantly kills the first non-boss enemy that it hits, but destroys itself afterwards. Has a {[cooldown_length]} second cooldown before it can be shot again.",
-      "effectCn": "立即击杀命中的第一个敌人（非Boss），但是之后将自毁。每次发射后需要等待{[cooldown_length]}秒冷却时间。"
+      "effect": "Instantly kills the first non-boss enemy that it hits, but destroys itself afterwards. Has a 7 second cooldown before it can be shot again.",
+      "effectCn": "立即击杀命中的第一个敌人（非Boss），但是之后将自毁。每次发射后需要等待7秒冷却时间。"
     },
     "Satan": {
       "id": "Satan",
@@ -2739,8 +2739,8 @@
       "statusEffects": [
         "STATUS_EFFECT.CHARM"
       ],
-      "effect": "While active, add 1 stack of burn to all active enemies per second (max {[max_burn_stacks]} stacks), dealing {[min_burn_damage]}-{[max_burn_damage]} damage per stack per second and make them go berserk, dealing {[min_berserk_damage]}-{[max_berserk_damage]} damage to adjacent enemies every second.",
-      "effectCn": "存在于场上时，每秒对所有敌人施加1层燃烧（最高{[max_burn_stacks]}层），每层燃烧每秒造成{[min_burn_damage]}-{[max_burn_damage]}伤害，除此以外使敌人狂暴，狂暴的敌人将对毗邻的其他敌人造成每秒{[min_berserk_damage]}-{[max_berserk_damage]}伤害。"
+      "effect": "While active, add 1 stack of burn to all active enemies per second (max 5 stacks), dealing 10-20 damage per stack per second and make them go berserk, dealing 15-24 damage to adjacent enemies every second.",
+      "effectCn": "存在于场上时，每秒对所有敌人施加1层燃烧（最高5层），每层燃烧每秒造成10-20伤害，除此以外使敌人狂暴，狂暴的敌人将对毗邻的其他敌人造成每秒15-24伤害。"
     },
     "Nosferatu": {
       "id": "Nosferatu",
@@ -2778,8 +2778,8 @@
       "statusEffects": [
         "STATUS_EFFECT.BLEED"
       ],
-      "effect": "Spawns a vampire bat each bounce. Vampire bats fly towards a random enemy, dealing {[min_vampire_bat_damage]}-{[max_vampire_bat_damage]} damage on hit, turning into a Vampire Lord.",
-      "effectCn": "每次反弹时生成1只吸血蝙蝠。吸血蝙蝠将飞向一名随机敌人，命中时造成{[min_vampire_bat_damage]}-{[max_vampire_bat_damage]}伤害，之后蝙蝠将变成1颗吸血鬼领主。"
+      "effect": "Spawns a vampire bat each bounce. Vampire bats fly towards a random enemy, dealing 132-176 damage on hit, turning into a Vampire Lord.",
+      "effectCn": "每次反弹时生成1只吸血蝙蝠。吸血蝙蝠将飞向一名随机敌人，命中时造成132-176伤害，之后蝙蝠将变成1颗吸血鬼领主。"
     },
     "Banshee": {
       "id": "Banshee",
@@ -2814,8 +2814,8 @@
       "statusEffects": [
         "STATUS_EFFECT.CURSE"
       ],
-      "effect": "Curses all enemies while on the field when launched. Cursed enemies are dealt {[min_curse_damage]}-{[max_curse_damage]} after being hit {[curse_delay]} times.",
-      "effectCn": "发射后诅咒场上的所有敌人。被诅咒的敌人在受到{[curse_delay]}次攻击后将承受{[min_curse_damage]}-{[max_curse_damage]}伤害。"
+      "effect": "Curses all enemies while on the field when launched. Cursed enemies are dealt 150-300 after being hit 6 times.",
+      "effectCn": "发射后诅咒场上的所有敌人。被诅咒的敌人在受到6次攻击后将承受150-300伤害。"
     },
     "Reaper": {
       "id": "Reaper",
@@ -2849,8 +2849,8 @@
         "DAMAGE_TYPE.INSTANT_KILL"
       ],
       "statusEffects": [],
-      "effect": "Has a {[kill_chance]} chance to kill enemies on impact, healing you for {[kill_heal]} health.",
-      "effectCn": "撞击目标时有{[kill_chance]}几率立即杀死敌人，并为你恢复{[kill_heal]}生命值。"
+      "effect": "Has a 10 chance to kill enemies on impact, healing you for 5 health.",
+      "effectCn": "撞击目标时有10几率立即杀死敌人，并为你恢复5生命值。"
     },
     "Sniper": {
       "id": "Sniper",
@@ -2883,8 +2883,8 @@
         "DAMAGE_TYPE.NORMAL"
       ],
       "statusEffects": [],
-      "effect": "Pierces enemies and shoots {[min_babies]}-{[max_babies]} sniper baby balls after hitting a wall. Sniper baby balls pierce enemies but are destroyed upon hitting a wall.",
-      "effectCn": "击中墙壁后穿透敌人并射出{[min_babies]}-{[max_babies]}枚狙击手迷你弹珠。狙击手迷你弹珠可以穿透敌人，但碰到墙壁后立即摧毁。"
+      "effect": "Pierces enemies and shoots 3-7 sniper baby balls after hitting a wall. Sniper baby balls pierce enemies but are destroyed upon hitting a wall.",
+      "effectCn": "击中墙壁后穿透敌人并射出3-7枚狙击手迷你弹珠。狙击手迷你弹珠可以穿透敌人，但碰到墙壁后立即摧毁。"
     },
     "Time Bomb": {
       "id": "Time Bomb",
@@ -2915,8 +2915,8 @@
         "DAMAGE_TYPE.BOMB"
       ],
       "statusEffects": [],
-      "effect": "Throws a time bomb every few seconds, which explodes after a delay, dealing {[min_bomb_damage]}-{[max_bomb_damage]} damage to nearby enemies.",
-      "effectCn": "每隔数秒投掷一枚时间炸弹，炸弹将在短暂延迟后引爆，对附近敌人造成{[min_bomb_damage]}-{[max_bomb_damage]}伤害。"
+      "effect": "Throws a time bomb every few seconds, which explodes after a delay, dealing 80-120 damage to nearby enemies.",
+      "effectCn": "每隔数秒投掷一枚时间炸弹，炸弹将在短暂延迟后引爆，对附近敌人造成80-120伤害。"
     },
     "Tumor": {
       "id": "Tumor",
@@ -2950,8 +2950,8 @@
       "statusEffects": [
         "STATUS_EFFECT.RADIATION"
       ],
-      "effect": "Applies tumor on hit. Enemies with a tumor die after {[tumor_length]} seconds (except for bosses).",
-      "effectCn": "命中时施加肿瘤。受肿瘤影响的敌人（除Boss以外）将在{[tumor_length]}秒后死亡。"
+      "effect": "Applies tumor on hit. Enemies with a tumor die after 40 seconds (except for bosses).",
+      "effectCn": "命中时施加肿瘤。受肿瘤影响的敌人（除Boss以外）将在40秒后死亡。"
     },
     "X Ray": {
       "id": "X Ray",
@@ -2986,8 +2986,8 @@
       "statusEffects": [
         "STATUS_EFFECT.RADIATION"
       ],
-      "effect": "Emits an X-shaped laser on hit, which deals {[min_laser_damage]}-{[max_laser_damage]} damage to enemies and applies 1 stack of radiation (max {[max_radiation_stacks]} stacks). Radiation causes enemies to receive {[radiation_pct]} more damage from all sources per stack.",
-      "effectCn": "命中时施放一道X形激光，激光将对敌人造成{[min_laser_damage]}-{[max_laser_damage]}伤害，并且施加1层核辐射（最高{[max_radiation_stacks]}层）。每层核辐射使敌人额外承受{[radiation_pct]}的所有来源伤害。"
+      "effect": "Emits an X-shaped laser on hit, which deals 50-75 damage to enemies and applies 1 stack of radiation (max 5 stacks). Radiation causes enemies to receive 10 more damage from all sources per stack.",
+      "effectCn": "命中时施放一道X形激光，激光将对敌人造成50-75伤害，并且施加1层核辐射（最高5层）。每层核辐射使敌人额外承受10的所有来源伤害。"
     },
     "Laser Cutter": {
       "id": "Laser Cutter",
@@ -3029,8 +3029,8 @@
         "DAMAGE_TYPE.LASER"
       ],
       "statusEffects": [],
-      "effect": "Constantly emits a laser in front of it, which deals {[min_laser_damage]}-{[max_laser_damage]} per second.",
-      "effectCn": "持续朝正前方发射激光，每秒造成{[min_laser_damage]}-{[max_laser_damage]}伤害。"
+      "effect": "Constantly emits a laser in front of it, which deals 100-150 per second.",
+      "effectCn": "持续朝正前方发射激光，每秒造成100-150伤害。"
     },
     "Elemental": {
       "id": "Elemental",

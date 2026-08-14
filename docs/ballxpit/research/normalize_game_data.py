@@ -9,6 +9,7 @@ Outputs a single JSON with:
 """
 
 import json
+import re
 from pathlib import Path
 from collections import defaultdict
 
@@ -18,6 +19,50 @@ def load_json(path: str):
     if not file_path.exists():
         raise FileNotFoundError(f"data file not found: {path}")
     return json.loads(file_path.read_text(encoding="utf-8"))
+
+
+def load_effect_properties(path: str):
+    """Load EFFECT_PROPERTIES from a JS/JSON-like file."""
+    file_path = Path(path)
+    if not file_path.exists():
+        return {}
+    text = file_path.read_text(encoding="utf-8")
+    # Find the object literal: const EFFECT_PROPERTIES = { ... };
+    start_marker = "const EFFECT_PROPERTIES ="
+    marker_idx = text.find(start_marker)
+    if marker_idx == -1:
+        return {}
+    start = text.find('{', marker_idx)
+    end = text.find('};', start)
+    if start == -1 or end == -1 or start >= end:
+        return {}
+    try:
+        return json.loads(text[start:end + 1])
+    except json.JSONDecodeError:
+        return {}
+
+
+def substitute_effects(balls, effect_properties):
+    """Replace {[property]} placeholders in effect/effectCn with numeric values."""
+    placeholder_pattern = re.compile(r"\{\[([a-zA-Z_][a-zA-Z0-9_]*)\]\}")
+
+    def replace(text, ball_name):
+        if not text:
+            return text
+        props = effect_properties.get(ball_name, {})
+
+        def repl(match):
+            key = match.group(1)
+            value = props.get(key)
+            if value is None:
+                return match.group(0)
+            return str(value)
+
+        return placeholder_pattern.sub(repl, text)
+
+    for ball in balls.values():
+        ball["effect"] = replace(ball.get("effect", ""), ball["name"])
+        ball["effectCn"] = replace(ball.get("effectCn", ""), ball["name"])
 
 
 def ensure_ball(balls, name, name_cn=None, img=None, tier=0, released=False):
@@ -45,6 +90,7 @@ def ensure_ball(balls, name, name_cn=None, img=None, tier=0, released=False):
 def normalize():
     root = Path(__file__).resolve().parent
     raw = load_json(str(root / "gameData.json"))
+    effect_properties = load_effect_properties(str(root / "effectProperties.js"))
 
     # Naturalist update (game version 1.301, Aug 2026) made Flesh and several
     # related balls/evolutions available. Patch the imported data accordingly.
@@ -187,6 +233,8 @@ def normalize():
         "balls": {k: v for k, v in balls.items()},
         "baseBalls": [b["name"] for b in raw.get("baseBalls", []) if b.get("released", False)],
     }
+
+    substitute_effects(output["balls"], effect_properties)
 
     output_path = root.parent.parent.parent / "frontend" / "public" / "data" / "ballxpit.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)

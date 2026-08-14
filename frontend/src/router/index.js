@@ -532,6 +532,16 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/ball-x-pit',
+      name: 'ball-x-pit',
+      component: () => import('../views/tools/BallxPit.vue'),
+      meta: {
+        title: 'BALL x PIT 合成表 - 弹珠进化路线查询工具',
+        description: 'BALL x PIT 弹珠合成表，列出基础弹珠到高级进化的所有合成路线，点击展开下一级，支持中英文名称搜索。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

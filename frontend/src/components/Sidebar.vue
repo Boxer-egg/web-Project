@@ -127,6 +127,12 @@ const groups = [
     ]
   },
   {
+    title: '游戏辅助',
+    tools: [
+      { path: '/tools/ball-x-pit', name: 'BALL x PIT 合成表', icon: '🎱', keywords: ['ball', 'pit', 'hecheng', '合成', 'danzu', 'evolve', 'game'] },
+    ]
+  },
+  {
     title: '健康生活',
     tools: [
       { path: '/tools/bmi', name: 'BMI 计算', icon: '⚖️', keywords: ['bmi', 'shengao', 'tizhong', 'body', 'mass', 'index', 'jisuan'] },

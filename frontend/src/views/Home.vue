@@ -52,6 +52,7 @@ const tools = [
   { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', desc: '根据生产日期和保质期计算过期日期', category: '转换' },
   { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', desc: '科目一/科目四 顺序/随机/模拟考试/错题本', category: '驾考' },
   { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', desc: '分类浏览交通标志与说明', category: '驾考' },
+  { path: '/tools/ball-x-pit', name: 'BALL x PIT 合成表', icon: '🎱', desc: '弹珠合成路线，点击展开下一级进化', category: '游戏' },
 ]
 
 const categories = [
@@ -156,6 +157,15 @@ const categories = [
     paths: [
       '/driving/quiz',
       '/driving/traffic-signs',
+    ]
+  },
+  {
+    key: 'game',
+    name: '游戏辅助',
+    icon: '🎮',
+    desc: 'BALL x PIT 等游戏数据查询与合成工具',
+    paths: [
+      '/tools/ball-x-pit',
     ]
   },
 ]

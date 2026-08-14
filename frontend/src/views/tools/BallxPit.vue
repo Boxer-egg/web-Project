@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import BallTree from '../../components/BallTree.vue'
+import BallFusion from '../../components/BallFusion.vue'
 import { TAG_LABELS } from '../../utils/ballxpitTags.js'
 
 const data = ref({ balls: {}, baseBalls: [] })
@@ -9,6 +10,7 @@ const search = useStorage('ballxpit-search', '')
 const expanded = useStorage('ballxpit-expanded', [])
 const selected = useStorage('ballxpit-selected', null)
 const lang = useStorage('ballxpit-lang', 'cn')
+const mode = useStorage('ballxpit-mode', 'evolution')
 
 onMounted(async () => {
   try {
@@ -70,15 +72,28 @@ function onSelect(name) {
   }
 }
 
+function ballMatches(b, term) {
+  if (!b) return false
+  const tagText = b.tags.map(t => `${t} ${TAG_LABELS[t] || ''}`).join(' ')
+  const text = `${b.name} ${b.nameCn || ''} ${tagText} ${b.effect || ''} ${b.effectCn || ''}`.toLowerCase()
+  return text.includes(term)
+}
+
+function hasMatchingDescendant(name, term, visited = new Set()) {
+  if (visited.has(name)) return false
+  visited.add(name)
+  const b = balls.value[name]
+  if (!b) return false
+  if (ballMatches(b, term)) return true
+  if (!b.children || !b.children.length) return false
+  return b.children.some(c => hasMatchingDescendant(c, term, new Set(visited)))
+}
+
 function filteredBaseBalls() {
   const term = search.value.trim().toLowerCase()
   const list = ballList(baseBalls.value)
   if (!term) return list
-  return list.filter(b => {
-    const tagText = b.tags.map(t => `${t} ${TAG_LABELS[t] || ''}`).join(' ')
-    const text = `${b.name} ${b.nameCn || ''} ${tagText}`.toLowerCase()
-    return text.includes(term)
-  })
+  return list.filter(b => ballMatches(b, term) || hasMatchingDescendant(b.name, term))
 }
 
 const baseBallList = computed(() => filteredBaseBalls())
@@ -90,7 +105,7 @@ const baseBallList = computed(() => filteredBaseBalls())
       <div>
         <h1>🎱 BALL x PIT 合成表</h1>
         <p class="tool-desc">
-          点击弹珠展开下一级合成路线，竖向从基础弹珠到高级进化。
+          切换「进化」查看弹珠的进阶路线，或切换「融合」查看弹珠的合成配方。
         </p>
       </div>
       <div class="header-actions">
@@ -115,6 +130,18 @@ const baseBallList = computed(() => filteredBaseBalls())
           placeholder="搜索弹珠名称 / 标签..."
         />
         <button v-if="search" class="search-clear" @click="clearSearch">×</button>
+      </div>
+      <div class="mode-toggle">
+        <button
+          class="btn btn-sm"
+          :class="mode === 'evolution' ? 'btn-primary' : 'btn-secondary'"
+          @click="mode = 'evolution'"
+        >进化</button>
+        <button
+          class="btn btn-sm"
+          :class="mode === 'fusion' ? 'btn-primary' : 'btn-secondary'"
+          @click="mode = 'fusion'"
+        >融合</button>
       </div>
       <button v-if="selected" class="btn btn-secondary" @click="selected = null">
         取消选择
@@ -149,11 +176,12 @@ const baseBallList = computed(() => filteredBaseBalls())
       <div class="tree-header">
         <img :src="imgUrl(selectedBall.img)" class="tree-icon" :alt="displayName(selectedBall)" />
         <div>
-          <h2>{{ displayName(selectedBall) }} 的合成路线</h2>
-          <p class="tree-meta">点击下方卡片可继续展开下一级</p>
+          <h2>{{ displayName(selectedBall) }} 的{{ mode === 'evolution' ? '进化路线' : '融合配方' }}</h2>
+          <p class="tree-meta">{{ mode === 'evolution' ? '点击下方卡片可继续展开下一级' : '查看该弹珠的合成方式与可参与合成的配方' }}</p>
         </div>
       </div>
       <BallTree
+        v-if="mode === 'evolution'"
         :balls="balls"
         :node-name="selectedBall.name"
         :expanded="expanded"
@@ -163,10 +191,16 @@ const baseBallList = computed(() => filteredBaseBalls())
         @toggle="onToggle"
         @select="onSelect"
       />
+      <BallFusion
+        v-else
+        :balls="balls"
+        :ball-name="selectedBall.name"
+        :lang="lang"
+      />
     </div>
 
     <div v-if="!selectedBall" class="hint">
-      提示：点击上方基础弹珠查看完整合成路线。使用搜索框可快速过滤。
+      提示：点击上方基础弹珠查看进化路线或融合配方。使用搜索框可快速过滤。
     </div>
   </div>
 </template>

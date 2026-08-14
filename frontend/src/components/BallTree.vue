@@ -29,6 +29,11 @@ function imgUrl(img) {
   return `/images/ballxpit/${img}`
 }
 
+function effectDisplay(b) {
+  if (!b) return ''
+  return props.lang === 'en' ? (b.effect || '') : (b.effectCn || b.effect || '')
+}
+
 function hasChildren(b) {
   return b && b.children && b.children.length > 0
 }
@@ -45,6 +50,8 @@ function matchesSearch(name) {
   return (
     b.name.toLowerCase().includes(term) ||
     (b.nameCn || '').toLowerCase().includes(term) ||
+    (b.effect || '').toLowerCase().includes(term) ||
+    (b.effectCn || '').toLowerCase().includes(term) ||
     b.tags.some(t => {
       const label = (TAG_LABELS[t] || t).toLowerCase()
       return t.toLowerCase().includes(term) || label.includes(term)
@@ -68,6 +75,7 @@ function hasMatchingDescendant(name) {
 }
 
 function onCardClick(name) {
+  if (!hasChildren(ball(name))) return
   emit('select', name)
 }
 
@@ -90,7 +98,7 @@ function tierClass(tier) {
     >
       <div
         class="tree-node"
-        :class="{ expanded: isExpanded(childName) }"
+        :class="{ expanded: isExpanded(childName), leaf: !hasChildren(ball(childName)) }"
         @click="onCardClick(childName)"
       >
         <div class="node-line" :style="{ marginLeft: `${depth * 24}px` }">
@@ -110,6 +118,9 @@ function tierClass(tier) {
             <div v-if="ball(childName).tags.length" class="node-tags">
               <span v-for="tag in ball(childName).tags" :key="tag" class="tag">{{ tagDisplayName(tag, props.lang) }}</span>
             </div>
+            <div v-if="effectDisplay(ball(childName))" class="node-effect">
+              {{ effectDisplay(ball(childName)) }}
+            </div>
           </div>
           <button
             v-if="hasChildren(ball(childName))"
@@ -122,7 +133,7 @@ function tierClass(tier) {
         </div>
       </div>
       <BallTree
-        v-if="hasChildren(ball(childName)) && isExpanded(childName)"
+        v-if="hasChildren(ball(childName)) && (isExpanded(childName) || (props.search.trim() && hasMatchingDescendant(childName)))"
         :balls="balls"
         :node-name="childName"
         :expanded="expanded"
@@ -162,6 +173,12 @@ export default {
 }
 .tree-node:hover {
   border-color: var(--accent);
+}
+.tree-node.leaf {
+  cursor: default;
+}
+.tree-node.leaf:hover {
+  border-color: var(--border);
 }
 .tree-node.expanded {
   border-color: var(--accent);
@@ -220,6 +237,12 @@ export default {
   background: var(--bg-primary);
   color: var(--text-muted);
   border: 1px solid var(--border);
+}
+.node-effect {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  line-height: 1.5;
 }
 .expand-btn {
   padding: 4px 10px;

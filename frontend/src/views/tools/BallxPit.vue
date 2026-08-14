@@ -89,14 +89,16 @@ function hasMatchingDescendant(name, term, visited = new Set()) {
   return b.children.some(c => hasMatchingDescendant(c, term, new Set(visited)))
 }
 
-function filteredBaseBalls() {
+function filteredBalls() {
   const term = search.value.trim().toLowerCase()
   const list = ballList(baseBalls.value)
   if (!term) return list
-  return list.filter(b => ballMatches(b, term) || hasMatchingDescendant(b.name, term))
+  // 全局搜索：返回所有匹配的弹珠（不限于基础弹珠）
+  return Object.values(balls.value).filter(b => ballMatches(b, term))
 }
 
-const baseBallList = computed(() => filteredBaseBalls())
+const ballListForGrid = computed(() => filteredBalls())
+const isSearching = computed(() => search.value.trim().length > 0)
 </script>
 
 <template>
@@ -127,21 +129,9 @@ const baseBallList = computed(() => filteredBaseBalls())
         <input
           v-model="search"
           type="text"
-          placeholder="搜索弹珠名称 / 标签..."
+          placeholder="搜索弹珠名称 / 标签 / 效果..."
         />
         <button v-if="search" class="search-clear" @click="clearSearch">×</button>
-      </div>
-      <div class="mode-toggle">
-        <button
-          class="btn btn-sm"
-          :class="mode === 'evolution' ? 'btn-primary' : 'btn-secondary'"
-          @click="mode = 'evolution'"
-        >进化</button>
-        <button
-          class="btn btn-sm"
-          :class="mode === 'fusion' ? 'btn-primary' : 'btn-secondary'"
-          @click="mode = 'fusion'"
-        >融合</button>
       </div>
       <button v-if="selected" class="btn btn-secondary" @click="selected = null">
         取消选择
@@ -153,13 +143,14 @@ const baseBallList = computed(() => filteredBaseBalls())
 
     <div class="tier-section">
       <h2 class="tier-title">
-        <span class="tier-badge tier-0">T0</span>
-        基础弹珠
-        <span class="tier-count">{{ baseBallList.length }}</span>
+        <span v-if="!isSearching" class="tier-badge tier-0">T0</span>
+        <span v-if="isSearching" class="tier-badge tier-2">搜</span>
+        {{ isSearching ? '搜索结果' : '基础弹珠' }}
+        <span class="tier-count">{{ ballListForGrid.length }}</span>
       </h2>
       <div class="ball-grid">
         <div
-          v-for="ball in baseBallList"
+          v-for="ball in ballListForGrid"
           :key="ball.name"
           class="ball-card"
           :class="{ active: selected === ball.name }"
@@ -175,9 +166,21 @@ const baseBallList = computed(() => filteredBaseBalls())
     <div v-if="selectedBall" class="tree-panel">
       <div class="tree-header">
         <img :src="imgUrl(selectedBall.img)" class="tree-icon" :alt="displayName(selectedBall)" />
-        <div>
+        <div class="tree-title">
           <h2>{{ displayName(selectedBall) }} 的{{ mode === 'evolution' ? '进化路线' : '融合配方' }}</h2>
           <p class="tree-meta">{{ mode === 'evolution' ? '点击下方卡片可继续展开下一级' : '查看该弹珠的合成方式与可参与合成的配方' }}</p>
+        </div>
+        <div class="tree-mode-toggle">
+          <button
+            class="btn btn-sm"
+            :class="mode === 'evolution' ? 'btn-primary' : 'btn-secondary'"
+            @click="mode = 'evolution'"
+          >进化</button>
+          <button
+            class="btn btn-sm"
+            :class="mode === 'fusion' ? 'btn-primary' : 'btn-secondary'"
+            @click="mode = 'fusion'"
+          >融合</button>
         </div>
       </div>
       <BallTree
@@ -336,6 +339,18 @@ export default {
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
+}
+.tree-title {
+  flex: 1;
+  min-width: 0;
+}
+.tree-title h2 {
+  margin: 0;
+}
+.tree-mode-toggle {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 .tree-icon {
   width: 56px;

@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import BallTree from '../../components/BallTree.vue'
 import BallFusion from '../../components/BallFusion.vue'
+import EvolutionMatrix from '../../components/EvolutionMatrix.vue'
 import { TAG_LABELS } from '../../utils/ballxpitTags.js'
 
 const data = ref({ balls: {}, baseBalls: [] })
@@ -11,6 +12,7 @@ const expanded = useStorage('ballxpit-expanded', [])
 const selected = useStorage('ballxpit-selected', null)
 const lang = useStorage('ballxpit-lang', 'cn')
 const mode = useStorage('ballxpit-mode', 'evolution')
+const viewMode = useStorage('ballxpit-view', 'list')
 
 onMounted(async () => {
   try {
@@ -72,6 +74,14 @@ function onSelect(name) {
   }
 }
 
+function selectFromMatrix(name) {
+  selected.value = name
+  viewMode.value = 'list'
+  if (!expanded.value.includes(name)) {
+    expanded.value.push(name)
+  }
+}
+
 function ballMatches(b, term) {
   if (!b) return false
   const tagText = b.tags.map(t => `${t} ${TAG_LABELS[t] || ''}`).join(' ')
@@ -107,7 +117,7 @@ const isSearching = computed(() => search.value.trim().length > 0)
       <div>
         <h1>🎱 BALL x PIT 合成表</h1>
         <p class="tool-desc">
-          切换「进化」查看弹珠的进阶路线，或切换「融合」查看弹珠的合成配方。
+          切换「列表」查看弹珠进阶路线，或切换「矩阵」一览所有基础弹珠两两合成结果。
         </p>
       </div>
       <div class="header-actions">
@@ -133,78 +143,101 @@ const isSearching = computed(() => search.value.trim().length > 0)
         />
         <button v-if="search" class="search-clear" @click="clearSearch">×</button>
       </div>
-      <button v-if="selected" class="btn btn-secondary" @click="selected = null">
+      <div class="view-toggle">
+        <button
+          class="btn btn-sm"
+          :class="viewMode === 'list' ? 'btn-primary' : 'btn-secondary'"
+          @click="viewMode = 'list'"
+        >列表</button>
+        <button
+          class="btn btn-sm"
+          :class="viewMode === 'matrix' ? 'btn-primary' : 'btn-secondary'"
+          @click="viewMode = 'matrix'"
+        >矩阵</button>
+      </div>
+      <button v-if="selected && viewMode === 'list'" class="btn btn-secondary" @click="selected = null">
         取消选择
       </button>
-      <button v-if="expanded.length" class="btn btn-secondary" @click="expanded = []">
+      <button v-if="expanded.length && viewMode === 'list'" class="btn btn-secondary" @click="expanded = []">
         全部收起
       </button>
     </div>
 
-    <div class="tier-section">
-      <h2 class="tier-title">
-        <span v-if="!isSearching" class="tier-badge tier-0">T0</span>
-        <span v-if="isSearching" class="tier-badge tier-2">搜</span>
-        {{ isSearching ? '搜索结果' : '基础弹珠' }}
-        <span class="tier-count">{{ ballListForGrid.length }}</span>
-      </h2>
-      <div class="ball-grid">
-        <div
-          v-for="ball in ballListForGrid"
-          :key="ball.name"
-          class="ball-card"
-          :class="{ active: selected === ball.name }"
-          @click="selectBase(ball.name)"
-        >
-          <img :src="imgUrl(ball.img)" :alt="displayName(ball)" class="ball-icon" />
-          <div class="ball-name">{{ displayName(ball) }}</div>
-          <div v-if="ball.children.length" class="ball-count">{{ ball.children.length }} 路线</div>
+    <template v-if="viewMode === 'list'">
+      <div class="tier-section">
+        <h2 class="tier-title">
+          <span v-if="!isSearching" class="tier-badge tier-0">T0</span>
+          <span v-if="isSearching" class="tier-badge tier-2">搜</span>
+          {{ isSearching ? '搜索结果' : '基础弹珠' }}
+          <span class="tier-count">{{ ballListForGrid.length }}</span>
+        </h2>
+        <div class="ball-grid">
+          <div
+            v-for="ball in ballListForGrid"
+            :key="ball.name"
+            class="ball-card"
+            :class="{ active: selected === ball.name }"
+            @click="selectBase(ball.name)"
+          >
+            <img :src="imgUrl(ball.img)" :alt="displayName(ball)" class="ball-icon" />
+            <div class="ball-name">{{ displayName(ball) }}</div>
+            <div v-if="ball.children.length" class="ball-count">{{ ball.children.length }} 路线</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div v-if="selectedBall" class="tree-panel">
-      <div class="tree-header">
-        <img :src="imgUrl(selectedBall.img)" class="tree-icon" :alt="displayName(selectedBall)" />
-        <div class="tree-title">
-          <h2>{{ displayName(selectedBall) }} 的{{ mode === 'evolution' ? '进化路线' : '融合配方' }}</h2>
-          <p class="tree-meta">{{ mode === 'evolution' ? '点击下方卡片可继续展开下一级' : '查看该弹珠的合成方式与可参与合成的配方' }}</p>
+      <div v-if="selectedBall" class="tree-panel">
+        <div class="tree-header">
+          <img :src="imgUrl(selectedBall.img)" class="tree-icon" :alt="displayName(selectedBall)" />
+          <div class="tree-title">
+            <h2>{{ displayName(selectedBall) }} 的{{ mode === 'evolution' ? '进化路线' : '融合配方' }}</h2>
+            <p class="tree-meta">{{ mode === 'evolution' ? '点击下方卡片可继续展开下一级' : '查看该弹珠的合成方式与可参与合成的配方' }}</p>
+          </div>
+          <div class="tree-mode-toggle">
+            <button
+              class="btn btn-sm"
+              :class="mode === 'evolution' ? 'btn-primary' : 'btn-secondary'"
+              @click="mode = 'evolution'"
+            >进化</button>
+            <button
+              class="btn btn-sm"
+              :class="mode === 'fusion' ? 'btn-primary' : 'btn-secondary'"
+              @click="mode = 'fusion'"
+            >融合</button>
+          </div>
         </div>
-        <div class="tree-mode-toggle">
-          <button
-            class="btn btn-sm"
-            :class="mode === 'evolution' ? 'btn-primary' : 'btn-secondary'"
-            @click="mode = 'evolution'"
-          >进化</button>
-          <button
-            class="btn btn-sm"
-            :class="mode === 'fusion' ? 'btn-primary' : 'btn-secondary'"
-            @click="mode = 'fusion'"
-          >融合</button>
-        </div>
+        <BallTree
+          v-if="mode === 'evolution'"
+          :balls="balls"
+          :node-name="selectedBall.name"
+          :expanded="expanded"
+          :search="search"
+          :lang="lang"
+          :depth="0"
+          @toggle="onToggle"
+          @select="onSelect"
+        />
+        <BallFusion
+          v-else
+          :balls="balls"
+          :ball-name="selectedBall.name"
+          :lang="lang"
+        />
       </div>
-      <BallTree
-        v-if="mode === 'evolution'"
-        :balls="balls"
-        :node-name="selectedBall.name"
-        :expanded="expanded"
-        :search="search"
-        :lang="lang"
-        :depth="0"
-        @toggle="onToggle"
-        @select="onSelect"
-      />
-      <BallFusion
-        v-else
-        :balls="balls"
-        :ball-name="selectedBall.name"
-        :lang="lang"
-      />
-    </div>
 
-    <div v-if="!selectedBall" class="hint">
-      提示：点击上方基础弹珠查看进化路线或融合配方。使用搜索框可快速过滤。
-    </div>
+      <div v-if="!selectedBall" class="hint">
+        提示：点击上方基础弹珠查看进化路线或融合配方。使用搜索框可快速过滤。
+      </div>
+    </template>
+
+    <EvolutionMatrix
+      v-else
+      :balls="balls"
+      :base-balls="baseBalls"
+      :lang="lang"
+      :selected="selected"
+      @select="selectFromMatrix"
+    />
   </div>
 </template>
 
@@ -348,6 +381,11 @@ export default {
   margin: 0;
 }
 .tree-mode-toggle {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.view-toggle {
   display: flex;
   gap: 8px;
   flex-shrink: 0;

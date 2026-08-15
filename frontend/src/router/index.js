@@ -542,6 +542,16 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/ball-x-pit-passives',
+      name: 'ball-x-pit-passives',
+      component: () => import('../views/tools/BallxPitPassives.vue'),
+      meta: {
+        title: 'BALL x PIT 道具合成表 - 被动道具配方查询工具',
+        description: 'BALL x PIT 被动道具合成表，列出基础道具与高级道具的合成配方，支持中英文名称与效果搜索。',
+        apiPath: '/api/tool'
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: Home,

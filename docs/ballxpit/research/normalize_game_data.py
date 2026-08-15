@@ -42,14 +42,14 @@ def load_effect_properties(path: str):
         return {}
 
 
-def substitute_effects(balls, effect_properties):
+def substitute_effects(items, effect_properties):
     """Replace {[property]} placeholders in effect/effectCn with numeric values."""
     placeholder_pattern = re.compile(r"\{\[([a-zA-Z_][a-zA-Z0-9_]*)\]\}")
 
-    def replace(text, ball_name):
+    def replace(text, item_name):
         if not text:
             return text
-        props = effect_properties.get(ball_name, {})
+        props = effect_properties.get(item_name, {})
 
         def repl(match):
             key = match.group(1)
@@ -60,9 +60,9 @@ def substitute_effects(balls, effect_properties):
 
         return placeholder_pattern.sub(repl, text)
 
-    for ball in balls.values():
-        ball["effect"] = replace(ball.get("effect", ""), ball["name"])
-        ball["effectCn"] = replace(ball.get("effectCn", ""), ball["name"])
+    for item in items.values():
+        item["effect"] = replace(item.get("effect", ""), item["name"])
+        item["effectCn"] = replace(item.get("effectCn", ""), item["name"])
 
 
 def ensure_ball(balls, name, name_cn=None, img=None, tier=0, released=False):
@@ -246,5 +246,91 @@ def normalize():
         print(f"  tier {tier}: {count}")
 
 
+def normalize_passives():
+    root = Path(__file__).resolve().parent
+    raw = load_json(str(root / "gameData.json"))
+    effect_properties = load_effect_properties(str(root / "effectProperties.js"))
+
+    def ensure_item(items, name, name_cn=None, img=None, released=False):
+        if name not in items:
+            items[name] = {
+                "id": name,
+                "name": name,
+                "nameCn": name_cn or name,
+                "img": img or "",
+                "released": released,
+                "effect": "",
+                "effectCn": "",
+                "parents": [],
+                "children": [],
+                "recipes": [],
+            }
+        return items[name]
+
+    items = {}
+
+    # Base passive items
+    for item in raw.get("baseItems", []):
+        if not item.get("released", False):
+            continue
+        name = item["name"]
+        entry = ensure_item(items, name, item.get("nameCn"), item.get("img"), released=True)
+        entry["effect"] = item.get("effect", "")
+        entry["effectCn"] = item.get("effectCn", "")
+
+    # Passive item evolutions (combinations)
+    for evo in raw.get("passiveEvolutions", []):
+        if not evo.get("released", False):
+            continue
+        name = evo["name"]
+        entry = ensure_item(items, name, evo.get("nameCn"), evo.get("img"), released=True)
+        entry["effect"] = evo.get("effect", "")
+        entry["effectCn"] = evo.get("effectCn", "")
+
+        components = evo.get("components", [])
+        recipe = {
+            "result": name,
+            "components": components,
+        }
+        entry["recipes"].append(recipe)
+        for comp in components:
+            entry["parents"].append(comp)
+            ensure_item(items, comp)
+            if name not in items[comp]["children"]:
+                items[comp]["children"].append(name)
+
+    # Deduplicate parents/children/recipes
+    for item in items.values():
+        item["parents"] = list(dict.fromkeys(item["parents"]))
+        item["children"] = list(dict.fromkeys(item["children"]))
+        seen = set()
+        unique = []
+        for r in item["recipes"]:
+            key = tuple(sorted(r["components"]))
+            if key not in seen:
+                seen.add(key)
+                unique.append(r)
+        item["recipes"] = unique
+
+    output = {
+        "version": "1.301",
+        "source": "https://ballxpit-query-tool.pages.dev/",
+        "items": {k: v for k, v in items.items()},
+        "baseItems": [i["name"] for i in raw.get("baseItems", []) if i.get("released", False)],
+    }
+
+    substitute_effects(output["items"], effect_properties)
+
+    output_path = root.parent.parent.parent / "frontend" / "public" / "data" / "ballxpit-passives.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Wrote {output_path}")
+    print(f"  total items: {len(items)}")
+    print(f"  base items: {len(output['baseItems'])}")
+    print(f"  evolutions: {len(items) - len(output['baseItems'])}")
+
+
 if __name__ == "__main__":
     normalize()
+    print()
+    normalize_passives()

@@ -1,0 +1,1056 @@
+{
+  "version": "1.301",
+  "source": "https://ballxpit-query-tool.pages.dev/",
+  "items": {
+    "Everflowing Goblet": {
+      "id": "Everflowing Goblet",
+      "name": "Everflowing Goblet",
+      "nameCn": "不竭圣杯",
+      "img": "everflowingGoblet.png",
+      "released": true,
+      "effect": "You can heal past your max health at 20 efficiency.",
+      "effectCn": "允许通过治疗效果超出最大生命值上限（20效率）。",
+      "parents": [],
+      "children": [
+        "Soul Reaver"
+      ],
+      "recipes": []
+    },
+    "Vampiric Sword": {
+      "id": "Vampiric Sword",
+      "name": "Vampiric Sword",
+      "nameCn": "吸血鬼之剑",
+      "img": "vampiricSword.png",
+      "released": true,
+      "effect": "Each kill heals you by 5. but each shot you take deals 2 damage to you.",
+      "effectCn": "每次击杀敌人将为你恢复5生命值，但是被射中时你将承受2点伤害。",
+      "parents": [],
+      "children": [
+        "Soul Reaver"
+      ],
+      "recipes": []
+    },
+    "Baby Rattle": {
+      "id": "Baby Rattle",
+      "name": "Baby Rattle",
+      "nameCn": "拨浪鼓",
+      "img": "babyRattle.png",
+      "released": true,
+      "effect": "Gain 150x baby balls, but your aim becomes scattered.",
+      "effectCn": "获得150x迷你弹珠，但是开火时无法精确瞄准。",
+      "parents": [],
+      "children": [
+        "Cornucopia"
+      ],
+      "recipes": []
+    },
+    "War Horn": {
+      "id": "War Horn",
+      "name": "War Horn",
+      "nameCn": "战争号角",
+      "img": "warHorn.png",
+      "released": true,
+      "effect": "All baby balls deal 20 more damage",
+      "effectCn": "所有迷你弹珠额外造成20伤害",
+      "parents": [],
+      "children": [
+        "Cornucopia"
+      ],
+      "recipes": []
+    },
+    "Ethereal Cloak": {
+      "id": "Ethereal Cloak",
+      "name": "Ethereal Cloak",
+      "nameCn": "幻影斗篷",
+      "img": "etherealCloak.png",
+      "released": true,
+      "effect": "Balls go through enemies and deal 25 bonus damage until they hit the back of the field",
+      "effectCn": "弹珠能够穿过敌人并造成25额外伤害，此效果持续至弹珠命中屏幕上方的尽头区域。",
+      "parents": [],
+      "children": [
+        "Phantom Regalia"
+      ],
+      "recipes": []
+    },
+    "Ghostly Corset": {
+      "id": "Ghostly Corset",
+      "name": "Ghostly Corset",
+      "nameCn": "幽灵束腰",
+      "img": "ghostlyCorset.png",
+      "released": true,
+      "effect": "Balls go through enemies and deal 20 bonus damage when hitting them from the side",
+      "effectCn": "从两侧命中敌人时，弹珠将穿过敌人并造成20额外伤害",
+      "parents": [],
+      "children": [
+        "Phantom Regalia"
+      ],
+      "recipes": []
+    },
+    "Breastplate": {
+      "id": "Breastplate",
+      "name": "Breastplate",
+      "nameCn": "胸甲",
+      "img": "breastplate.png",
+      "released": true,
+      "effect": "Decrease damage taken by 10",
+      "effectCn": "你承受的伤害减少10",
+      "parents": [],
+      "children": [
+        "Odiferous Shell"
+      ],
+      "recipes": []
+    },
+    "Wretched Onion": {
+      "id": "Wretched Onion",
+      "name": "Wretched Onion",
+      "nameCn": "腐臭洋葱",
+      "img": "wretchedOnion.png",
+      "released": true,
+      "effect": "Deal 6-12 per second to enemies within 2 tiles.",
+      "effectCn": "每秒对2格范围内的敌人造成6-12点伤害",
+      "parents": [],
+      "children": [
+        "Odiferous Shell"
+      ],
+      "recipes": []
+    },
+    "Reacher's Spear": {
+      "id": "Reacher's Spear",
+      "name": "Reacher's Spear",
+      "nameCn": "突刺之矛",
+      "img": "reachersSpear.png",
+      "released": true,
+      "effect": "Increase crit chance to 200 when hitting enemies in the same column as you.",
+      "effectCn": "命中与你处于同一列的敌人时，暴击率提高至200。",
+      "parents": [],
+      "children": [
+        "Gracious Impaler"
+      ],
+      "recipes": []
+    },
+    "Deadeye's Amulet": {
+      "id": "Deadeye's Amulet",
+      "name": "Deadeye's Amulet",
+      "nameCn": "靶眼护符",
+      "img": "deadeyesAmulet.png",
+      "released": true,
+      "effect": "Critical hits deal 10-15 bonus damage.",
+      "effectCn": "暴击造成10-15额外伤害。",
+      "parents": [],
+      "children": [
+        "Gracious Impaler"
+      ],
+      "recipes": []
+    },
+    "Crown of Thorns": {
+      "id": "Crown of Thorns",
+      "name": "Crown of Thorns",
+      "nameCn": "荆棘之冠",
+      "img": "crownOfThorns.png",
+      "released": true,
+      "effect": "Destroy the 2 nearest enemies when you are hit from close range",
+      "effectCn": "承受近距离攻击时，摧毁距离你最近的2个敌人",
+      "parents": [],
+      "children": [
+        "Tormenters Mask"
+      ],
+      "recipes": []
+    },
+    "Spiked Collar": {
+      "id": "Spiked Collar",
+      "name": "Spiked Collar",
+      "nameCn": "尖刺项圈",
+      "img": "spikedCollar.png",
+      "released": true,
+      "effect": "Deal 30-50 to enemies the first time you get into their melee attack range.",
+      "effectCn": "首次进入敌人的近战攻击范围时，对其造成30-50伤害。",
+      "parents": [],
+      "children": [
+        "Tormenters Mask"
+      ],
+      "recipes": []
+    },
+    "Fleet Feet": {
+      "id": "Fleet Feet",
+      "name": "Fleet Feet",
+      "nameCn": "迅捷之靴",
+      "img": "fleetFeet.png",
+      "released": true,
+      "effect": "Increase movement speed by 10 and move at full speed while shooting.",
+      "effectCn": "你的移动速度提高10，并且能够在开火时全速移动。",
+      "parents": [],
+      "children": [
+        "Wings of the Anointed"
+      ],
+      "recipes": []
+    },
+    "Radiant Feather": {
+      "id": "Radiant Feather",
+      "name": "Radiant Feather",
+      "nameCn": "辉光之羽",
+      "img": "radiantFeather.png",
+      "released": true,
+      "effect": "Increase ball launch speed by 20, but get knocked back a little each time you shoot a ball",
+      "effectCn": "弹珠发射初速提高20，但是每次发射弹珠时后坐力将会把你微微推开。",
+      "parents": [],
+      "children": [
+        "Wings of the Anointed"
+      ],
+      "recipes": []
+    },
+    "Diamond Hilted Dagger": {
+      "id": "Diamond Hilted Dagger",
+      "name": "Diamond Hilted Dagger",
+      "nameCn": "钻石匕首",
+      "img": "diamondHiltedDagger.png",
+      "released": true,
+      "effect": "Increase crit chance to 200 when hitting enemies in the front.",
+      "effectCn": "攻击敌人的正面时，暴击率提高至200。",
+      "parents": [],
+      "children": [
+        "Deadeye's Cross"
+      ],
+      "recipes": []
+    },
+    "Emerald Hilted Dagger": {
+      "id": "Emerald Hilted Dagger",
+      "name": "Emerald Hilted Dagger",
+      "nameCn": "绿宝石匕首",
+      "img": "emeraldHiltedDagger.png",
+      "released": true,
+      "effect": "Increase crit chance to 300 when hitting enemies on their right side.",
+      "effectCn": "攻击敌人的右侧时，暴击率提高至300。",
+      "parents": [],
+      "children": [
+        "Deadeye's Cross"
+      ],
+      "recipes": []
+    },
+    "Ruby Hilted Dagger": {
+      "id": "Ruby Hilted Dagger",
+      "name": "Ruby Hilted Dagger",
+      "nameCn": "红宝石匕首",
+      "img": "rubyHiltedDagger.png",
+      "released": true,
+      "effect": "Increase crit chance to 150 when hitting enemies in the back.",
+      "effectCn": "攻击敌人的背面时，暴击率提高至150。",
+      "parents": [],
+      "children": [
+        "Deadeye's Cross"
+      ],
+      "recipes": []
+    },
+    "Sapphire Hilted Dagger": {
+      "id": "Sapphire Hilted Dagger",
+      "name": "Sapphire Hilted Dagger",
+      "nameCn": "蓝宝石匕首",
+      "img": "sapphireHiltedDagger.png",
+      "released": true,
+      "effect": "Increase crit chance to 300 when hitting enemies on their left side.",
+      "effectCn": "攻击敌人的左侧时，暴击率提高至300。",
+      "parents": [],
+      "children": [
+        "Deadeye's Cross"
+      ],
+      "recipes": []
+    },
+    "Ghostly Shield": {
+      "id": "Ghostly Shield",
+      "name": "Ghostly Shield",
+      "nameCn": "幽灵护盾",
+      "img": "ghostlyShield.png",
+      "released": true,
+      "effect": "Balls go through allies and heal them for 2 health",
+      "effectCn": "弹珠能够穿过友方单位并为其恢复2点生命值",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Kiss of Death": {
+      "id": "Kiss of Death",
+      "name": "Kiss of Death",
+      "nameCn": "死亡之吻",
+      "img": "kissOfDeath.png",
+      "released": true,
+      "effect": "Charmed enemies have a 10 chance of dying after recovering.",
+      "effectCn": "被魅惑的敌人在魅惑效果结束时有10几率死亡。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Lover's Quiver": {
+      "id": "Lover's Quiver",
+      "name": "Lover's Quiver",
+      "nameCn": "爱之箭袋",
+      "img": "loversQuiver.png",
+      "released": true,
+      "effect": "Projectiles have a 40 chance to heal you for 1 health instead of hurting you.",
+      "effectCn": "投射物有40%的几率为你恢复1点生命值，而不是对你造成伤害。",
+      "parents": [],
+      "children": [
+        "Arrow of Fate"
+      ],
+      "recipes": []
+    },
+    "Protective Charm": {
+      "id": "Protective Charm",
+      "name": "Protective Charm",
+      "nameCn": "护身符",
+      "img": "protectiveCharm.png",
+      "released": true,
+      "effect": "Gain a shield that blocks the next damage you would receive. Recharges after 60 seconds.",
+      "effectCn": "获得一面能够抵挡1次伤害的盾牌。盾牌将在触发效果的60秒后重新充能。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Rubber Headband": {
+      "id": "Rubber Headband",
+      "name": "Rubber Headband",
+      "nameCn": "弹力头带",
+      "img": "rubberHeadband.png",
+      "released": true,
+      "effect": "Balls start off at 70 speed but increase by 20 each bounce (max 200).",
+      "effectCn": "弹珠初速变为70，但是每次反弹将使速度提高20（最高200）。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Silver Blindfold": {
+      "id": "Silver Blindfold",
+      "name": "Silver Blindfold",
+      "nameCn": "白银眼罩",
+      "img": "silverBlindfold.png",
+      "released": true,
+      "effect": "Increase crit chance to 200 when hitting blinded enemies.",
+      "effectCn": "命中致盲的敌人时，暴击率提高至200。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Traitor's Cowl": {
+      "id": "Traitor's Cowl",
+      "name": "Traitor's Cowl",
+      "nameCn": "叛徒兜帽",
+      "img": "traitorsCowl.png",
+      "released": true,
+      "effect": "Stone allies can now be damaged by your balls, but you heal by 2 when a ball hits one.",
+      "effectCn": "你的弹珠将对各类岩石友军造成伤害，但是每次命中这些友军时，你将恢复2生命值。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Upturned Hatchet": {
+      "id": "Upturned Hatchet",
+      "name": "Upturned Hatchet",
+      "nameCn": "逆转手斧",
+      "img": "upturnedHatchet.png",
+      "released": true,
+      "effect": "Balls deal 80 more damage after hitting the back of the field, otherwise damage is reduced by 20.",
+      "effectCn": "弹珠命中屏幕上方的尽头区域后伤害提高80，但没有命中时伤害降低20。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Voodoo Doll": {
+      "id": "Voodoo Doll",
+      "name": "Voodoo Doll",
+      "nameCn": "巫毒人偶",
+      "img": "voodooDoll.png",
+      "released": true,
+      "effect": "Curse has a 10 chance of killing enemies",
+      "effectCn": "诅咒有10几率杀死敌人",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Archer's Effigy": {
+      "id": "Archer's Effigy",
+      "name": "Archer's Effigy",
+      "nameCn": "弓手雕塑",
+      "img": "archersEffigy.png",
+      "released": true,
+      "effect": "Every 7 - 12 rows, spawn a stone archer with 160 health on your side. Stone archers are immune to ball damage and shoot arrows at enemies, dealing 10-20 each.",
+      "effectCn": "每隔7-12行，从你的这一侧生成1个拥有160生命值的岩石弓手。岩石弓手免疫弹珠伤害，并且会朝敌人发射箭矢，每枚箭矢造成10-20伤害。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Artificial Heart": {
+      "id": "Artificial Heart",
+      "name": "Artificial Heart",
+      "nameCn": "人造之心",
+      "img": "artificialHeart.png",
+      "released": true,
+      "effect": "Friendly pieces gain 100 more health",
+      "effectCn": "友方单位获得额外100生命值",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Bandage Roll": {
+      "id": "Bandage Roll",
+      "name": "Bandage Roll",
+      "nameCn": "绷带卷",
+      "img": "bandageRoll.png",
+      "released": true,
+      "effect": "Shoot 1-2 baby balls each time you're healed.",
+      "effectCn": "每次恢复生命值时发射1-2颗迷你弹珠。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Cursed Elixir": {
+      "id": "Cursed Elixir",
+      "name": "Cursed Elixir",
+      "nameCn": "诅咒魔药",
+      "img": "cursedElixir.png",
+      "released": true,
+      "effect": "When a poisoned enemy dies, 10 chance for them to come back as a zombie with 240 health that moves up the board and fights enemies",
+      "effectCn": "如果中毒的敌人死亡，它们有10几率复活为僵尸，僵尸拥有240生命值，并且会向上方移动并攻击敌人",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Dynamite": {
+      "id": "Dynamite",
+      "name": "Dynamite",
+      "nameCn": "雷管",
+      "img": "dynamite.png",
+      "released": true,
+      "effect": "Every 5 - 10 rows, spawn an enemy with dynamite attached to them. Destroying them will deal 200 - 500 damage to nearby enemies.",
+      "effectCn": "每隔5-10行，生成1个携带着雷管的敌人。摧毁这些敌人将对其附近的其他敌人造成200-500伤害。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Eye of the Beholder": {
+      "id": "Eye of the Beholder",
+      "name": "Eye of the Beholder",
+      "nameCn": "监视之眼",
+      "img": "eyeOfTheBeholder.png",
+      "released": true,
+      "effect": "10 chance to dodge incoming attacks",
+      "effectCn": "10几率躲避来袭攻击",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Frozen Spike": {
+      "id": "Frozen Spike",
+      "name": "Frozen Spike",
+      "nameCn": "寒冰尖刺",
+      "img": "frozenSpike.png",
+      "released": true,
+      "effect": "When an enemy is frozen, they emit a chill to nearby enemies that deals 10-20 damage",
+      "effectCn": "被冰冻的敌人将释放寒气，并对周遭的敌人造成10-20伤害",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Gemspring": {
+      "id": "Gemspring",
+      "name": "Gemspring",
+      "nameCn": "宝石泉",
+      "img": "gemspring.png",
+      "released": true,
+      "effect": "Every 7 - 11 rows, spawn a Gemspring. Dealing damage to them causes them to drop an increasing amount of XP gems.",
+      "effectCn": "每隔7-11行，生成一口宝石泉。对泉水造成伤害将使其掉落更多的经验值宝石。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Golden Bull": {
+      "id": "Golden Bull",
+      "name": "Golden Bull",
+      "nameCn": "黄金公牛",
+      "img": "goldenBull.png",
+      "released": true,
+      "effect": "Every 7 - 11 rows, spawn a golden bull with 400 health on your side. Golden bulls accrue  10 <sprite name=gold> per minute. They also move up the field, blocking and attacking enemies in the way.",
+      "effectCn": "每隔7-11行，从你的这一侧生成1个拥有400生命值的黄金公牛。黄金公牛每分钟积累10 <sprite name=gold>。除此以外，黄金公牛会向上方移动，阻挡并攻击敌人。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Healer's Effigy": {
+      "id": "Healer's Effigy",
+      "name": "Healer's Effigy",
+      "nameCn": "治疗师雕塑",
+      "img": "healersEffigy.png",
+      "released": true,
+      "effect": "Every 7 - 12 rows, spawn a stone healer with 100 health on your side, which heals you 10 health per minute while it's on the field. Healers are immune to ball damage and move up the field, blocking and attacking enemies in the way.",
+      "effectCn": "每隔7-12行，从你的这一侧生成1个生命值为100的岩石治疗师，在场上时，治疗师将每分钟为你恢复10点生命值。治疗师免疫弹珠伤害，除此以外还会向上方移动，而且会阻挡并攻击敌人。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Magic Staff": {
+      "id": "Magic Staff",
+      "name": "Magic Staff",
+      "nameCn": "魔杖",
+      "img": "magicStaff.png",
+      "released": true,
+      "effect": "Increase area-of-effect damage (such as earthquake, laser, and lightning) by 20",
+      "effectCn": "使范围伤害（例如地震、激光或闪电等）提高20",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Midnight Oil": {
+      "id": "Midnight Oil",
+      "name": "Midnight Oil",
+      "nameCn": "午夜煤油",
+      "img": "midnightOil.png",
+      "released": true,
+      "effect": "Balls that hit flaming enemies light on fire and deal 10-20 bonus fire damage on the next hit.",
+      "effectCn": "如果命中承受燃烧效果的敌人，弹珠将被点燃，并且将在下一次命中时造成10-20额外火焰伤害。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Shortbow": {
+      "id": "Shortbow",
+      "name": "Shortbow",
+      "nameCn": "短弓",
+      "img": "shortbow.png",
+      "released": true,
+      "effect": "Increase fire rate by 15",
+      "effectCn": "射速提高15",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Stone Effigy": {
+      "id": "Stone Effigy",
+      "name": "Stone Effigy",
+      "nameCn": "岩石雕塑",
+      "img": "stoneEffigy.png",
+      "released": true,
+      "effect": "Every 7 - 12 rows, spawn a stone soldier with 200 health on your side. Stone soldiers are immune to ball damage and move up the field, blocking and attacking enemies in the way.",
+      "effectCn": "每隔7-12行，从你的这一侧生成1个拥有200生命值的岩石士兵。岩石士兵免疫弹珠伤害，除此以外还会向上方移动，而且会阻挡并攻击敌人。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Wagon Wheel": {
+      "id": "Wagon Wheel",
+      "name": "Wagon Wheel",
+      "nameCn": "车轮",
+      "img": "wagonWheel.png",
+      "released": true,
+      "effect": "Each time a ball hits a wall, it deals 30 extra damage on the next hit",
+      "effectCn": "每次命中屏幕上方的尽头区域后，弹珠下一次命中敌人将造成30额外伤害",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Hourglass": {
+      "id": "Hourglass",
+      "name": "Hourglass",
+      "nameCn": "沙漏",
+      "img": "hourglass.png",
+      "released": true,
+      "effect": "Balls deal 150 damage, but damage decays by 30 each time they bounce (minimum 50).",
+      "effectCn": "弹珠造成150伤害，但是每次反弹后伤害衰减30（最低50）。",
+      "parents": [],
+      "children": [
+        "Argent Stopwatch"
+      ],
+      "recipes": []
+    },
+    "Silver Bullet": {
+      "id": "Silver Bullet",
+      "name": "Silver Bullet",
+      "nameCn": "白银子弹",
+      "img": "silverBullet.png",
+      "released": true,
+      "effect": "Balls deal 20 bonus damage until they hit a wall",
+      "effectCn": "在命中墙体之前，弹珠将造成20额外伤害。",
+      "parents": [],
+      "children": [
+        "Argent Stopwatch"
+      ],
+      "recipes": []
+    },
+    "Hand Mirror": {
+      "id": "Hand Mirror",
+      "name": "Hand Mirror",
+      "nameCn": "手镜",
+      "img": "handMirror.png",
+      "released": true,
+      "effect": "Projectiles have a 50 chance to reflect upon hitting you, dealing 20 - 40 damage if they hit an enemy",
+      "effectCn": "被投射物命中时有50几率反弹投射物，反弹的投射物将对命中的敌人造成20-40伤害。",
+      "parents": [],
+      "children": [
+        "Arrow of Fate"
+      ],
+      "recipes": []
+    },
+    "Turret": {
+      "id": "Turret",
+      "name": "Turret",
+      "nameCn": "炮塔",
+      "img": "turret.png",
+      "released": true,
+      "effect": "Floats around your character and shoots a baby ball at enemies every 20 seconds.",
+      "effectCn": "飘浮在你的角色周围，并且每隔20秒朝敌人发射1颗迷你弹珠",
+      "parents": [],
+      "children": [
+        "Grotesque Artillery"
+      ],
+      "recipes": []
+    },
+    "Hand Fan": {
+      "id": "Hand Fan",
+      "name": "Hand Fan",
+      "nameCn": "手扇",
+      "img": "handFan.png",
+      "released": true,
+      "effect": "Slow down enemies in the same column as you by 50",
+      "effectCn": "使与你处于同一列的敌人减速50",
+      "parents": [],
+      "children": [
+        "Grotesque Artillery"
+      ],
+      "recipes": []
+    },
+    "Iron Onesie": {
+      "id": "Iron Onesie",
+      "name": "Iron Onesie",
+      "nameCn": "黑铁连体服",
+      "img": "passive_irononesie.png",
+      "released": true,
+      "effect": "Balls deal 5 more damage for each baby ball on the field.",
+      "effectCn": "场上每有1颗迷你弹珠，则弹珠额外造成5伤害。",
+      "parents": [],
+      "children": [
+        "Full Metal Rapier"
+      ],
+      "recipes": []
+    },
+    "Sword Breaker": {
+      "id": "Sword Breaker",
+      "name": "Sword Breaker",
+      "nameCn": "断剑者",
+      "img": "passive_swordbreaker.png",
+      "released": true,
+      "effect": "Balls deal 40 less damage, but gain 1 damage for each enemy on the field",
+      "effectCn": "弹珠伤害降低40，但是场上每有1名敌人，则获得1伤害加成。",
+      "parents": [],
+      "children": [
+        "Full Metal Rapier"
+      ],
+      "recipes": []
+    },
+    "Pressure Valve": {
+      "id": "Pressure Valve",
+      "name": "Pressure Valve",
+      "nameCn": "压力阀",
+      "img": "pressureValve.png",
+      "released": true,
+      "effect": "Enemies explode on death, dealing 20-30 damage to adjacent enemies.",
+      "effectCn": "敌人死亡时将爆炸，并对毗邻的敌人造成20-30伤害。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Magnet": {
+      "id": "Magnet",
+      "name": "Magnet",
+      "nameCn": "磁铁",
+      "img": "magnet.png",
+      "released": true,
+      "effect": "Increase range at which you pick up items and catch balls by 100 tiles.",
+      "effectCn": "使你的物品拾取&弹珠接取范围扩大100格。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Bottled Tornado": {
+      "id": "Bottled Tornado",
+      "name": "Bottled Tornado",
+      "nameCn": "瓶中龙卷风",
+      "img": "bottledTornado.png",
+      "released": true,
+      "effect": "When you catch a special ball, automatically shoot 1 - 3 new baby balls in random directions.",
+      "effectCn": "接住特殊弹珠时，自动朝随机方向发射1-3颗新的迷你弹珠。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Slingshot": {
+      "id": "Slingshot",
+      "name": "Slingshot",
+      "nameCn": "弹弓",
+      "img": "slingshot.png",
+      "released": true,
+      "effect": "25 chance to launch a baby ball when you pick up a gem.",
+      "effectCn": "拾取宝石时有25几率发射1颗迷你弹珠。",
+      "parents": [],
+      "children": [],
+      "recipes": []
+    },
+    "Soul Reaver": {
+      "id": "Soul Reaver",
+      "name": "Soul Reaver",
+      "nameCn": "灵魂收割者",
+      "img": "soulReaver.png",
+      "released": true,
+      "effect": "Each kill heals you by 1 and you can heal past your max health at 30 efficiency.",
+      "effectCn": "每次击杀敌人为你恢复30，并且允许治疗效果超出最大生命值上限（1效率）。",
+      "parents": [
+        "Everflowing Goblet",
+        "Vampiric Sword"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Soul Reaver",
+          "components": [
+            "Everflowing Goblet",
+            "Vampiric Sword"
+          ]
+        }
+      ]
+    },
+    "Cornucopia": {
+      "id": "Cornucopia",
+      "name": "Cornucopia",
+      "nameCn": "丰饶之角",
+      "img": "cornucopia.png",
+      "released": true,
+      "effect": "Each time baby balls are created, spawn 0-1 additional baby balls",
+      "effectCn": "每次创造迷你弹珠时，生成0-1颗额外迷你弹珠",
+      "parents": [
+        "Baby Rattle",
+        "War Horn"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Cornucopia",
+          "components": [
+            "Baby Rattle",
+            "War Horn"
+          ]
+        }
+      ]
+    },
+    "Phantom Regalia": {
+      "id": "Phantom Regalia",
+      "name": "Phantom Regalia",
+      "nameCn": "幻影华服",
+      "img": "phantomRegalia.png",
+      "released": true,
+      "effect": "Balls go through enemies until they hit the back wall. Balls deal 50 more damage when going through enemies.",
+      "effectCn": "弹珠能够穿过敌人，直到命中屏幕上方的尽头区域。弹珠穿过敌人时将额外造成50伤害。",
+      "parents": [
+        "Ethereal Cloak",
+        "Ghostly Corset"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Phantom Regalia",
+          "components": [
+            "Ethereal Cloak",
+            "Ghostly Corset"
+          ]
+        }
+      ]
+    },
+    "Odiferous Shell": {
+      "id": "Odiferous Shell",
+      "name": "Odiferous Shell",
+      "nameCn": "腐臭之躯",
+      "img": "odiferousShell.png",
+      "released": true,
+      "effect": "When you touch enemies, they have a 50 chance of instantly dying.",
+      "effectCn": "当你触碰敌人时，它们有50几率立即死亡。",
+      "parents": [
+        "Breastplate",
+        "Wretched Onion"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Odiferous Shell",
+          "components": [
+            "Breastplate",
+            "Wretched Onion"
+          ]
+        }
+      ]
+    },
+    "Gracious Impaler": {
+      "id": "Gracious Impaler",
+      "name": "Gracious Impaler",
+      "nameCn": "优雅刺枪",
+      "img": "graciousImpaler.png",
+      "released": true,
+      "effect": "Critical hits have a 5 chance to instantly kill enemies",
+      "effectCn": "暴击有5几率立即击杀敌人",
+      "parents": [
+        "Reacher's Spear",
+        "Deadeye's Amulet"
+      ],
+      "children": [
+        "Deadeye's Impaler"
+      ],
+      "recipes": [
+        {
+          "result": "Gracious Impaler",
+          "components": [
+            "Reacher's Spear",
+            "Deadeye's Amulet"
+          ]
+        }
+      ]
+    },
+    "Tormenters Mask": {
+      "id": "Tormenters Mask",
+      "name": "Tormenters Mask",
+      "nameCn": "处刑者的面具",
+      "img": "tormentersMask.png",
+      "released": true,
+      "effect": "Enemies have a 10 chance of dying immediately the first time they detect you.",
+      "effectCn": "首次发现你（头顶显示惊叹号）时，敌人有10几率立即死亡。",
+      "parents": [
+        "Spiked Collar",
+        "Crown of Thorns"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Tormenters Mask",
+          "components": [
+            "Spiked Collar",
+            "Crown of Thorns"
+          ]
+        }
+      ]
+    },
+    "Wings of the Anointed": {
+      "id": "Wings of the Anointed",
+      "name": "Wings of the Anointed",
+      "nameCn": "圣礼者之翼",
+      "img": "wingsOfTheAnointed.png",
+      "released": true,
+      "effect": "Balls move 40 faster and you move 20 faster. You no longer are affected by environmental hazards on the ground.",
+      "effectCn": "弹珠移动速度加快40，你的移动速度加快20。无视场地上的环境危险影响。",
+      "parents": [
+        "Fleet Feet",
+        "Radiant Feather"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Wings of the Anointed",
+          "components": [
+            "Fleet Feet",
+            "Radiant Feather"
+          ]
+        }
+      ]
+    },
+    "Deadeye's Cross": {
+      "id": "Deadeye's Cross",
+      "name": "Deadeye's Cross",
+      "nameCn": "靶眼十字架",
+      "img": "deadeyesCross.png",
+      "released": true,
+      "effect": "Increase critical hit chance to 600",
+      "effectCn": "暴击率提高至600",
+      "parents": [
+        "Diamond Hilted Dagger",
+        "Emerald Hilted Dagger",
+        "Ruby Hilted Dagger",
+        "Sapphire Hilted Dagger"
+      ],
+      "children": [
+        "Deadeye's Impaler"
+      ],
+      "recipes": [
+        {
+          "result": "Deadeye's Cross",
+          "components": [
+            "Diamond Hilted Dagger",
+            "Emerald Hilted Dagger",
+            "Ruby Hilted Dagger",
+            "Sapphire Hilted Dagger"
+          ]
+        }
+      ]
+    },
+    "Deadeye's Impaler": {
+      "id": "Deadeye's Impaler",
+      "name": "Deadeye's Impaler",
+      "nameCn": "靶眼刺针",
+      "img": "passive_impaler.png",
+      "released": true,
+      "effect": "Increase critical hit chance to 50. Critical hits instantly kill non-boss enemies.",
+      "effectCn": "暴击率提高至50。暴击将立即击杀非Boss敌人。",
+      "parents": [
+        "Deadeye's Cross",
+        "Gracious Impaler"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Deadeye's Impaler",
+          "components": [
+            "Deadeye's Cross",
+            "Gracious Impaler"
+          ]
+        }
+      ]
+    },
+    "Argent Stopwatch": {
+      "id": "Argent Stopwatch",
+      "name": "Argent Stopwatch",
+      "nameCn": "白银怀表",
+      "img": "passive_stopwatch.png",
+      "released": true,
+      "effect": "Balls deal 200 damage, but damage decays by 20 each time they bounce (minimum 100).",
+      "effectCn": "弹珠造成200伤害，但是每次反弹后伤害衰减20（最低100）。",
+      "parents": [
+        "Hourglass",
+        "Silver Bullet"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Argent Stopwatch",
+          "components": [
+            "Hourglass",
+            "Silver Bullet"
+          ]
+        }
+      ]
+    },
+    "Arrow of Fate": {
+      "id": "Arrow of Fate",
+      "name": "Arrow of Fate",
+      "nameCn": "命运之箭",
+      "img": "passive_arrow.png",
+      "released": true,
+      "effect": "Projectiles no longer hurt you. Shoot 1-2 baby balls when hit by a projectile.",
+      "effectCn": "投射物将不会再对你造成伤害。被投射物命中时发射1-2颗迷你弹珠。",
+      "parents": [
+        "Lover's Quiver",
+        "Hand Mirror"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Arrow of Fate",
+          "components": [
+            "Lover's Quiver",
+            "Hand Mirror"
+          ]
+        }
+      ]
+    },
+    "Full Metal Rapier": {
+      "id": "Full Metal Rapier",
+      "name": "Full Metal Rapier",
+      "nameCn": "全金属刺剑",
+      "img": "passive_rapier.png",
+      "released": true,
+      "effect": "Balls deal 10 more damage for each baby ball and enemy on the field.",
+      "effectCn": "场上每有1颗迷你弹珠或1名敌人，则弹珠额外造成10伤害。",
+      "parents": [
+        "Iron Onesie",
+        "Sword Breaker"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Full Metal Rapier",
+          "components": [
+            "Iron Onesie",
+            "Sword Breaker"
+          ]
+        }
+      ]
+    },
+    "Grotesque Artillery": {
+      "id": "Grotesque Artillery",
+      "name": "Grotesque Artillery",
+      "nameCn": "畸变大炮",
+      "img": "passive_artillery.png",
+      "released": true,
+      "effect": "Floats around your character and shoots a random level 1 unevolved special ball at enemies every 80 seconds.",
+      "effectCn": "飘浮在你的角色周围，并且每隔80秒朝敌人发射1颗1级且非进化过的弹珠。",
+      "parents": [
+        "Turret",
+        "Hand Fan"
+      ],
+      "children": [],
+      "recipes": [
+        {
+          "result": "Grotesque Artillery",
+          "components": [
+            "Turret",
+            "Hand Fan"
+          ]
+        }
+      ]
+    }
+  },
+  "baseItems": [
+    "Everflowing Goblet",
+    "Vampiric Sword",
+    "Baby Rattle",
+    "War Horn",
+    "Ethereal Cloak",
+    "Ghostly Corset",
+    "Breastplate",
+    "Wretched Onion",
+    "Reacher's Spear",
+    "Deadeye's Amulet",
+    "Crown of Thorns",
+    "Spiked Collar",
+    "Fleet Feet",
+    "Radiant Feather",
+    "Diamond Hilted Dagger",
+    "Emerald Hilted Dagger",
+    "Ruby Hilted Dagger",
+    "Sapphire Hilted Dagger",
+    "Ghostly Shield",
+    "Kiss of Death",
+    "Lover's Quiver",
+    "Protective Charm",
+    "Rubber Headband",
+    "Silver Blindfold",
+    "Traitor's Cowl",
+    "Upturned Hatchet",
+    "Voodoo Doll",
+    "Archer's Effigy",
+    "Artificial Heart",
+    "Bandage Roll",
+    "Cursed Elixir",
+    "Dynamite",
+    "Eye of the Beholder",
+    "Frozen Spike",
+    "Gemspring",
+    "Golden Bull",
+    "Healer's Effigy",
+    "Magic Staff",
+    "Midnight Oil",
+    "Shortbow",
+    "Stone Effigy",
+    "Wagon Wheel",
+    "Hourglass",
+    "Silver Bullet",
+    "Hand Mirror",
+    "Turret",
+    "Hand Fan",
+    "Iron Onesie",
+    "Sword Breaker",
+    "Pressure Valve",
+    "Magnet",
+    "Bottled Tornado",
+    "Slingshot"
+  ]
+}

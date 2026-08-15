@@ -214,5 +214,9 @@
   "/tools/ball-x-pit": {
     "title": "BALL x PIT 合成表 - 弹珠进化路线查询工具",
     "description": "BALL x PIT 弹珠合成表，列出基础弹珠到高级进化的所有合成路线，点击展开下一级，支持中英文名称搜索。"
+  },
+  "/tools/ball-x-pit-passives": {
+    "title": "BALL x PIT 道具合成表 - 被动道具配方查询工具",
+    "description": "BALL x PIT 被动道具合成表，列出基础道具与高级道具的合成配方，支持中英文名称与效果搜索。"
   }
 }

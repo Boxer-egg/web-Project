@@ -130,6 +130,7 @@ const groups = [
     title: '游戏辅助',
     tools: [
       { path: '/tools/ball-x-pit', name: 'BALL x PIT 合成表', icon: '🎱', keywords: ['ball', 'pit', 'hecheng', '合成', 'danzu', 'evolve', 'game'] },
+      { path: '/tools/ball-x-pit-passives', name: 'BALL x PIT 道具合成', icon: '🧪', keywords: ['ball', 'pit', 'daoju', 'passive', 'item', 'hecheng', 'game'] },
     ]
   },
   {

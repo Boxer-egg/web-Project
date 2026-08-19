@@ -1562,7 +1562,7 @@ function downloadResultsAsImage() {
           </div>
           <div class="form-col">
             <label>人数</label>
-            <input v-model.number="laborHeadcount" type="number" class="input">
+            <input v-model.number="laborHeadcount" type="number" class="input with-spinners">
             <span v-if="laborHeadcount > 0 && laborAvgSalary > 0" class="labor-inline-hint">总工资 {{ fmtMoney(monthlyLabor) }} 元</span>
           </div>
         </div>
@@ -1573,7 +1573,7 @@ function downloadResultsAsImage() {
           </div>
           <div class="form-col">
             <label>毛利率</label>
-            <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input">
+            <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input with-spinners">
             <span v-if="missingRequiredFields.includes('grossMargin')" class="field-warning">请填写毛利率，否则无法计算盈亏平衡与净利润</span>
           </div>
         </div>
@@ -1589,14 +1589,14 @@ function downloadResultsAsImage() {
           </div>
           <div class="form-col">
             <label>平均客单价（元）</label>
-            <input v-model.number="avgTicket" type="number" class="input">
+            <input v-model.number="avgTicket" type="number" class="input with-spinners">
             <span v-if="missingRequiredFields.includes('avgTicket')" class="field-warning">请填写平均客单价，否则无法计算营收与保本单数</span>
           </div>
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">
             <label>目标日单数</label>
-            <input v-model.number="targetDailyOrders" type="number" class="input">
+            <input v-model.number="targetDailyOrders" type="number" class="input with-spinners">
             <span v-if="missingRequiredFields.includes('targetDailyOrders')" class="field-warning">请填写目标日单数，否则目标月净利润为负</span>
           </div>
           <div class="form-col">
@@ -1862,7 +1862,7 @@ function downloadResultsAsImage() {
   gap: 20px;
 }
 
-/* 隐藏 number 输入框的上下箭头 */
+/* 默认隐藏 number 输入框的上下箭头 */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -1870,6 +1870,15 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 input[type="number"] {
   -moz-appearance: textfield;
+}
+/* 指定字段显示上下箭头 */
+input[type="number"].with-spinners::-webkit-inner-spin-button,
+input[type="number"].with-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: inner-spin-button;
+  opacity: 1;
+}
+input[type="number"].with-spinners {
+  -moz-appearance: number-input;
 }
 
 .input-panel {

@@ -349,6 +349,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/storefront-sign-editor',
+      name: 'storefront-sign-editor',
+      component: () => import('../views/tools/StorefrontSignEditor.vue'),
+      meta: {
+        title: '门头编辑器 - 餐饮店铺招牌排版设计工具',
+        description: '在线门头招牌设计工具，输入物理尺寸后拖拽文字与 Logo，支持对齐吸附、网格、安全边界与间距标注，可导出工程图或 PNG。'
+      }
+    },
+    {
       path: '/tools/rpr',
       name: 'restaurant-profit-reverse',
       component: () => import('../views/tools/RestaurantProfitReverseCalculator.vue'),

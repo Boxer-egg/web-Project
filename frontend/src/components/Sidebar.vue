@@ -61,6 +61,7 @@ const groups = [
     tools: [
       { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', keywords: ['canyin', 'restaurant', 'profit', 'yingli', 'jisuan', 'kaidian', 'kuiyin'] },
       { path: '/tools/rpr', name: '餐饮反向调研', icon: '🕵️‍♂️', keywords: ['canyin', 'restaurant', 'reverse', 'fankui', 'diaoyan', 'jingpin', 'yingli', 'fanxuan'] },
+      { path: '/tools/storefront-sign-editor', name: '门头编辑器', icon: '🏪', keywords: ['mentou', 'storefront', 'sign', 'paibian', 'sheji', 'canyin'] },
     ]
   },
   {

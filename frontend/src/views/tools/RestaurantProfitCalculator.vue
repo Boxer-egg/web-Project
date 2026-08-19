@@ -1921,7 +1921,7 @@ function downloadResultsAsImage() {
               <div class="metric-value">{{ fmtMoney(targetMonthlyGrossProfit) }}</div>
               <div class="metric-label">目标月毛利（元）</div>
             </div>
-            <div class="metric clickable" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.rows, 'steps')">
+            <div class="metric clickable" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.groups, 'steps')">
               <div class="metric-value">{{ fmtMoney(targetMonthlyNetProfit) }}</div>
               <div class="metric-label">目标月净利润（元）</div>
             </div>

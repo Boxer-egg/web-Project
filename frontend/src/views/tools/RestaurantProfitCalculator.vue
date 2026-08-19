@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick, watch, onMounted, onUnmounted, reactive } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { getUrlParams, applyParams, toNumber, syncParamsToUrl, buildShareUrl } from '../../utils/urlParams.js'
 import { useToast } from '../../composables/useToast.js'
@@ -491,47 +491,6 @@ function fmtNumber(n, digits = 2) {
 function fmtPercent(n) {
   if (!Number.isFinite(n)) return '—'
   return (n * 100).toFixed(1) + '%'
-}
-
-/**
- * 数字输入框编辑状态。
- * 某些浏览器对 type="number" 输入框会在删除首位后把前导零折叠为 0，
- * 导致用户希望保留位数的输入（如 10000 删除 1 后输入 2）变成 2 而非 20000。
- * 此处用一个临时的字符串状态在编辑期间保留原始字符，失焦后再回退到数字值。
- */
-const numberEditing = reactive({})
-
-/**
- * 获取数字输入框的当前显示值。
- * @param {string} key - 字段标识
- * @param {number} value - 字段实际数值
- * @returns {string} 编辑中字符串或数值字符串
- */
-function getNumberDisplay(key, value) {
-  if (key in numberEditing) return numberEditing[key]
-  return String(value ?? 0)
-}
-
-/**
- * 整数输入框 input 事件处理：过滤非数字字符，同步更新数值。
- * @param {InputEvent} event - 输入事件
- * @param {Ref<number>} refObj - 对应响应式引用
- * @param {string} key - 字段标识
- */
-function onIntegerInput(event, refObj, key) {
-  const raw = event.target.value
-  const filtered = raw.replace(/[^0-9]/g, '')
-  numberEditing[key] = filtered
-  refObj.value = filtered === '' ? 0 : Number(filtered)
-  event.target.value = filtered
-}
-
-/**
- * 整数输入框 blur 事件处理：清除编辑状态，让输入框显示格式化后的数值。
- * @param {string} key - 字段标识
- */
-function onIntegerBlur(key) {
-  delete numberEditing[key]
 }
 
 /** 加载表格示例数据 */
@@ -1570,14 +1529,7 @@ function downloadResultsAsImage() {
           </div>
           <div class="form-col">
             <label>转让费/中介费（元）</label>
-            <input
-              :value="getNumberDisplay('transferFee', transferFee)"
-              @input="onIntegerInput($event, transferFee, 'transferFee')"
-              @blur="onIntegerBlur('transferFee')"
-              type="text"
-              inputmode="numeric"
-              class="input"
-            >
+            <input v-model.number="transferFee" type="number" class="input">
           </div>
         </div>
         <div class="form-row form-row-2col">

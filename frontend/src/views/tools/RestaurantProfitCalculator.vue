@@ -361,6 +361,14 @@ const dailyFixedCost = computed(() => monthlyFixedCost.value / 30)
 /** 日均经营成本（人工 + 水电杂费） */
 const dailyOperatingCost = computed(() => (Number(monthlyLabor.value || 0) + Number(monthlyUtilities.value || 0)) / 30)
 
+/** 日固定成本明细 */
+const dailyRentCost = computed(() => effectiveMonthlyRent.value / 30)
+const dailyLaborCost = computed(() => monthlyLabor.value / 30)
+const dailyUtilitiesCost = computed(() => Number(monthlyUtilities.value || 0) / 30)
+
+/** 日盈亏平衡营业额下的食材成本 */
+const dailyBreakEvenFoodCost = computed(() => Math.max(0, dailyBreakEvenRevenue.value - dailyFixedCost.value))
+
 /** 日盈亏平衡营业额 */
 const dailyBreakEvenRevenue = computed(() => {
   const margin = Number(grossMargin.value) || 0
@@ -734,7 +742,7 @@ function drawCostPieChart(ctx, width, height, data) {
 
 /** 绘制盈亏构成横向柱状图 */
 function drawBreakEvenBarChart(ctx, width, height, data, options = {}) {
-  const padding = { top: 32, right: 56, bottom: 32, left: 56 }
+  const padding = { top: 32, right: 56, bottom: 56, left: 56 }
   const chartWidth = width - padding.left - padding.right
   const chartHeight = height - padding.top - padding.bottom
   const ticket = Number(options.avgTicket) || 0
@@ -801,14 +809,34 @@ function drawBreakEvenBarChart(ctx, width, height, data, options = {}) {
   const barCount = data.length
   const barSlot = chartWidth / barCount
   const barWidth = Math.min(barSlot * 0.5, 48)
+  const segmentLegendItems = []
 
   data.forEach((item, index) => {
-    const barHeight = (item.value / maxValue) * chartHeight
     const x = padding.left + barSlot * index + (barSlot - barWidth) / 2
-    const y = height - padding.bottom - barHeight
 
-    ctx.fillStyle = item.color
-    ctx.fillRect(x, y, barWidth, barHeight)
+    if (item.segments && item.segments.length > 0) {
+      // 绘制堆叠柱
+      let currentY = height - padding.bottom
+      item.segments.forEach((seg) => {
+        const segHeight = (seg.value / maxValue) * chartHeight
+        const segY = currentY - segHeight
+        ctx.fillStyle = seg.color
+        ctx.fillRect(x, segY, barWidth, segHeight)
+        currentY = segY
+
+        // 收集图例项
+        segmentLegendItems.push({ ...seg, parentLabel: item.label.split('\n')[0] })
+      })
+    } else {
+      // 普通柱子
+      const barHeight = (item.value / maxValue) * chartHeight
+      const y = height - padding.bottom - barHeight
+      ctx.fillStyle = item.color
+      ctx.fillRect(x, y, barWidth, barHeight)
+    }
+
+    const barHeight = (item.value / maxValue) * chartHeight
+    const y = height - padding.bottom - barHeight
 
     // 末端数值
     ctx.fillStyle = '#111827'
@@ -835,6 +863,28 @@ function drawBreakEvenBarChart(ctx, width, height, data, options = {}) {
       ctx.fillText(item.marker, x + barWidth / 2, y - 20)
     }
   })
+
+  // 明细图例
+  if (segmentLegendItems.length > 0) {
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+    ctx.font = '10px sans-serif'
+    let legendX = padding.left
+    let legendY = height - padding.bottom + 46
+    segmentLegendItems.forEach((item) => {
+      const text = `${item.parentLabel}·${item.label}: ${fmtMoney(item.value)}元`
+      const textWidth = ctx.measureText(text).width
+      if (legendX + textWidth + 18 > width - padding.right) {
+        legendX = padding.left
+        legendY += 16
+      }
+      ctx.fillStyle = item.color
+      ctx.fillRect(legendX, legendY - 4, 10, 10)
+      ctx.fillStyle = '#6b7280'
+      ctx.fillText(text, legendX + 14, legendY)
+      legendX += textWidth + 26
+    })
+  }
 }
 
 /** 绘制盈利拐点折线图 */
@@ -1023,7 +1073,150 @@ function drawProfitLineChart(ctx, width, height, data, options = {}) {
   }
 
   // 目标点独立标注（目标日单数 × 目标月净利润）
-  if (targetX !== null && targetX > 0 && targetX <= xMax) {
+  // 当前选中点标注（跟随滑块）
+  // 两者需要避免标签重叠，采用互斥布局
+  const targetText = targetX !== null && targetX > 0 && targetX <= xMax
+    ? `目标：${fmtNumber(targetX, 0)}单/天，月利润¥${fmtMoney(targetY)}`
+    : ''
+  const currentText = selectedX !== null && selectedX >= xMin && selectedX <= xMax
+    ? `当前：${fmtNumber(selectedX, 0)}单/天，月利润¥${fmtMoney(selectedY)}`
+    : ''
+
+  /**
+   * 在指定方位绘制点标注并返回近似包围盒，用于重叠检测。
+   * @param {string} text - 标签文字
+   * @param {number} px - 点 x 坐标
+   * @param {number} py - 点 y 坐标
+   * @param {string} position - 方位
+   * @returns {{left:number,right:number,top:number,bottom:number}}
+   */
+  function drawPointLabel(text, px, py, position) {
+    const offset = 10
+    const lineHeight = 12
+    let tx, ty, align, baseline
+
+    switch (position) {
+      case 'right-top':
+        tx = px + offset; ty = py - offset; align = 'left'; baseline = 'top'; break
+      case 'right-middle':
+        tx = px + offset; ty = py; align = 'left'; baseline = 'middle'; break
+      case 'right-bottom':
+        tx = px + offset; ty = py + offset; align = 'left'; baseline = 'bottom'; break
+      case 'left-top':
+        tx = px - offset; ty = py - offset; align = 'right'; baseline = 'top'; break
+      case 'left-middle':
+        tx = px - offset; ty = py; align = 'right'; baseline = 'middle'; break
+      case 'left-bottom':
+        tx = px - offset; ty = py + offset; align = 'right'; baseline = 'bottom'; break
+      case 'top':
+        tx = px; ty = py - offset; align = 'center'; baseline = 'bottom'; break
+      case 'bottom':
+        tx = px; ty = py + offset; align = 'center'; baseline = 'top'; break
+      default:
+        tx = px + offset; ty = py - offset; align = 'left'; baseline = 'top'
+    }
+
+    ctx.textAlign = align
+    ctx.textBaseline = baseline
+    ctx.fillText(text, tx, ty)
+
+    const labelWidth = ctx.measureText(text).width
+    const left = align === 'left' ? tx : (align === 'right' ? tx - labelWidth : tx - labelWidth / 2)
+    const right = align === 'left' ? tx + labelWidth : (align === 'right' ? tx : tx + labelWidth / 2)
+    const top = baseline === 'top' ? ty : (baseline === 'bottom' ? ty - lineHeight : ty - lineHeight / 2)
+    const bottom = baseline === 'top' ? ty + lineHeight : (baseline === 'bottom' ? ty : ty + lineHeight / 2)
+    return { left, right, top, bottom }
+  }
+
+  function boxesOverlap(a, b, margin = 6) {
+    return !(a.right + margin < b.left || a.left - margin > b.right ||
+             a.bottom + margin < b.top || a.top - margin > b.bottom)
+  }
+
+  function boxFits(box) {
+    return box.left >= padding.left - 4 && box.right <= width - padding.right + 4 &&
+           box.top >= padding.top - 4 && box.bottom <= height - padding.bottom + 4
+  }
+
+  /**
+   * 选择目标点和当前点标签的互斥方位。
+   * 优先根据两点相对位置让标签朝相反方向展开；若会重叠或超出边界则尝试备选。
+   */
+  function chooseLabelPositions() {
+    const targetPx = targetX !== null ? getX(targetX) : null
+    const currentPx = selectedX !== null ? getX(selectedX) : null
+    const targetOnRight = targetPx !== null && currentPx !== null && targetPx >= currentPx
+
+    const candidateSets = targetOnRight
+      ? [
+          { target: 'right-top', current: 'left-middle' },
+          { target: 'right-top', current: 'left-bottom' },
+          { target: 'right-top', current: 'right-bottom' },
+          { target: 'right-bottom', current: 'left-top' },
+          { target: 'left-top', current: 'right-middle' },
+          { target: 'top', current: 'bottom' },
+        ]
+      : [
+          { target: 'left-top', current: 'right-middle' },
+          { target: 'left-top', current: 'right-bottom' },
+          { target: 'left-top', current: 'left-bottom' },
+          { target: 'left-bottom', current: 'right-top' },
+          { target: 'right-top', current: 'left-middle' },
+          { target: 'top', current: 'bottom' },
+        ]
+
+    for (const set of candidateSets) {
+      const targetBox = targetText ? estimateLabelBox(targetText, targetX !== null ? getX(targetX) : 0, targetY !== null ? getY(targetY) : 0, set.target) : null
+      const currentBox = currentText ? estimateLabelBox(currentText, selectedX !== null ? getX(selectedX) : 0, selectedY !== null ? getY(selectedY) : 0, set.current) : null
+      const fitsTarget = !targetBox || boxFits(targetBox)
+      const fitsCurrent = !currentBox || boxFits(currentBox)
+      const overlap = targetBox && currentBox ? boxesOverlap(targetBox, currentBox) : false
+      if (fitsTarget && fitsCurrent && !overlap) return set
+    }
+    return candidateSets[0]
+  }
+
+  /**
+   * 估算标签包围盒，与 drawPointLabel 的计算逻辑保持一致。
+   */
+  function estimateLabelBox(text, px, py, position) {
+    const offset = 10
+    const lineHeight = 12
+    let tx, ty, align, baseline
+
+    switch (position) {
+      case 'right-top':
+        tx = px + offset; ty = py - offset; align = 'left'; baseline = 'top'; break
+      case 'right-middle':
+        tx = px + offset; ty = py; align = 'left'; baseline = 'middle'; break
+      case 'right-bottom':
+        tx = px + offset; ty = py + offset; align = 'left'; baseline = 'bottom'; break
+      case 'left-top':
+        tx = px - offset; ty = py - offset; align = 'right'; baseline = 'top'; break
+      case 'left-middle':
+        tx = px - offset; ty = py; align = 'right'; baseline = 'middle'; break
+      case 'left-bottom':
+        tx = px - offset; ty = py + offset; align = 'right'; baseline = 'bottom'; break
+      case 'top':
+        tx = px; ty = py - offset; align = 'center'; baseline = 'bottom'; break
+      case 'bottom':
+        tx = px; ty = py + offset; align = 'center'; baseline = 'top'; break
+      default:
+        tx = px + offset; ty = py - offset; align = 'left'; baseline = 'top'
+    }
+
+    const labelWidth = ctx.measureText(text).width
+    const left = align === 'left' ? tx : (align === 'right' ? tx - labelWidth : tx - labelWidth / 2)
+    const right = align === 'left' ? tx + labelWidth : (align === 'right' ? tx : tx + labelWidth / 2)
+    const top = baseline === 'top' ? ty : (baseline === 'bottom' ? ty - lineHeight : ty - lineHeight / 2)
+    const bottom = baseline === 'top' ? ty + lineHeight : (baseline === 'bottom' ? ty : ty + lineHeight / 2)
+    return { left, right, top, bottom }
+  }
+
+  const positions = chooseLabelPositions()
+
+  // 绘制目标点标注
+  if (targetText) {
     const tx = getX(targetX)
     const ty = getY(targetY)
     ctx.fillStyle = '#f59e0b'
@@ -1041,21 +1234,11 @@ function drawProfitLineChart(ctx, width, height, data, options = {}) {
     ctx.fill()
     ctx.fillStyle = '#d97706'
     ctx.font = 'bold 11px sans-serif'
-    const labelText = `目标：${fmtNumber(targetX, 0)}单/天，月利润¥${fmtMoney(targetY)}`
-    const labelWidth = ctx.measureText(labelText).width
-    if (tx + labelWidth + 14 <= width - padding.right) {
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'top'
-      ctx.fillText(labelText, tx + 10, ty - 10)
-    } else {
-      ctx.textAlign = 'right'
-      ctx.textBaseline = 'top'
-      ctx.fillText(labelText, tx - 10, ty - 10)
-    }
+    drawPointLabel(targetText, tx, ty, positions.target)
   }
 
-  // 当前选中点标注（跟随滑块）
-  if (selectedX !== null && selectedX >= xMin && selectedX <= xMax) {
+  // 绘制当前选中点标注
+  if (currentText) {
     const tx = getX(selectedX)
     const ty = getY(selectedY)
     ctx.fillStyle = '#f59e0b'
@@ -1073,19 +1256,7 @@ function drawProfitLineChart(ctx, width, height, data, options = {}) {
     ctx.fill()
     ctx.fillStyle = '#d97706'
     ctx.font = 'bold 11px sans-serif'
-    // 当前点标注放在黄星右侧，避免与保本线标注重叠；
-    // 若太靠近右边界，则改放到左侧
-    const labelText = `当前：${fmtNumber(selectedX, 0)}单/天，月利润¥${fmtMoney(selectedY)}`
-    const labelWidth = ctx.measureText(labelText).width
-    if (tx + labelWidth + 14 <= width - padding.right) {
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(labelText, tx + 10, ty)
-    } else {
-      ctx.textAlign = 'right'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(labelText, tx - 10, ty)
-    }
+    drawPointLabel(currentText, tx, ty, positions.current)
   }
 }
 
@@ -1114,12 +1285,32 @@ function redrawCharts() {
     if (barCanvasRef.value && barWrapRef.value) {
       const rect = barWrapRef.value.getBoundingClientRect()
       const w = rect.width
-      const h = Math.max(w * 0.5, 160)
+      const h = Math.max(w * 0.55, 180)
       const ctx = prepareCanvas(barCanvasRef.value, w, h)
       if (ctx) {
         drawBreakEvenBarChart(ctx, w, h, [
-          { label: '日固定成本', value: dailyFixedCost.value, color: '#ef4444', unit: '元' },
-          { label: '日盈亏平衡\n营业额', value: dailyBreakEvenRevenue.value, color: '#f59e0b', unit: '元', marker: '保本线' },
+          {
+            label: '日固定成本',
+            value: dailyFixedCost.value,
+            color: '#ef4444',
+            unit: '元',
+            segments: [
+              { label: '房租', value: dailyRentCost.value, color: '#fca5a5' },
+              { label: '人工', value: dailyLaborCost.value, color: '#f87171' },
+              { label: '水电', value: dailyUtilitiesCost.value, color: '#ef4444' },
+            ],
+          },
+          {
+            label: '日盈亏平衡\n营业额',
+            value: dailyBreakEvenRevenue.value,
+            color: '#f59e0b',
+            unit: '元',
+            marker: '保本线',
+            segments: [
+              { label: '日固定成本', value: dailyFixedCost.value, color: '#fbbf24' },
+              { label: '食材成本', value: dailyBreakEvenFoodCost.value, color: '#f59e0b' },
+            ],
+          },
           { label: '保本日单数', value: dailyBreakEvenOrders.value, color: '#3b82f6', unit: '单' },
         ], { avgTicket: avgTicket.value })
         ctx.restore()
@@ -1271,9 +1462,8 @@ onUnmounted(() => {
 /** 下载测算结果图片 */
 function downloadResultsAsImage() {
   const name = window.prompt('请填写商圈名称（可直接留空跳过）', businessName.value)
-  if (name !== null) {
-    businessName.value = name.trim()
-  }
+  if (name === null) return
+  businessName.value = name.trim()
 
   const width = 480
   const padding = 20
@@ -1419,13 +1609,33 @@ function downloadResultsAsImage() {
 
     // 柱状图
     const barW = width - padding * 2
-    const barH = 200
+    const barH = 220
     const barCanvas = document.createElement('canvas')
     const barCtx = prepareCanvas(barCanvas, barW, barH)
     if (barCtx) {
       drawBreakEvenBarChart(barCtx, barW, barH, [
-        { label: '日固定成本', value: dailyFixedCost.value, color: '#ef4444', unit: '元' },
-        { label: '日盈亏平衡\n营业额', value: dailyBreakEvenRevenue.value, color: '#f59e0b', unit: '元', marker: '保本线' },
+        {
+          label: '日固定成本',
+          value: dailyFixedCost.value,
+          color: '#ef4444',
+          unit: '元',
+          segments: [
+            { label: '房租', value: dailyRentCost.value, color: '#fca5a5' },
+            { label: '人工', value: dailyLaborCost.value, color: '#f87171' },
+            { label: '水电', value: dailyUtilitiesCost.value, color: '#ef4444' },
+          ],
+        },
+        {
+          label: '日盈亏平衡\n营业额',
+          value: dailyBreakEvenRevenue.value,
+          color: '#f59e0b',
+          unit: '元',
+          marker: '保本线',
+          segments: [
+            { label: '日固定成本', value: dailyFixedCost.value, color: '#fbbf24' },
+            { label: '食材成本', value: dailyBreakEvenFoodCost.value, color: '#f59e0b' },
+          ],
+        },
         { label: '保本日单数', value: dailyBreakEvenOrders.value, color: '#3b82f6', unit: '单' },
       ], { avgTicket: avgTicket.value })
       barCtx.restore()

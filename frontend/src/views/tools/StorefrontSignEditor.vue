@@ -61,6 +61,107 @@ function ensureDefaults() {
 ensureDefaults()
 
 // ============================================================
+// Undo / redo history
+// ============================================================
+const MAX_HISTORY = 50
+const history = ref([])
+const historyIndex = ref(-1)
+const isHistoryNavigating = ref(false)
+
+function cloneState(state) {
+  try {
+    return structuredClone(state)
+  } catch {
+    return JSON.parse(JSON.stringify(state))
+  }
+}
+
+function captureState() {
+  return {
+    width: signWidth.value,
+    height: signHeight.value,
+    selectedPreset: selectedPreset.value,
+    selectedId: selectedId.value,
+    elements: cloneState(elements.value),
+  }
+}
+
+function commitHistory(reason = 'change') {
+  if (isHistoryNavigating.value) return
+  const state = captureState()
+  // Drop any redo branches before appending.
+  if (historyIndex.value < history.value.length - 1) {
+    history.value = history.value.slice(0, historyIndex.value + 1)
+  }
+  // Avoid duplicate consecutive snapshots.
+  const last = history.value[history.value.length - 1]
+  if (last && JSON.stringify(last) === JSON.stringify(state)) return
+
+  history.value.push(state)
+  if (history.value.length > MAX_HISTORY) {
+    history.value.shift()
+  } else {
+    historyIndex.value += 1
+  }
+}
+
+function applyState(state) {
+  isHistoryNavigating.value = true
+  signWidth.value = state.width
+  signHeight.value = state.height
+  selectedPreset.value = state.selectedPreset
+  elements.value = cloneState(state.elements)
+  selectedId.value = state.selectedId
+  nextTick(() => {
+    renderCanvas()
+    isHistoryNavigating.value = false
+  })
+}
+
+function undo() {
+  if (!canUndo.value) return
+  historyIndex.value -= 1
+  applyState(history.value[historyIndex.value])
+}
+
+function redo() {
+  if (!canRedo.value) return
+  historyIndex.value += 1
+  applyState(history.value[historyIndex.value])
+}
+
+const canUndo = computed(() => historyIndex.value > 0)
+const canRedo = computed(() => historyIndex.value < history.value.length - 1)
+
+// Capture the initial state as the first history entry.
+commitHistory('init')
+
+// Auto-commit when structural or property changes settle.
+const debouncedCommitHistory = useDebounceFn(() => commitHistory('edit'), 300)
+
+watch(
+  () => elements.value,
+  () => {
+    debouncedCommitHistory()
+  },
+  { deep: true }
+)
+
+watch([signWidth, signHeight], () => {
+  debouncedCommitHistory()
+})
+
+// Keyboard shortcuts for undo/redo.
+function onKeyDown(e) {
+  const meta = e.ctrlKey || e.metaKey
+  if (meta && e.key.toLowerCase() === 'z') {
+    e.preventDefault()
+    if (e.shiftKey) redo()
+    else undo()
+  }
+}
+
+// ============================================================
 // Drag / resize / rotate state
 // ============================================================
 const dragState = ref(null)
@@ -91,6 +192,7 @@ function applyPreset(key) {
     signWidth.value = preset.width
     signHeight.value = preset.height
   }
+  commitHistory('preset')
 }
 
 watch([signWidth, signHeight], () => {
@@ -113,10 +215,12 @@ function updateCanvasScale() {
 onMounted(() => {
   updateCanvasScale()
   window.addEventListener('resize', updateCanvasScale)
+  window.addEventListener('keydown', onKeyDown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateCanvasScale)
+  window.removeEventListener('keydown', onKeyDown)
 })
 
 // ============================================================
@@ -126,12 +230,14 @@ function addText(type) {
   const el = createTextElement(type, signWidth.value, signHeight.value)
   elements.value.push(el)
   selectedId.value = el.id
+  commitHistory('add-text')
   nextTick(renderCanvas)
 }
 
 function deleteElement(id) {
   elements.value = elements.value.filter((e) => e.id !== id)
   if (selectedId.value === id) selectedId.value = null
+  commitHistory('delete')
   nextTick(renderCanvas)
 }
 
@@ -142,6 +248,7 @@ function duplicateElement(el) {
   copy.y += 10
   elements.value.push(copy)
   selectedId.value = copy.id
+  commitHistory('duplicate')
   nextTick(renderCanvas)
 }
 
@@ -186,6 +293,7 @@ async function onLogoFile(e) {
       elements.value.push(el)
       selectedId.value = el.id
       isLoading.value = false
+      commitHistory('add-logo')
       nextTick(renderCanvas)
     }
     img.onerror = () => {
@@ -468,6 +576,9 @@ function onCanvasMouseMove(e) {
 }
 
 function onCanvasMouseUp() {
+  if (dragState.value) {
+    commitHistory('drag')
+  }
   dragState.value = null
 }
 
@@ -572,6 +683,7 @@ function loadDesign(file) {
         elements.value = data.elements
       }
       selectedId.value = null
+      commitHistory('load')
       nextTick(renderCanvas)
     } catch {
       errorMsg.value = '设计文件解析失败'
@@ -590,6 +702,7 @@ function clearDesign() {
   elements.value = []
   selectedId.value = null
   ensureDefaults()
+  commitHistory('clear')
   nextTick(renderCanvas)
 }
 </script>
@@ -604,44 +717,217 @@ function clearDesign() {
     </div>
 
     <div class="editor-layout">
-      <!-- Canvas area -->
-      <div class="canvas-panel card">
-        <div class="canvas-toolbar">
-          <button class="btn btn-sm btn-secondary" @click="addText('heading')">+ 大字</button>
-          <button class="btn btn-sm btn-secondary" @click="addText('sub')">+ 小字</button>
-          <button class="btn btn-sm btn-secondary" @click="triggerLogoUpload">+ Logo</button>
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept="image/png,image/jpeg,image/svg+xml"
-            style="display:none"
-            @change="onLogoFile"
-          />
-          <button class="btn btn-sm btn-secondary" @click="saveDesign">保存 JSON</button>
-          <label class="btn btn-sm btn-secondary" style="position:relative;cursor:pointer">
-            加载 JSON
-            <input type="file" accept="application/json" style="display:none" @change="onDesignFile" />
-          </label>
-          <button class="btn btn-sm btn-danger" @click="clearDesign">清空</button>
+      <!-- Left: canvas + properties + export -->
+      <div class="main-column">
+        <div class="canvas-panel card">
+          <div class="canvas-toolbar">
+            <button class="btn btn-sm btn-secondary" @click="addText('heading')">+ 大字</button>
+            <button class="btn btn-sm btn-secondary" @click="addText('sub')">+ 小字</button>
+            <button class="btn btn-sm btn-secondary" @click="triggerLogoUpload">+ Logo</button>
+            <input
+              ref="fileInputRef"
+              type="file"
+              accept="image/png,image/jpeg,image/svg+xml"
+              style="display:none"
+              @change="onLogoFile"
+            />
+            <button class="btn btn-sm btn-secondary" @click="saveDesign">保存 JSON</button>
+            <label class="btn btn-sm btn-secondary" style="position:relative;cursor:pointer">
+              加载 JSON
+              <input type="file" accept="application/json" style="display:none" @change="onDesignFile" />
+            </label>
+            <button class="btn btn-sm btn-secondary" :disabled="!canUndo" @click="undo">↩ 返工</button>
+            <button class="btn btn-sm btn-secondary" :disabled="!canRedo" @click="redo">↪ 重做</button>
+            <button class="btn btn-sm btn-danger" @click="clearDesign">清空</button>
+          </div>
+
+          <div ref="canvasWrapperRef" class="canvas-wrapper">
+            <canvas
+              ref="canvasRef"
+              class="sign-canvas"
+              @mousedown="onCanvasMouseDown"
+              @mousemove="onCanvasMouseMove"
+              @mouseup="onCanvasMouseUp"
+              @mouseleave="onCanvasMouseUp"
+            />
+          </div>
+
+          <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
+          <div v-if="isLoading" class="loading-msg">处理中…</div>
         </div>
 
-        <div ref="canvasWrapperRef" class="canvas-wrapper">
-          <canvas
-            ref="canvasRef"
-            class="sign-canvas"
-            @mousedown="onCanvasMouseDown"
-            @mousemove="onCanvasMouseMove"
-            @mouseup="onCanvasMouseUp"
-            @mouseleave="onCanvasMouseUp"
-          />
+        <!-- Element properties below canvas -->
+        <div class="properties-panel card">
+          <template v-if="selectedEl">
+            <h3>元素属性 · {{ selectedEl.type === 'text' ? (selectedEl.name || '文字') : 'Logo' }}</h3>
+
+            <!-- Text properties -->
+            <template v-if="selectedEl.type === 'text'">
+              <div class="control-group">
+                <label class="control-label">文字内容</label>
+                <input v-model="selectedEl.text" type="text" class="input" />
+              </div>
+              <div class="control-row">
+                <div class="control-group">
+                  <label class="control-label">字体</label>
+                  <select v-model="selectedEl.fontFamily" class="input">
+                    <option v-for="f in FONT_OPTIONS" :key="f.key" :value="f.key">{{ f.label }}</option>
+                  </select>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">字号 (cm)</label>
+                  <input v-model.number="selectedEl.fontSize" type="number" class="input" min="5" max="200" />
+                </div>
+              </div>
+              <div class="control-row">
+                <div class="control-group">
+                  <label class="control-label">颜色</label>
+                  <input v-model="selectedEl.color" type="color" class="color-picker" />
+                </div>
+                <div class="control-group" style="justify-content: flex-end">
+                  <label class="inline-label">
+                    <input v-model="selectedEl.bold" type="checkbox" />
+                    加粗
+                  </label>
+                  <label class="inline-label">
+                    <input v-model="selectedEl.vertical" type="checkbox" />
+                    竖排
+                  </label>
+                </div>
+              </div>
+              <div class="control-row">
+                <div class="control-group">
+                  <label class="control-label">X (cm)</label>
+                  <input v-model.number="selectedEl.x" type="number" class="input" step="0.1" />
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Y (cm)</label>
+                  <input v-model.number="selectedEl.y" type="number" class="input" step="0.1" />
+                </div>
+              </div>
+              <div class="control-row">
+                <div class="control-group">
+                  <label class="control-label">宽 (cm)</label>
+                  <input v-model.number="selectedEl.width" type="number" class="input" min="1" />
+                </div>
+                <div class="control-group">
+                  <label class="control-label">高 (cm)</label>
+                  <input v-model.number="selectedEl.height" type="number" class="input" min="1" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">旋转 (°)</label>
+                <div class="control-row">
+                  <input v-model.number="selectedEl.rotation" type="range" class="density-slider" min="0" max="360" />
+                  <input v-model.number="selectedEl.rotation" type="number" class="input number-input" min="0" max="360" />
+                </div>
+              </div>
+            </template>
+
+            <!-- Logo properties -->
+            <template v-if="selectedEl.type === 'logo'">
+              <div class="control-row">
+                <label class="inline-label">
+                  <input v-model="selectedEl.removeBackground" type="checkbox" />
+                  去底色
+                </label>
+                <label class="inline-label">
+                  <input v-model="selectedEl.replaceColor" type="checkbox" />
+                  颜色替换
+                </label>
+              </div>
+              <div v-if="selectedEl.removeBackground" class="control-group">
+                <label class="control-label">去底色阈值</label>
+                <div class="control-row">
+                  <input v-model.number="selectedEl.removeThreshold" type="range" class="density-slider" min="0" max="255" />
+                  <input v-model.number="selectedEl.removeThreshold" type="number" class="input number-input" min="0" max="255" />
+                </div>
+              </div>
+              <div v-if="selectedEl.replaceColor" class="control-row">
+                <div class="control-group">
+                  <label class="control-label">替换为</label>
+                  <input v-model="selectedEl.replacementColor" type="color" class="color-picker" />
+                </div>
+              </div>
+              <div class="control-row">
+                <div class="control-group">
+                  <label class="control-label">宽 (cm)</label>
+                  <input v-model.number="selectedEl.width" type="number" class="input" min="1" step="0.1" />
+                </div>
+                <div class="control-group">
+                  <label class="control-label">高 (cm)</label>
+                  <input v-model.number="selectedEl.height" type="number" class="input" min="1" step="0.1" />
+                </div>
+              </div>
+              <div class="control-row">
+                <div class="control-group">
+                  <label class="control-label">X (cm)</label>
+                  <input v-model.number="selectedEl.x" type="number" class="input" step="0.1" />
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Y (cm)</label>
+                  <input v-model.number="selectedEl.y" type="number" class="input" step="0.1" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">旋转 (°)</label>
+                <div class="control-row">
+                  <input v-model.number="selectedEl.rotation" type="range" class="density-slider" min="0" max="360" />
+                  <input v-model.number="selectedEl.rotation" type="number" class="input number-input" min="0" max="360" />
+                </div>
+              </div>
+            </template>
+
+            <!-- Spacing info -->
+            <div class="spacing-info">
+              <div class="info-row">
+                <span>到左</span>
+                <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).left) }}</strong>
+              </div>
+              <div class="info-row">
+                <span>到上</span>
+                <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).top) }}</strong>
+              </div>
+              <div class="info-row">
+                <span>到右</span>
+                <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).right) }}</strong>
+              </div>
+              <div class="info-row">
+                <span>到下</span>
+                <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).bottom) }}</strong>
+              </div>
+            </div>
+
+            <div class="control-row" style="margin-top: 12px">
+              <button class="btn btn-secondary btn-sm" @click="duplicateElement(selectedEl)">复制</button>
+              <button class="btn btn-danger btn-sm" @click="deleteElement(selectedEl.id)">删除</button>
+            </div>
+          </template>
+
+          <template v-else>
+            <h3>元素属性</h3>
+            <div class="hint">点击画布中的元素进行编辑，或从上方工具栏添加文字/Logo。</div>
+          </template>
         </div>
 
-        <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
-        <div v-if="isLoading" class="loading-msg">处理中…</div>
+        <!-- Export below properties -->
+        <div class="export-panel card">
+          <h3>导出</h3>
+          <div class="control-group">
+            <label class="inline-label">
+              <input v-model="exportDpi" type="checkbox" />
+              按真实 DPI (300) 导出
+            </label>
+          </div>
+          <div class="control-row">
+            <button class="btn btn-primary" @click="exportImage({ annotated: false, realDpi: exportDpi })">导出 PNG</button>
+            <button class="btn btn-secondary" @click="exportImage({ annotated: true, realDpi: exportDpi })">导出工程图</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Properties panel -->
-      <div class="properties-panel card">
+      <!-- Right: sign settings -->
+      <div class="settings-panel card">
         <h3>招牌设置</h3>
         <div class="control-group">
           <label class="control-label">预设尺寸</label>
@@ -693,164 +979,6 @@ function clearDesign() {
             </select>
           </div>
         </div>
-
-        <template v-if="selectedEl">
-          <h3>元素属性</h3>
-          <div class="control-group">
-            <label class="control-label">类型</label>
-            <div class="static-text">{{ selectedEl.type === 'text' ? (selectedEl.name || '文字') : 'Logo' }}</div>
-          </div>
-
-          <!-- Text properties -->
-          <template v-if="selectedEl.type === 'text'">
-            <div class="control-group">
-              <label class="control-label">文字内容</label>
-              <input v-model="selectedEl.text" type="text" class="input" />
-            </div>
-            <div class="control-group">
-              <label class="control-label">字体</label>
-              <select v-model="selectedEl.fontFamily" class="input">
-                <option v-for="f in FONT_OPTIONS" :key="f.key" :value="f.key">{{ f.label }}</option>
-              </select>
-            </div>
-            <div class="control-row">
-              <div class="control-group">
-                <label class="control-label">字号 (cm)</label>
-                <input v-model.number="selectedEl.fontSize" type="number" class="input" min="5" max="200" />
-              </div>
-              <div class="control-group">
-                <label class="control-label">颜色</label>
-                <input v-model="selectedEl.color" type="color" class="color-picker" />
-              </div>
-            </div>
-            <div class="control-row">
-              <label class="inline-label">
-                <input v-model="selectedEl.bold" type="checkbox" />
-                加粗
-              </label>
-              <label class="inline-label">
-                <input v-model="selectedEl.vertical" type="checkbox" />
-                竖排
-              </label>
-            </div>
-            <div class="control-row">
-              <div class="control-group">
-                <label class="control-label">X (cm)</label>
-                <input v-model.number="selectedEl.x" type="number" class="input" step="0.1" />
-              </div>
-              <div class="control-group">
-                <label class="control-label">Y (cm)</label>
-                <input v-model.number="selectedEl.y" type="number" class="input" step="0.1" />
-              </div>
-            </div>
-            <div class="control-row">
-              <div class="control-group">
-                <label class="control-label">宽 (cm)</label>
-                <input v-model.number="selectedEl.width" type="number" class="input" min="1" />
-              </div>
-              <div class="control-group">
-                <label class="control-label">高 (cm)</label>
-                <input v-model.number="selectedEl.height" type="number" class="input" min="1" />
-              </div>
-            </div>
-            <div class="control-group">
-              <label class="control-label">旋转 (°)</label>
-              <input v-model.number="selectedEl.rotation" type="range" class="density-slider" min="0" max="360" />
-              <input v-model.number="selectedEl.rotation" type="number" class="input number-input" min="0" max="360" />
-            </div>
-          </template>
-
-          <!-- Logo properties -->
-          <template v-if="selectedEl.type === 'logo'">
-            <div class="control-row">
-              <label class="inline-label">
-                <input v-model="selectedEl.removeBackground" type="checkbox" />
-                去底色
-              </label>
-              <label class="inline-label">
-                <input v-model="selectedEl.replaceColor" type="checkbox" />
-                颜色替换
-              </label>
-            </div>
-            <div v-if="selectedEl.removeBackground" class="control-group">
-              <label class="control-label">去底色阈值</label>
-              <input v-model.number="selectedEl.removeThreshold" type="range" class="density-slider" min="0" max="255" />
-              <input v-model.number="selectedEl.removeThreshold" type="number" class="input number-input" min="0" max="255" />
-            </div>
-            <div v-if="selectedEl.replaceColor" class="control-row">
-              <div class="control-group">
-                <label class="control-label">替换为</label>
-                <input v-model="selectedEl.replacementColor" type="color" class="color-picker" />
-              </div>
-            </div>
-            <div class="control-row">
-              <div class="control-group">
-                <label class="control-label">宽 (cm)</label>
-                <input v-model.number="selectedEl.width" type="number" class="input" min="1" step="0.1" />
-              </div>
-              <div class="control-group">
-                <label class="control-label">高 (cm)</label>
-                <input v-model.number="selectedEl.height" type="number" class="input" min="1" step="0.1" />
-              </div>
-            </div>
-            <div class="control-row">
-              <div class="control-group">
-                <label class="control-label">X (cm)</label>
-                <input v-model.number="selectedEl.x" type="number" class="input" step="0.1" />
-              </div>
-              <div class="control-group">
-                <label class="control-label">Y (cm)</label>
-                <input v-model.number="selectedEl.y" type="number" class="input" step="0.1" />
-              </div>
-            </div>
-            <div class="control-group">
-              <label class="control-label">旋转 (°)</label>
-              <input v-model.number="selectedEl.rotation" type="range" class="density-slider" min="0" max="360" />
-              <input v-model.number="selectedEl.rotation" type="number" class="input number-input" min="0" max="360" />
-            </div>
-          </template>
-
-          <!-- Spacing info -->
-          <div class="spacing-info">
-            <div class="info-row">
-              <span>到左</span>
-              <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).left) }}</strong>
-            </div>
-            <div class="info-row">
-              <span>到上</span>
-              <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).top) }}</strong>
-            </div>
-            <div class="info-row">
-              <span>到右</span>
-              <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).right) }}</strong>
-            </div>
-            <div class="info-row">
-              <span>到下</span>
-              <strong>{{ formatCm(measureEdgeDistances(selectedEl, dimensions).bottom) }}</strong>
-            </div>
-          </div>
-
-          <div class="control-row" style="margin-top: 12px">
-            <button class="btn btn-secondary btn-sm" @click="duplicateElement(selectedEl)">复制</button>
-            <button class="btn btn-danger btn-sm" @click="deleteElement(selectedEl.id)">删除</button>
-          </div>
-        </template>
-
-        <template v-else>
-          <div class="hint">点击画布中的元素进行编辑，或从上方添加文字/Logo。</div>
-        </template>
-
-        <h3>导出</h3>
-        <div class="control-group">
-          <label class="inline-label">
-            <input v-model="exportDpi" type="checkbox" />
-            按真实 DPI (300) 导出
-          </label>
-        </div>
-        <div class="control-row">
-          <button class="btn btn-primary" @click="exportImage({ annotated: false, realDpi: exportDpi })">导出 PNG</button>
-          <button class="btn btn-secondary" @click="exportImage({ annotated: true, realDpi: exportDpi })">导出工程图</button>
-        </div>
       </div>
     </div>
   </div>
@@ -870,9 +998,14 @@ export default {
 }
 .editor-layout {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 280px;
   gap: 20px;
   align-items: start;
+}
+.main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 .canvas-panel {
   display: flex;
@@ -886,6 +1019,10 @@ export default {
   gap: 8px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
+}
+.canvas-toolbar .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .canvas-wrapper {
   flex: 1;
@@ -905,12 +1042,16 @@ export default {
   max-width: 100%;
   max-height: 100%;
 }
-.properties-panel {
+.properties-panel,
+.export-panel,
+.settings-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-.properties-panel h3 {
+.properties-panel h3,
+.export-panel h3,
+.settings-panel h3 {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
@@ -930,6 +1071,7 @@ export default {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  align-items: flex-end;
 }
 .control-row .control-group {
   flex: 1;
@@ -1004,12 +1146,6 @@ export default {
 @media (max-width: 768px) {
   .editor-layout {
     grid-template-columns: 1fr;
-  }
-  .properties-panel {
-    order: 2;
-  }
-  .canvas-panel {
-    order: 1;
   }
 }
 </style>

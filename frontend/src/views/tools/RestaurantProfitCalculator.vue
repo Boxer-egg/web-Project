@@ -198,11 +198,20 @@ const detailPopup = ref({
   visible: false,
   title: '',
   rows: [],
+  groups: [],
   variant: 'list',
 })
 
-function showDetailPopup(title, rows, variant = 'list') {
-  detailPopup.value = { visible: true, title, rows, variant }
+function showDetailPopup(title, data, variant = 'list') {
+  const payload = { visible: true, title, variant }
+  if (variant === 'steps') {
+    payload.groups = data || []
+    payload.rows = []
+  } else {
+    payload.rows = data || []
+    payload.groups = []
+  }
+  detailPopup.value = payload
 }
 
 function closeDetailPopup() {
@@ -286,16 +295,31 @@ const detailFields = computed(() => ({
   },
   targetMonthlyNetProfit: {
     title: '目标月净利润明细',
-    rows: [
-      ['目标日单数', fmtNumber(targetDailyOrders.value, 0), '单'],
-      ['× 平均客单价', fmtMoney(avgTicket.value), '元'],
-      ['= 目标日营收', fmtMoney(targetDailyRevenue.value), '元'],
-      ['× 30 天', '30', '天'],
-      ['= 目标月营收', fmtMoney(targetMonthlyRevenue.value), '元'],
-      ['× 毛利率', fmtPercent(grossMargin.value), ''],
-      ['= 目标月毛利', fmtMoney(targetMonthlyGrossProfit.value), '元'],
-      ['- 月固定成本', fmtMoney(monthlyFixedCost.value), '元'],
-      ['= 目标月净利润', fmtMoney(targetMonthlyNetProfit.value), '元'],
+    groups: [
+      {
+        op: '×',
+        a: { label: '目标日单数', value: fmtNumber(targetDailyOrders.value, 0), unit: '单' },
+        b: { label: '平均客单价', value: fmtMoney(avgTicket.value), unit: '元' },
+        result: { label: '目标日营收', value: fmtMoney(targetDailyRevenue.value), unit: '元' },
+      },
+      {
+        op: '×',
+        a: { label: '目标日营收', value: fmtMoney(targetDailyRevenue.value), unit: '元' },
+        b: { label: '30 天', value: '30', unit: '天' },
+        result: { label: '目标月营收', value: fmtMoney(targetMonthlyRevenue.value), unit: '元' },
+      },
+      {
+        op: '×',
+        a: { label: '目标月营收', value: fmtMoney(targetMonthlyRevenue.value), unit: '元' },
+        b: { label: '毛利率', value: fmtPercent(grossMargin.value), unit: '' },
+        result: { label: '目标月毛利', value: fmtMoney(targetMonthlyGrossProfit.value), unit: '元' },
+      },
+      {
+        op: '−',
+        a: { label: '目标月毛利', value: fmtMoney(targetMonthlyGrossProfit.value), unit: '元' },
+        b: { label: '月固定成本', value: fmtMoney(monthlyFixedCost.value), unit: '元' },
+        result: { label: '目标月净利润', value: fmtMoney(targetMonthlyNetProfit.value), unit: '元' },
+      },
     ],
   },
   paybackMonths: {
@@ -1924,13 +1948,25 @@ function downloadResultsAsImage() {
           <div class="detail-popup-body">
             <div v-if="detailPopup.variant === 'steps'" class="detail-steps">
               <div
-                v-for="(row, idx) in detailPopup.rows"
+                v-for="(group, idx) in detailPopup.groups"
                 :key="idx"
                 class="detail-step"
-                :class="{ 'detail-step-final': idx === detailPopup.rows.length - 1 }"
+                :class="{ 'detail-step-final': idx === detailPopup.groups.length - 1 }"
               >
-                <div class="detail-step-label">{{ row[0] }}</div>
-                <div class="detail-step-value">{{ row[1] }} <span class="detail-step-unit">{{ row[2] }}</span></div>
+                <div class="detail-step-operands">
+                  <div class="detail-step-operand">
+                    <span class="detail-step-op-label">{{ group.a.label }}</span>
+                    <span class="detail-step-op-value">{{ group.a.value }} {{ group.a.unit }}</span>
+                  </div>
+                  <div class="detail-step-operator">{{ group.op }}</div>
+                  <div class="detail-step-operand">
+                    <span class="detail-step-op-label">{{ group.b.label }}</span>
+                    <span class="detail-step-op-value">{{ group.b.value }} {{ group.b.unit }}</span>
+                  </div>
+                </div>
+                <div class="detail-step-result">
+                  = {{ group.result.label }} {{ group.result.value }} {{ group.result.unit }}
+                </div>
               </div>
             </div>
             <div v-else class="detail-popup-body-rows">
@@ -2415,36 +2451,59 @@ input[type="number"].with-spinners {
 .detail-steps {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .detail-step {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 14px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
-.detail-step-label {
-  font-size: 13px;
+.detail-step-operands {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.detail-step-operand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 80px;
+}
+.detail-step-op-label {
+  font-size: 12px;
   color: var(--text-secondary);
 }
-.detail-step-value {
-  font-size: 18px;
-  font-weight: 700;
+.detail-step-op-value {
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-primary);
 }
-.detail-step-unit {
-  font-size: 12px;
+.detail-step-operator {
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-muted);
-  font-weight: 400;
+  padding: 0 6px;
+}
+.detail-step-result {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
 }
 .detail-step-final {
   background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
   border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
 }
-.detail-step-final .detail-step-value {
+.detail-step-final .detail-step-result {
   color: var(--accent);
 }
 

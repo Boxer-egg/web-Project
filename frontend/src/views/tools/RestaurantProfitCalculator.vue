@@ -198,10 +198,11 @@ const detailPopup = ref({
   visible: false,
   title: '',
   rows: [],
+  variant: 'list',
 })
 
-function showDetailPopup(title, rows) {
-  detailPopup.value = { visible: true, title, rows }
+function showDetailPopup(title, rows, variant = 'list') {
+  detailPopup.value = { visible: true, title, rows, variant }
 }
 
 function closeDetailPopup() {
@@ -1883,42 +1884,20 @@ function downloadResultsAsImage() {
           <div v-if="hasMissingRequiredFields" class="result-warning">
             当前还有 {{ missingRequiredFields.length }} 项关键参数未填写，目标净利润可能为负数或无法准确计算：{{ missingRequiredLabels.join('、') }}
           </div>
-
-          <div class="calculation-flow">
-            <div class="calc-step">
-              <div class="calc-step-formula">{{ targetDailyOrders }} 单 × {{ fmtMoney(avgTicket) }} 元</div>
-              <div class="calc-step-value">{{ fmtMoney(targetDailyRevenue) }}</div>
-              <div class="calc-step-unit">元</div>
-              <div class="calc-step-name">目标日营收</div>
+          <div class="metric-grid">
+            <div class="metric">
+              <div class="metric-value">{{ fmtMoney(targetDailyRevenue) }}</div>
+              <div class="metric-label">目标日营收（元）</div>
             </div>
-            <div class="calc-arrow">
-              <span>× 30 天</span>
+            <div class="metric">
+              <div class="metric-value">{{ fmtMoney(targetMonthlyRevenue) }}</div>
+              <div class="metric-label">目标月营收（元）</div>
             </div>
-            <div class="calc-step">
-              <div class="calc-step-value">{{ fmtMoney(targetMonthlyRevenue) }}</div>
-              <div class="calc-step-unit">元</div>
-              <div class="calc-step-name">目标月营收</div>
+            <div class="metric">
+              <div class="metric-value">{{ fmtMoney(targetMonthlyGrossProfit) }}</div>
+              <div class="metric-label">目标月毛利（元）</div>
             </div>
-            <div class="calc-arrow">
-              <span>× 毛利率 {{ fmtPercent(grossMargin) }}</span>
-            </div>
-            <div class="calc-step">
-              <div class="calc-step-value">{{ fmtMoney(targetMonthlyGrossProfit) }}</div>
-              <div class="calc-step-unit">元</div>
-              <div class="calc-step-name">目标月毛利</div>
-            </div>
-            <div class="calc-arrow">
-              <span>− 月固定成本</span>
-            </div>
-            <div class="calc-step final" :class="{ positive: targetMonthlyNetProfit > 0, negative: targetMonthlyNetProfit < 0 }">
-              <div class="calc-step-value">{{ fmtMoney(targetMonthlyNetProfit) }}</div>
-              <div class="calc-step-unit">元</div>
-              <div class="calc-step-name">目标月净利润</div>
-            </div>
-          </div>
-
-          <div class="metric-grid target-extra-grid">
-            <div class="metric clickable" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.rows)">
+            <div class="metric clickable" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.rows, 'steps')">
               <div class="metric-value">{{ fmtMoney(targetMonthlyNetProfit) }}</div>
               <div class="metric-label">目标月净利润（元）</div>
             </div>
@@ -1943,14 +1922,27 @@ function downloadResultsAsImage() {
             <button class="detail-popup-close" @click="closeDetailPopup">×</button>
           </div>
           <div class="detail-popup-body">
-            <div
-              v-for="(row, idx) in detailPopup.rows"
-              :key="idx"
-              class="detail-row"
-              :class="{ 'detail-row-total': idx === detailPopup.rows.length - 1 }"
-            >
-              <span class="detail-label">{{ row[0] }}</span>
-              <span class="detail-value">{{ row[1] }} <span class="detail-unit">{{ row[2] }}</span></span>
+            <div v-if="detailPopup.variant === 'steps'" class="detail-steps">
+              <div
+                v-for="(row, idx) in detailPopup.rows"
+                :key="idx"
+                class="detail-step"
+                :class="{ 'detail-step-final': idx === detailPopup.rows.length - 1 }"
+              >
+                <div class="detail-step-label">{{ row[0] }}</div>
+                <div class="detail-step-value">{{ row[1] }} <span class="detail-step-unit">{{ row[2] }}</span></div>
+              </div>
+            </div>
+            <div v-else class="detail-popup-body-rows">
+              <div
+                v-for="(row, idx) in detailPopup.rows"
+                :key="idx"
+                class="detail-row"
+                :class="{ 'detail-row-total': idx === detailPopup.rows.length - 1 }"
+              >
+                <span class="detail-label">{{ row[0] }}</span>
+                <span class="detail-value">{{ row[1] }} <span class="detail-unit">{{ row[2] }}</span></span>
+              </div>
             </div>
           </div>
         </div>
@@ -2309,83 +2301,7 @@ input[type="number"].with-spinners {
   line-height: 1.4;
 }
 
-/* 目标经营测算步骤流 */
-.calculation-flow {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: nowrap;
-}
-.calc-step {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 14px 10px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  text-align: center;
-}
-.calc-step-formula {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.3;
-  margin-bottom: 2px;
-}
-.calc-step-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-  word-break: break-all;
-}
-.calc-step-unit {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.calc-step-name {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-}
-.calc-step.final {
-  background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
-  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
-}
-.calc-step.final.positive .calc-step-value {
-  color: var(--success);
-}
-.calc-step.final.negative .calc-step-value {
-  color: var(--error);
-}
-.calc-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: 12px;
-  white-space: nowrap;
-  min-width: 44px;
-}
-.calc-arrow span {
-  background: var(--bg-tertiary);
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-}
-.target-extra-grid {
-  margin-top: 8px;
-}
-.target-extra-grid .metric-value {
-  font-size: 20px;
-}
-
-.chart-action-bar {
+.text-success .metric-value {
   color: var(--success);
 }
 .text-error .metric-value {
@@ -2493,6 +2409,43 @@ input[type="number"].with-spinners {
   font-size: 12px;
   color: var(--text-muted);
   font-weight: 400;
+}
+
+/* 目标月净利润明细步骤卡片 */
+.detail-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.detail-step {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.detail-step-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.detail-step-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.detail-step-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.detail-step-final {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+}
+.detail-step-final .detail-step-value {
+  color: var(--accent);
 }
 
 /* 图表弹窗 */
@@ -2788,20 +2741,6 @@ input[type="number"].with-spinners {
   }
   .form-row.form-row-3col .input {
     padding: 8px 6px;
-  }
-  .calculation-flow {
-    flex-direction: column;
-    gap: 10px;
-  }
-  .calc-arrow {
-    transform: rotate(90deg);
-    margin: -4px 0;
-  }
-  .calc-arrow span {
-    transform: rotate(-90deg);
-  }
-  .calc-step-value {
-    font-size: 16px;
   }
   .chart-popup {
     max-height: calc(100vh - 32px);

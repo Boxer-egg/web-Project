@@ -256,6 +256,7 @@ const detailFields = computed(() => ({
       ['月固定成本', fmtMoney(monthlyFixedCost.value), '元'],
       ['÷ 30 天', '', ''],
       ['日固定成本', fmtMoney(dailyFixedCost.value), '元'],
+      ['其中：日均经营成本（人工+水电）', fmtMoney(dailyOperatingCost.value), '元'],
     ],
   },
   dailyBreakEvenRevenue: {
@@ -356,6 +357,9 @@ const monthlyFixedCost = computed(() =>
 
 /** 日固定成本（按 30 天/月） */
 const dailyFixedCost = computed(() => monthlyFixedCost.value / 30)
+
+/** 日均经营成本（人工 + 水电杂费） */
+const dailyOperatingCost = computed(() => (Number(monthlyLabor.value || 0) + Number(monthlyUtilities.value || 0)) / 30)
 
 /** 日盈亏平衡营业额 */
 const dailyBreakEvenRevenue = computed(() => {
@@ -1629,7 +1633,8 @@ function downloadResultsAsImage() {
             </div>
             <div class="metric">
               <div class="metric-value">{{ fmtMoney(effectiveMonthlyRent) }}</div>
-              <div class="metric-label">每月有效房租（实际 {{ fmtMoney(actualMonthlyRent) }}）</div>
+              <div class="metric-label">每月有效房租（元）</div>
+              <div class="metric-sublabel">实际 {{ fmtMoney(actualMonthlyRent) }} 元/月</div>
             </div>
             <div class="metric clickable" @click="showDetailPopup(detailFields.monthlyFixedCost.title, detailFields.monthlyFixedCost.rows)">
               <div class="metric-value">{{ fmtMoney(monthlyFixedCost) }}</div>
@@ -1638,6 +1643,7 @@ function downloadResultsAsImage() {
             <div class="metric clickable" @click="showDetailPopup(detailFields.dailyFixedCost.title, detailFields.dailyFixedCost.rows)">
               <div class="metric-value">{{ fmtMoney(dailyFixedCost) }}</div>
               <div class="metric-label">日固定成本（元）</div>
+              <div class="metric-sublabel">其中经营成本日均 {{ fmtMoney(dailyOperatingCost) }} 元</div>
             </div>
             <div class="metric highlight clickable" @click="showDetailPopup(detailFields.dailyBreakEvenRevenue.title, detailFields.dailyBreakEvenRevenue.rows)">
               <div class="metric-value">{{ fmtMoney(dailyBreakEvenRevenue) }}</div>
@@ -1667,20 +1673,42 @@ function downloadResultsAsImage() {
           <div v-if="hasMissingRequiredFields" class="result-warning">
             当前还有 {{ missingRequiredFields.length }} 项关键参数未填写，目标净利润可能为负数或无法准确计算：{{ missingRequiredLabels.join('、') }}
           </div>
-          <div class="metric-grid">
-            <div class="metric">
-              <div class="metric-value">{{ fmtMoney(targetDailyRevenue) }}</div>
-              <div class="metric-label">目标日营收（元）</div>
+
+          <div class="calculation-flow">
+            <div class="calc-step">
+              <div class="calc-step-formula">{{ targetDailyOrders }} 单 × {{ fmtMoney(avgTicket) }} 元</div>
+              <div class="calc-step-value">{{ fmtMoney(targetDailyRevenue) }}</div>
+              <div class="calc-step-unit">元</div>
+              <div class="calc-step-name">目标日营收</div>
             </div>
-            <div class="metric">
-              <div class="metric-value">{{ fmtMoney(targetMonthlyRevenue) }}</div>
-              <div class="metric-label">目标月营收（元）</div>
+            <div class="calc-arrow">
+              <span>× 30 天</span>
             </div>
-            <div class="metric">
-              <div class="metric-value">{{ fmtMoney(targetMonthlyGrossProfit) }}</div>
-              <div class="metric-label">目标月毛利（元）</div>
+            <div class="calc-step">
+              <div class="calc-step-value">{{ fmtMoney(targetMonthlyRevenue) }}</div>
+              <div class="calc-step-unit">元</div>
+              <div class="calc-step-name">目标月营收</div>
             </div>
-            <div class="metric clickable" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.rows)">
+            <div class="calc-arrow">
+              <span>× 毛利率 {{ fmtPercent(grossMargin) }}</span>
+            </div>
+            <div class="calc-step">
+              <div class="calc-step-value">{{ fmtMoney(targetMonthlyGrossProfit) }}</div>
+              <div class="calc-step-unit">元</div>
+              <div class="calc-step-name">目标月毛利</div>
+            </div>
+            <div class="calc-arrow">
+              <span>− 月固定成本</span>
+            </div>
+            <div class="calc-step final" :class="{ positive: targetMonthlyNetProfit > 0, negative: targetMonthlyNetProfit < 0 }">
+              <div class="calc-step-value">{{ fmtMoney(targetMonthlyNetProfit) }}</div>
+              <div class="calc-step-unit">元</div>
+              <div class="calc-step-name">目标月净利润</div>
+            </div>
+          </div>
+
+          <div class="metric-grid target-extra-grid">
+            <div class="metric clickable" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.rows)">
               <div class="metric-value">{{ fmtMoney(targetMonthlyNetProfit) }}</div>
               <div class="metric-label">目标月净利润（元）</div>
             </div>
@@ -2064,7 +2092,90 @@ input[type="number"].with-spinners {
   font-size: 12px;
   color: var(--text-secondary);
 }
-.text-success .metric-value {
+.metric-sublabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* 目标经营测算步骤流 */
+.calculation-flow {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: nowrap;
+}
+.calc-step {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.calc-step-formula {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+.calc-step-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+.calc-step-unit {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.calc-step-name {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.calc-step.final {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+}
+.calc-step.final.positive .calc-step-value {
+  color: var(--success);
+}
+.calc-step.final.negative .calc-step-value {
+  color: var(--error);
+}
+.calc-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  min-width: 44px;
+}
+.calc-arrow span {
+  background: var(--bg-tertiary);
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.target-extra-grid {
+  margin-top: 8px;
+}
+.target-extra-grid .metric-value {
+  font-size: 20px;
+}
+
+.chart-action-bar {
   color: var(--success);
 }
 .text-error .metric-value {
@@ -2468,8 +2579,19 @@ input[type="number"].with-spinners {
   .form-row.form-row-3col .input {
     padding: 8px 6px;
   }
-  .chart-popup-overlay {
-    padding: 16px 12px;
+  .calculation-flow {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .calc-arrow {
+    transform: rotate(90deg);
+    margin: -4px 0;
+  }
+  .calc-arrow span {
+    transform: rotate(-90deg);
+  }
+  .calc-step-value {
+    font-size: 16px;
   }
   .chart-popup {
     max-height: calc(100vh - 32px);

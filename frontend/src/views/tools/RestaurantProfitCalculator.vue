@@ -1878,7 +1878,7 @@ function downloadResultsAsImage() {
             <div class="metric clickable" @click="showDetailPopup(detailFields.dailyFixedCost.title, detailFields.dailyFixedCost.rows)">
               <div class="metric-value">{{ fmtMoney(dailyFixedCost) }}</div>
               <div class="metric-label">日固定成本（元）</div>
-              <div class="metric-sublabel">其中经营成本日均 {{ fmtMoney(dailyOperatingCost) }} 元</div>
+              <div class="metric-sublabel">日均经营成本（人工 + 水电）：{{ fmtMoney(dailyOperatingCost) }} 元</div>
             </div>
             <div class="metric highlight clickable" @click="showDetailPopup(detailFields.dailyBreakEvenRevenue.title, detailFields.dailyBreakEvenRevenue.rows)">
               <div class="metric-value">{{ fmtMoney(dailyBreakEvenRevenue) }}</div>

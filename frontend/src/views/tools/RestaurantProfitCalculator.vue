@@ -96,6 +96,26 @@ applyParams(getUrlParams(), {
 /** 每月人工 = 平均工资 × 人数 */
 const monthlyLabor = computed(() => Number(laborAvgSalary.value || 0) * Number(laborHeadcount.value || 0))
 
+/** 不允许为负数的录入字段（金额、数量类） */
+const nonNegativeRefs = [
+  area, annualRent, deposit, transferFee, franchiseFee, decorationAd,
+  equipment, firstBatchMaterial, laborAvgSalary, laborHeadcount,
+  monthlyUtilities, grossMargin, avgTicket, seats, tables, targetDailyOrders,
+]
+
+/** 输入负数时自动归零，保证所有录入值非负 */
+watch(
+  nonNegativeRefs.map((r) => () => r.value),
+  (values) => {
+    nonNegativeRefs.forEach((r, i) => {
+      const num = Number(values[i])
+      if (!Number.isNaN(num) && num < 0) {
+        r.value = 0
+      }
+    })
+  }
+)
+
 /** 撤消/重做状态 */
 const history = ref([])
 const historyIndex = ref(-1)
@@ -1801,7 +1821,7 @@ function downloadResultsAsImage() {
           </div>
           <div class="form-col">
             <label>人数</label>
-            <input v-model.number="laborHeadcount" type="number" class="input with-spinners">
+            <input v-model.number="laborHeadcount" type="number" min="0" class="input with-spinners">
             <span v-if="laborHeadcount > 0 && laborAvgSalary > 0" class="labor-inline-hint">总工资 {{ fmtMoney(monthlyLabor) }} 元</span>
           </div>
         </div>
@@ -1828,14 +1848,14 @@ function downloadResultsAsImage() {
           </div>
           <div class="form-col">
             <label>平均客单价（元）</label>
-            <input v-model.number="avgTicket" type="number" class="input with-spinners">
+            <input v-model.number="avgTicket" type="number" min="0" class="input with-spinners">
             <span v-if="missingRequiredFields.includes('avgTicket')" class="field-warning">请填写平均客单价，否则无法计算营收与保本单数</span>
           </div>
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">
             <label>目标日单数</label>
-            <input v-model.number="targetDailyOrders" type="number" class="input with-spinners">
+            <input v-model.number="targetDailyOrders" type="number" min="0" class="input with-spinners">
             <span v-if="missingRequiredFields.includes('targetDailyOrders')" class="field-warning">请填写目标日单数，否则目标月净利润为负</span>
           </div>
           <div class="form-col">

@@ -166,6 +166,14 @@ function applySnapshot(snapshot) {
 
 function pushHistory() {
   if (isUndoing.value) return
+
+  // 跳过包含负数的快照：这些值会被 clamp  watcher 立即归零，避免污染撤销栈
+  const hasNegative = nonNegativeRefs.some((r) => {
+    const num = Number(r.value)
+    return !Number.isNaN(num) && num < 0
+  })
+  if (hasNegative) return
+
   const snapshot = getSnapshot()
   // 如果和当前状态一致，不重复入栈
   if (historyIndex.value >= 0) {

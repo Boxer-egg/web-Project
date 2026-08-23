@@ -107,14 +107,34 @@ const nonNegativeRefs = [
 watch(
   nonNegativeRefs.map((r) => () => r.value),
   (values) => {
+    let clamped = false
     nonNegativeRefs.forEach((r, i) => {
       const num = Number(values[i])
       if (!Number.isNaN(num) && num < 0) {
         r.value = 0
+        clamped = true
       }
     })
+    if (clamped) {
+      toast.info('输入不能为负数，已自动调整为 0')
+    }
   }
 )
+
+/** 毛利率输入：锁定 "0." 前缀，只允许输入后面的小数 */
+const grossMarginSuffix = ref('')
+
+watch(grossMargin, (val) => {
+  const num = Number(val) || 0
+  const str = String(num)
+  grossMarginSuffix.value = str.startsWith('0.') ? str.slice(2) : ''
+}, { immediate: true })
+
+function onGrossMarginInput(event) {
+  const raw = event.target.value
+  const digits = raw.replace(/\D/g, '').slice(0, 3)
+  grossMargin.value = Number('0.' + (digits || '0'))
+}
 
 /** 撤消/重做状态 */
 const history = ref([])
@@ -1840,7 +1860,17 @@ function downloadResultsAsImage() {
           </div>
           <div class="form-col">
             <label>毛利率</label>
-            <input v-model.number="grossMargin" type="number" step="0.01" min="0" max="1" class="input with-spinners">
+            <div class="input gross-margin-input">
+              <span class="gross-margin-prefix">0.</span>
+              <input
+                :value="grossMarginSuffix"
+                @input="onGrossMarginInput"
+                type="text"
+                inputmode="decimal"
+                class="gross-margin-suffix"
+                placeholder="00"
+              >
+            </div>
             <span v-if="missingRequiredFields.includes('grossMargin')" class="field-warning">请填写毛利率，否则无法计算盈亏平衡与净利润</span>
           </div>
         </div>
@@ -2173,6 +2203,33 @@ input[type="number"].with-spinners::-webkit-outer-spin-button {
 }
 input[type="number"].with-spinners {
   -moz-appearance: number-input;
+}
+
+/* 毛利率输入：锁定 0. 前缀 */
+.gross-margin-input {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 8px 10px;
+}
+.gross-margin-prefix {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 14px;
+  user-select: none;
+}
+.gross-margin-suffix {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 14px;
+  outline: none;
+  padding: 0;
+  width: 100%;
+}
+.gross-margin-suffix::placeholder {
+  color: var(--text-tertiary);
 }
 
 .input-panel {

@@ -46,6 +46,7 @@ const tools = [
   { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', desc: '颜文字装饰与零宽字符文字隐写', category: '文本' },
   { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', desc: '离线查询邮编、车牌归属地、电话区号', category: '转换' },
   { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', desc: '开店成本、盈亏平衡、回本周期测算', category: '商业' },
+  { path: '/tools/gross-margin', name: '毛利率计算', icon: '💰', desc: '输入成本与售价，自动算毛利率', category: '商业' },
   { path: '/tools/rpr', name: '餐饮反向调研', icon: '🕵️‍♂️', desc: '通过单一数据反推竞品营收与翻台率', category: '商业' },
   { path: '/tools/storefront-sign-editor', name: '门头编辑器', icon: '🏪', desc: '餐饮店铺招牌排版、对齐、间距与导出', category: '商业' },
   { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', desc: '常见生活垃圾所属分类与投放提示', category: '健康' },
@@ -82,6 +83,7 @@ const categories = [
     desc: '餐饮盈利测算、竞品反向调研与门头招牌设计工具',
     paths: [
       '/tools/restaurant-profit',
+      '/tools/gross-margin',
       '/tools/rpr',
       '/tools/storefront-sign-editor',
     ]

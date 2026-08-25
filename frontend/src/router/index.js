@@ -358,6 +358,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/gross-margin',
+      name: 'gross-margin',
+      component: () => import('../views/tools/GrossMarginCalculator.vue'),
+      meta: {
+        title: '毛利率计算 - 输入成本与售价自动算毛利',
+        description: '在线毛利率计算器，输入食材成本与售价，自动给出逐步计算过程并显示毛利率，支持负毛利提示。'
+      }
+    },
+    {
       path: '/tools/rpr',
       name: 'restaurant-profit-reverse',
       component: () => import('../views/tools/RestaurantProfitReverseCalculator.vue'),

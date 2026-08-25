@@ -60,6 +60,7 @@ const groups = [
     title: '商业测算',
     tools: [
       { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', keywords: ['canyin', 'restaurant', 'profit', 'yingli', 'jisuan', 'kaidian', 'kuiyin'] },
+      { path: '/tools/gross-margin', name: '毛利率计算', icon: '💰', keywords: ['maolilv', 'gross', 'margin', 'chengben', 'shoujia', 'maoli', 'jisuan'] },
       { path: '/tools/rpr', name: '餐饮反向调研', icon: '🕵️‍♂️', keywords: ['canyin', 'restaurant', 'reverse', 'fankui', 'diaoyan', 'jingpin', 'yingli', 'fanxuan'] },
       { path: '/tools/storefront-sign-editor', name: '门头编辑器', icon: '🏪', keywords: ['mentou', 'storefront', 'sign', 'paibian', 'sheji', 'canyin'] },
     ]

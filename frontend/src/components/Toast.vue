@@ -16,6 +16,7 @@ const { toasts } = useToast()
         <span class="icon" v-if="toast.type === 'success'">✅</span>
         <span class="icon" v-if="toast.type === 'error'">❌</span>
         <span class="icon" v-if="toast.type === 'warning'">⚠️</span>
+        <span class="icon" v-if="toast.type === 'info'">ℹ️</span>
         {{ toast.message }}
       </div>
     </transition-group>
@@ -53,6 +54,7 @@ const { toasts } = useToast()
 .toast.success { border-left: 4px solid var(--success); }
 .toast.error { border-left: 4px solid var(--error); }
 .toast.warning { border-left: 4px solid var(--warning); }
+.toast.info { border-left: 4px solid var(--primary); }
 
 .icon {
   font-size: 16px;

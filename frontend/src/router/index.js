@@ -367,6 +367,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/tools/menu-gross-margin',
+      name: 'menu-gross-margin',
+      component: () => import('../views/tools/MenuGrossMarginCalculator.vue'),
+      meta: {
+        title: '菜单毛利率计算器 - 单品/套餐/整体菜单毛利测算工具',
+        description: '在线餐饮菜单毛利率计算器，录入单品原材料成本与售价自动计算毛利率，支持套餐组合定价、整体菜单毛利率加权计算、多方案管理与 Excel 导出。'
+      }
+    },
+    {
       path: '/tools/rpr',
       name: 'restaurant-profit-reverse',
       component: () => import('../views/tools/RestaurantProfitReverseCalculator.vue'),

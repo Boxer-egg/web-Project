@@ -34,11 +34,11 @@ export function createCombo(name = '', price = 0, items = []) {
 }
 
 /** 创建新的菜单方案 */
-export function createProfile(name = '默认菜单', dishes = null, combos = [], options = {}) {
+export function createProfile(name = '默认菜单', dishes = [], combos = [], options = {}) {
   return {
     id: uid(),
     name: String(name || '默认菜单'),
-    dishes: dishes === null ? [createDish()] : dishes,
+    dishes,
     combos,
     proportionMode: options.proportionMode || 'percentage', // 'percentage' | 'relative'
     dishProportions: options.dishProportions || {}, // { [dishId]: value }

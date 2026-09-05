@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
@@ -13,8 +13,7 @@ import {
   calculateCombo,
   calculateOverall,
   buildDishesMap,
-  buildCombosMap,
-  validateName
+  buildCombosMap
 } from '../../logic/menuGrossMargin.js'
 import { useToast } from '../../composables/useToast.js'
 
@@ -37,70 +36,215 @@ if (!currentProfileId.value || !profiles.value.find((p) => p.id === currentProfi
 
 const currentProfile = computed(() => profiles.value.find((p) => p.id === currentProfileId.value) || profiles.value[0])
 
-/** 当前方案的单品列表（响应式引用） */
+/** 当前方案的单品/套餐列表 */
 const dishes = computed({
   get: () => currentProfile.value.dishes,
   set: (val) => { currentProfile.value.dishes = val }
 })
-
-/** 当前方案的套餐列表 */
 const combos = computed({
   get: () => currentProfile.value.combos,
   set: (val) => { currentProfile.value.combos = val }
 })
 
-/** 计算后的单品映射 */
 const dishesMap = computed(() => buildDishesMap(dishes.value))
 const combosMap = computed(() => buildCombosMap(combos.value))
 
-/** 计算后的单品 */
+/** 计算结果 */
 const calculatedDishes = computed(() => dishes.value.map((d) => calculateDish(d)))
 const validDishes = computed(() => calculatedDishes.value.filter((d) => d.valid && d.price > 0))
-
-/** 计算后的套餐 */
 const calculatedCombos = computed(() => combos.value.map((c) => calculateCombo(c, dishesMap.value)))
 const validCombos = computed(() => calculatedCombos.value.filter((c) => c.valid))
-
-/** 整体菜单毛利率计算结果 */
 const overallResult = computed(() => calculateOverall(currentProfile.value, dishesMap.value, combosMap.value))
 
-/** 切换方案 */
-function switchProfile(id) {
-  currentProfileId.value = id
+/** ========== 单品录入框（单条录入） ========== */
+const emptyDishForm = () => ({
+  id: null,
+  name: '',
+  price: 0,
+  ingredients: [createIngredient()]
+})
+const dishForm = ref(emptyDishForm())
+
+function isDishFormDirty() {
+  const f = dishForm.value
+  return Boolean(
+    (f.name && f.name.trim()) ||
+    Number(f.price) > 0 ||
+    f.ingredients.some((ing) => (ing.name && ing.name.trim()) || Number(ing.cost) > 0)
+  )
 }
 
-/** 新建方案 */
+/** 点击菜单中的单品名称，回填到录入框 */
+function fillDishForm(dish) {
+  if (dishForm.value.id === dish.id) return
+  if (isDishFormDirty() && !window.confirm('单品录入框已有数据，是否覆盖？')) return
+  dishForm.value = {
+    id: dish.id,
+    name: dish.name,
+    price: dish.price,
+    ingredients: dish.ingredients.length
+      ? dish.ingredients.map((ing) => ({ ...ing }))
+      : [createIngredient()]
+  }
+}
+
+/** 重置单品录入框 */
+function resetDishForm() {
+  dishForm.value = emptyDishForm()
+}
+
+/** 加入菜单：编辑态更新原单品，否则新增 */
+function addDishToMenu() {
+  const f = dishForm.value
+  if (!f.name || !f.name.trim()) {
+    toast.warn('请填写单品名称')
+    return
+  }
+  const ingredients = f.ingredients
+    .filter((ing) => (ing.name && ing.name.trim()) || Number(ing.cost) > 0)
+    .map((ing) => ({ ...ing, name: ing.name.trim(), cost: Math.max(0, Number(ing.cost) || 0) }))
+  if (!ingredients.length) {
+    toast.warn('请至少填写一条原材料')
+    return
+  }
+  const price = Math.max(0, Number(f.price) || 0)
+  if (f.id && dishesMap.value.has(f.id)) {
+    dishes.value = dishes.value.map((d) =>
+      d.id === f.id ? { ...d, name: f.name.trim(), price, ingredients } : d
+    )
+    toast.success(`已更新单品「${f.name.trim()}」`)
+  } else {
+    const dish = createDish(f.name.trim(), price, ingredients)
+    dishes.value = [...dishes.value, dish]
+    toast.success(`已加入菜单：「${dish.name}」`)
+  }
+  resetDishForm()
+}
+
+/** ========== 套餐录入框（单条录入） ========== */
+const emptyComboForm = () => ({
+  id: null,
+  name: '',
+  price: 0,
+  items: [createComboItem(dishes.value[0]?.id || '', 1)]
+})
+const comboForm = ref(emptyComboForm())
+
+function isComboFormDirty() {
+  const f = comboForm.value
+  return Boolean(
+    (f.name && f.name.trim()) ||
+    Number(f.price) > 0 ||
+    f.items.some((it) => it.dishId && Number(it.quantity) > 0)
+  )
+}
+
+/** 点击套餐名称，回填到套餐录入框 */
+function fillComboForm(combo) {
+  if (comboForm.value.id === combo.id) return
+  if (isComboFormDirty() && !window.confirm('套餐录入框已有数据，是否覆盖？')) return
+  comboForm.value = {
+    id: combo.id,
+    name: combo.name,
+    price: combo.price,
+    items: combo.items.length
+      ? combo.items.map((it) => ({ ...it }))
+      : [createComboItem(dishes.value[0]?.id || '', 1)]
+  }
+}
+
+function resetComboForm() {
+  comboForm.value = emptyComboForm()
+}
+
+/** 加入菜单：编辑态更新原套餐，否则新增 */
+function addComboToMenu() {
+  const f = comboForm.value
+  if (!f.name || !f.name.trim()) {
+    toast.warn('请填写套餐名称')
+    return
+  }
+  const items = f.items
+    .filter((it) => it.dishId && dishesMap.value.has(it.dishId))
+    .map((it) => ({ dishId: it.dishId, quantity: Math.max(1, Number(it.quantity) || 1) }))
+  if (!items.length) {
+    toast.warn('请至少选择一个有效单品')
+    return
+  }
+  const price = Math.max(0, Number(f.price) || 0)
+  if (f.id && combosMap.value.has(f.id)) {
+    combos.value = combos.value.map((c) =>
+      c.id === f.id ? { ...c, name: f.name.trim(), price, items } : c
+    )
+    toast.success(`已更新套餐「${f.name.trim()}」`)
+  } else {
+    const combo = createCombo(f.name.trim(), price, items)
+    combos.value = [...combos.value, combo]
+    toast.success(`已加入菜单：「${combo.name}」`)
+  }
+  resetComboForm()
+}
+
+/** ========== 菜单概览操作 ========== */
+function removeDishById(id) {
+  const dish = dishesMap.value.get(id)
+  if (!dish) return
+  if (!window.confirm(`确定从菜单中删除「${dish.name || '未命名'}」吗？`)) return
+  dishes.value = dishes.value.filter((d) => d.id !== id)
+  const newProportions = { ...currentProfile.value.dishProportions }
+  delete newProportions[id]
+  currentProfile.value.dishProportions = newProportions
+  combos.value = combos.value
+    .map((combo) => ({ ...combo, items: combo.items.filter((item) => item.dishId !== id) }))
+    .filter((combo) => combo.items.length > 0)
+  if (dishForm.value.id === id) resetDishForm()
+  toast.success('已从菜单删除')
+}
+
+function removeComboById(id) {
+  const combo = combosMap.value.get(id)
+  if (!combo) return
+  if (!window.confirm(`确定删除套餐「${combo.name || '未命名'}」吗？`)) return
+  combos.value = combos.value.filter((c) => c.id !== id)
+  const newProportions = { ...currentProfile.value.comboProportions }
+  delete newProportions[id]
+  currentProfile.value.comboProportions = newProportions
+  if (comboForm.value.id === id) resetComboForm()
+  toast.success('套餐已删除')
+}
+
+/** ========== 方案管理 ========== */
 function createNewProfile(fromCurrent = true) {
   const name = window.prompt('请输入新方案名称', '')
-  if (!name || !validateName(name)) {
+  if (!name || !name.trim()) {
     toast.warn('方案名称不能为空')
     return
   }
   const newProfile = fromCurrent
-    ? createProfile(name, JSON.parse(JSON.stringify(dishes.value)), JSON.parse(JSON.stringify(combos.value)), {
+    ? createProfile(name.trim(), JSON.parse(JSON.stringify(dishes.value)), JSON.parse(JSON.stringify(combos.value)), {
         proportionMode: currentProfile.value.proportionMode,
         dishProportions: { ...currentProfile.value.dishProportions },
         comboProportions: { ...currentProfile.value.comboProportions },
         includeCombosInOverall: currentProfile.value.includeCombosInOverall
       })
-    : createProfile(name)
+    : createProfile(name.trim())
   profiles.value = [...profiles.value, newProfile]
   currentProfileId.value = newProfile.id
-  toast.success(`已创建方案「${name}」`)
+  resetDishForm()
+  resetComboForm()
+  toast.success(`已创建方案「${name.trim()}」`)
 }
 
-/** 重命名方案 */
 function renameProfile() {
   const name = window.prompt('请输入新的方案名称', currentProfile.value.name)
   if (name === null) return
-  if (!validateName(name)) {
+  if (!name.trim()) {
     toast.warn('方案名称不能为空')
     return
   }
-  currentProfile.value.name = name
+  currentProfile.value.name = name.trim()
 }
 
-/** 删除方案 */
 function deleteProfile(id) {
   if (profiles.value.length <= 1) {
     toast.warn('至少保留一个方案')
@@ -117,7 +261,7 @@ function deleteProfile(id) {
   toast.success('方案已删除')
 }
 
-/** 加载示例数据 */
+/** ========== 示例与清空 ========== */
 function loadExample() {
   if (!window.confirm('加载示例会替换当前方案中的所有单品和套餐，是否继续？')) return
   const dish1 = createDish('牛肉饭', 28, [
@@ -144,100 +288,45 @@ function loadExample() {
   currentProfile.value.comboProportions = {}
   currentProfile.value.proportionMode = 'percentage'
   currentProfile.value.includeCombosInOverall = false
+  resetDishForm()
+  resetComboForm()
   toast.success('示例数据已加载')
 }
 
-/** 清空当前方案 */
 function clearAll() {
-  if (!window.confirm('确定清空当前方案的所有单品、套餐和销量占比吗？')) return
-  dishes.value = [createDish()]
+  if (!window.confirm('确定清空当前方案的菜单、销量占比和录入框吗？')) return
+  dishes.value = []
   combos.value = []
   currentProfile.value.dishProportions = {}
   currentProfile.value.comboProportions = {}
+  resetDishForm()
+  resetComboForm()
   toast.success('已清空当前方案')
 }
 
-/** 添加单品 */
-function addDish() {
-  dishes.value = [...dishes.value, createDish()]
-  nextTick(() => {
-    const inputs = document.querySelectorAll('.dish-name-input')
-    const last = inputs[inputs.length - 1]
-    if (last) last.focus()
-  })
+/** ========== 录入框行操作 ========== */
+function addFormIngredient() {
+  dishForm.value.ingredients = [...dishForm.value.ingredients, createIngredient()]
 }
-
-/** 删除单品 */
-function removeDish(index) {
-  if (!window.confirm('确定删除该单品吗？')) return
-  const dish = dishes.value[index]
-  dishes.value = dishes.value.filter((_, i) => i !== index)
-  // 清理已删除单品的销量占比
-  const newProportions = { ...currentProfile.value.dishProportions }
-  delete newProportions[dish.id]
-  currentProfile.value.dishProportions = newProportions
-  // 清理套餐中引用的该单品
-  combos.value = combos.value.map((combo) => ({
-    ...combo,
-    items: combo.items.filter((item) => item.dishId !== dish.id)
-  })).filter((combo) => combo.items.length > 0)
-}
-
-/** 添加原材料 */
-function addIngredient(dish) {
-  dish.ingredients = [...dish.ingredients, createIngredient()]
-}
-
-/** 删除原材料 */
-function removeIngredient(dish, ingIndex) {
-  if (dish.ingredients.length <= 1) {
+function removeFormIngredient(index) {
+  if (dishForm.value.ingredients.length <= 1) {
     toast.info('至少保留一条原材料')
     return
   }
-  dish.ingredients = dish.ingredients.filter((_, i) => i !== ingIndex)
+  dishForm.value.ingredients = dishForm.value.ingredients.filter((_, i) => i !== index)
 }
-
-/** 添加套餐 */
-function addCombo() {
-  combos.value = [...combos.value, createCombo()]
+function addFormComboItem() {
+  comboForm.value.items = [...comboForm.value.items, createComboItem(dishes.value[0]?.id || '', 1)]
 }
-
-/** 删除套餐 */
-function removeCombo(index) {
-  if (!window.confirm('确定删除该套餐吗？')) return
-  const combo = combos.value[index]
-  combos.value = combos.value.filter((_, i) => i !== index)
-  const newProportions = { ...currentProfile.value.comboProportions }
-  delete newProportions[combo.id]
-  currentProfile.value.comboProportions = newProportions
-}
-
-/** 添加套餐项 */
-function addComboItem(combo) {
-  const firstDish = dishes.value[0]
-  combo.items = [...combo.items, createComboItem(firstDish?.id)]
-}
-
-/** 删除套餐项 */
-function removeComboItem(combo, itemIndex) {
-  if (combo.items.length <= 1) {
+function removeFormComboItem(index) {
+  if (comboForm.value.items.length <= 1) {
     toast.info('至少保留一个单品')
     return
   }
-  combo.items = combo.items.filter((_, i) => i !== itemIndex)
+  comboForm.value.items = comboForm.value.items.filter((_, i) => i !== index)
 }
 
-/** 格式化金额 */
-function fmtMoney(value) {
-  return Number(value || 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 })
-}
-
-/** 格式化百分比 */
-function fmtPercent(value) {
-  return `${(Number(value || 0) * 100).toFixed(2)}%`
-}
-
-/** 更新销量占比 */
+/** ========== 销量占比 ========== */
 function updateProportion(itemId, value) {
   const num = Math.max(0, Number(value) || 0)
   if (currentProfile.value.proportionMode === 'percentage') {
@@ -246,7 +335,6 @@ function updateProportion(itemId, value) {
     currentProfile.value.dishProportions = { ...currentProfile.value.dishProportions, [itemId]: num }
   }
 }
-
 function updateComboProportion(comboId, value) {
   const num = Math.max(0, Number(value) || 0)
   if (currentProfile.value.proportionMode === 'percentage') {
@@ -255,8 +343,6 @@ function updateComboProportion(comboId, value) {
     currentProfile.value.comboProportions = { ...currentProfile.value.comboProportions, [comboId]: num }
   }
 }
-
-/** 归一化百分比 */
 function normalizePercentages() {
   const items = overallResult.value.items
   const total = items.reduce((sum, item) => sum + Number(item.proportion || 0), 0)
@@ -278,26 +364,27 @@ function normalizePercentages() {
   currentProfile.value.comboProportions = newComboProportions
   toast.success('已归一化为 100%')
 }
+const proportionSum = computed(() =>
+  overallResult.value.items.reduce((sum, item) => sum + Number(item.proportion || 0), 0)
+)
 
-/** 导出 Excel */
+/** ========== 导出 ========== */
+function fmtMoney(value) {
+  return Number(value || 0).toLocaleString('zh-CN', { maximumFractionDigits: 2 })
+}
+function fmtPercent(value) {
+  return `${(Number(value || 0) * 100).toFixed(2)}%`
+}
+
 function exportExcel() {
   const wb = XLSX.utils.book_new()
 
-  // Sheet 1: 单品
   const dishRows = [['单品名称', '售价', '成本', '毛利', '毛利率']]
   calculatedDishes.value.forEach((d) => {
-    dishRows.push([
-      d.name || '(未命名)',
-      d.price,
-      d.cost,
-      d.grossProfit,
-      d.price > 0 ? d.grossProfit / d.price : 0
-    ])
+    dishRows.push([d.name || '(未命名)', d.price, d.cost, d.grossProfit, d.price > 0 ? d.grossProfit / d.price : 0])
   })
-  const wsDishes = XLSX.utils.aoa_to_sheet(dishRows)
-  XLSX.utils.book_append_sheet(wb, wsDishes, '单品毛利率')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dishRows), '单品毛利率')
 
-  // Sheet 2: 套餐
   const comboRows = [['套餐名称', '包含单品', '套餐售价', '单品原价合计', '折扣率', '成本', '毛利', '毛利率']]
   calculatedCombos.value.forEach((c) => {
     comboRows.push([
@@ -311,10 +398,8 @@ function exportExcel() {
       c.price > 0 ? c.grossProfit / c.price : 0
     ])
   })
-  const wsCombos = XLSX.utils.aoa_to_sheet(comboRows)
-  XLSX.utils.book_append_sheet(wb, wsCombos, '套餐毛利率')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(comboRows), '套餐毛利率')
 
-  // Sheet 3: 整体菜单汇总
   const summaryRows = [
     ['整体菜单毛利率', overallResult.value.overallGrossMarginRate],
     ['菜单总销售额', overallResult.value.totalSales],
@@ -324,22 +409,14 @@ function exportExcel() {
     ['名称', '类型', '销售额占比', '加权贡献']
   ]
   overallResult.value.items.forEach((item) => {
-    summaryRows.push([
-      item.name || '(未命名)',
-      item.type === 'dish' ? '单品' : '套餐',
-      item.salesProportion,
-      item.weightedContribution
-    ])
+    summaryRows.push([item.name || '(未命名)', item.type === 'dish' ? '单品' : '套餐', item.salesProportion, item.weightedContribution])
   })
-  const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows)
-  XLSX.utils.book_append_sheet(wb, wsSummary, '整体菜单汇总')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), '整体菜单汇总')
 
-  const fileName = `${currentProfile.value.name || '菜单毛利率'}_${new Date().toISOString().slice(0, 10)}.xlsx`
-  XLSX.writeFile(wb, fileName)
+  XLSX.writeFile(wb, `${currentProfile.value.name || '菜单毛利率'}_${new Date().toISOString().slice(0, 10)}.xlsx`)
   toast.success('Excel 导出成功')
 }
 
-/** 下载结果图片 */
 function downloadImage() {
   const width = 520
   const padding = 24
@@ -409,7 +486,6 @@ function downloadImage() {
   toast.success('图片已保存')
 }
 
-/** 回填到餐饮盈利计算器 */
 function fillToRestaurantProfit() {
   const gm = overallResult.value.overallGrossMarginRate
   localStorage.setItem('rpf-gross-margin', String(gm))
@@ -439,16 +515,16 @@ watch(
   <div class="tool-page">
     <div class="tool-header">
       <h1>📋 餐饮菜单毛利率计算器</h1>
-      <p class="tool-desc">拆分单品成本、设计套餐定价、测算整体菜单毛利率，支持多方案管理与 Excel 导出。</p>
+      <p class="tool-desc">单品录入原材料成本、套餐组合定价，加入菜单后自动测算整体毛利率，支持多方案管理与 Excel 导出。</p>
     </div>
 
     <div class="tool-layout">
-      <!-- 左侧输入区 -->
+      <!-- 左侧：录入区 -->
       <div class="input-panel">
         <!-- 方案管理 -->
         <div class="section-title">方案管理</div>
         <div class="profile-bar">
-          <select v-model="currentProfileId" class="select profile-select">
+          <select v-model="currentProfileId" class="select profile-select" @change="resetDishForm(); resetComboForm()">
             <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
           <button class="btn btn-sm" @click="renameProfile">重命名</button>
@@ -457,90 +533,101 @@ watch(
           <button class="btn btn-sm btn-danger" @click="() => deleteProfile(currentProfileId)">删除</button>
         </div>
 
-        <!-- 操作按钮 -->
         <div class="action-bar">
-          <button class="btn btn-secondary" @click="loadExample">加载示例</button>
-          <button class="btn btn-secondary" @click="clearAll">清空全部</button>
+          <button class="btn btn-secondary btn-sm" @click="loadExample">加载示例</button>
+          <button class="btn btn-secondary btn-sm" @click="clearAll">清空全部</button>
         </div>
 
-        <!-- 单品管理 -->
-        <div class="section-title">单品管理</div>
-        <div class="dish-list">
-          <div v-for="(dish, index) in dishes" :key="dish.id" class="dish-card">
-            <div class="card-header">
-              <input v-model="dish.name" type="text" class="input dish-name-input" placeholder="单品名称">
-              <button class="btn-icon" @click="removeDish(index)">✕</button>
+        <!-- 单品录入 -->
+        <div class="section-title">单品录入</div>
+        <div class="form-card">
+          <div class="form-row form-row-2col">
+            <div class="form-col">
+              <label>单品名称</label>
+              <input v-model="dishForm.name" type="text" class="input" placeholder="如：牛肉饭">
             </div>
-            <div class="form-row form-row-2col">
-              <div class="form-col">
-                <label>售价（元）</label>
-                <input v-model.number="dish.price" type="number" min="0" class="input" placeholder="0">
-              </div>
-              <div class="form-col">
-                <label>单品毛利率</label>
-                <div class="readonly-value">{{ fmtPercent(calculatedDishes[index]?.grossMarginRate) }}</div>
-              </div>
-            </div>
-            <div class="ingredients-section">
-              <div class="ingredients-header">
-                <span>原材料</span>
-                <span class="cost-total">成本合计 {{ fmtMoney(calculatedDishes[index]?.cost) }} 元</span>
-              </div>
-              <div v-for="(ing, ingIndex) in dish.ingredients" :key="ing.id" class="ingredient-row">
-                <input v-model="ing.name" type="text" class="input" placeholder="名称">
-                <input v-model.number="ing.cost" type="number" min="0" class="input" placeholder="成本">
-                <button class="btn-icon" @click="removeIngredient(dish, ingIndex)">✕</button>
-              </div>
-              <button class="btn btn-sm btn-link" @click="addIngredient(dish)">+ 添加原材料</button>
+            <div class="form-col">
+              <label>售价（元）</label>
+              <input v-model.number="dishForm.price" type="number" min="0" class="input" placeholder="0">
             </div>
           </div>
+          <div class="form-ingredients">
+            <div class="form-subheader">
+              <span>原材料</span>
+            </div>
+            <div v-for="(ing, ingIndex) in dishForm.ingredients" :key="ing.id" class="ingredient-row">
+              <input v-model="ing.name" type="text" class="input" placeholder="名称">
+              <input v-model.number="ing.cost" type="number" min="0" class="input" placeholder="成本">
+              <button class="btn-icon" @click="removeFormIngredient(ingIndex)">✕</button>
+            </div>
+            <button class="btn btn-sm btn-link" @click="addFormIngredient">+ 添加原材料</button>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" @click="addDishToMenu">{{ dishForm.id ? '更新菜单' : '加入菜单' }}</button>
+            <button v-if="isDishFormDirty()" class="btn btn-secondary btn-sm" @click="resetDishForm">重置</button>
+          </div>
         </div>
-        <button class="btn btn-primary add-dish-btn" @click="addDish">+ 添加单品</button>
 
-        <!-- 套餐管理 -->
-        <div class="section-title">套餐管理</div>
-        <div v-if="!combos.length" class="empty-tip">暂无套餐，点击下方按钮添加</div>
-        <div class="combo-list">
-          <div v-for="(combo, index) in combos" :key="combo.id" class="combo-card">
-            <div class="card-header">
-              <input v-model="combo.name" type="text" class="input combo-name-input" placeholder="套餐名称">
-              <button class="btn-icon" @click="removeCombo(index)">✕</button>
+        <!-- 套餐录入 -->
+        <div class="section-title">套餐录入</div>
+        <div class="form-card">
+          <div class="form-row form-row-2col">
+            <div class="form-col">
+              <label>套餐名称</label>
+              <input v-model="comboForm.name" type="text" class="input" placeholder="如：招牌双人餐">
             </div>
-            <div class="form-row form-row-3col">
-              <div class="form-col">
-                <label>套餐售价（元）</label>
-                <input v-model.number="combo.price" type="number" min="0" class="input">
-              </div>
-              <div class="form-col">
-                <label>单品原价合计</label>
-                <div class="readonly-value">{{ fmtMoney(calculatedCombos[index]?.originalPrice) }}</div>
-              </div>
-              <div class="form-col">
-                <label>套餐毛利率</label>
-                <div class="readonly-value">{{ fmtPercent(calculatedCombos[index]?.grossMarginRate) }}</div>
-              </div>
-            </div>
-            <div v-if="calculatedCombos[index]?.discountRate > 0" class="combo-discount">
-              折扣率 {{ fmtPercent(calculatedCombos[index]?.discountRate) }}
-            </div>
-            <div class="combo-items-section">
-              <div class="combo-items-header">包含单品</div>
-              <div v-for="(item, itemIndex) in combo.items" :key="`${combo.id}-${itemIndex}`" class="combo-item-row">
-                <select v-model="item.dishId" class="select">
-                  <option v-for="d in dishes" :key="d.id" :value="d.id">{{ d.name || '(未命名)' }}</option>
-                </select>
-                <input v-model.number="item.quantity" type="number" min="1" class="input input-quantity" placeholder="份数">
-                <button class="btn-icon" @click="removeComboItem(combo, itemIndex)">✕</button>
-              </div>
-              <button class="btn btn-sm btn-link" @click="addComboItem(combo)">+ 添加单品</button>
+            <div class="form-col">
+              <label>套餐售价（元）</label>
+              <input v-model.number="comboForm.price" type="number" min="0" class="input" placeholder="0">
             </div>
           </div>
+          <div class="form-ingredients">
+            <div class="form-subheader"><span>包含单品</span></div>
+            <div v-for="(item, itemIndex) in comboForm.items" :key="itemIndex" class="ingredient-row">
+              <select v-model="item.dishId" class="select">
+                <option v-for="d in dishes" :key="d.id" :value="d.id">{{ d.name || '(未命名)' }}</option>
+              </select>
+              <input v-model.number="item.quantity" type="number" min="1" class="input input-quantity" placeholder="份数">
+              <button class="btn-icon" @click="removeFormComboItem(itemIndex)">✕</button>
+            </div>
+            <button class="btn btn-sm btn-link" @click="addFormComboItem">+ 添加单品</button>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" @click="addComboToMenu">{{ comboForm.id ? '更新菜单' : '加入菜单' }}</button>
+            <button v-if="isComboFormDirty()" class="btn btn-secondary btn-sm" @click="resetComboForm">重置</button>
+          </div>
         </div>
-        <button class="btn btn-primary add-combo-btn" @click="addCombo">+ 添加套餐</button>
       </div>
 
-      <!-- 右侧结果区 -->
+      <!-- 右侧：结果区 -->
       <div class="result-panel">
+        <!-- 菜单概览 -->
+        <div class="result-card">
+          <div class="section-title tight">菜单概览</div>
+          <div v-if="!dishes.length && !combos.length" class="empty-tip">菜单为空，请在左侧录入单品或套餐后点击「加入菜单」</div>
+          <div v-if="dishes.length" class="overview-group">
+            <div class="overview-group-title">单品（{{ dishes.length }}）</div>
+            <div v-for="d in calculatedDishes" :key="d.id" class="overview-row">
+              <button class="overview-name" @click="fillDishForm(dishesMap.get(d.id))">{{ d.name || '(未命名)' }}</button>
+              <span class="overview-stat">售价 {{ fmtMoney(d.price) }}</span>
+              <span class="overview-stat">成本 {{ fmtMoney(d.cost) }}</span>
+              <span class="overview-stat strong" :class="{ warn: d.grossMarginRate < 0.3 }">毛利率 {{ d.price > 0 ? fmtPercent(d.grossMarginRate) : '—' }}</span>
+              <button class="btn-icon" @click="removeDishById(d.id)">✕</button>
+            </div>
+          </div>
+          <div v-if="combos.length" class="overview-group">
+            <div class="overview-group-title">套餐（{{ combos.length }}）</div>
+            <div v-for="c in calculatedCombos" :key="c.id" class="overview-row">
+              <button class="overview-name combo" @click="fillComboForm(combosMap.get(c.id))">{{ c.name || '(未命名)' }}</button>
+              <span class="overview-stat">售价 {{ fmtMoney(c.price) }}</span>
+              <span class="overview-stat">成本 {{ fmtMoney(c.cost) }}</span>
+              <span class="overview-stat strong">毛利率 {{ c.price > 0 ? fmtPercent(c.grossMarginRate) : '—' }}</span>
+              <button class="btn-icon" @click="removeComboById(c.id)">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 整体菜单毛利率 -->
         <div class="result-card">
           <div class="result-card-header">
             <h3>整体菜单毛利率</h3>
@@ -566,27 +653,28 @@ watch(
           </div>
         </div>
 
+        <!-- 销量占比设置 -->
         <div class="result-card">
-          <div class="section-title">销量占比设置</div>
+          <div class="section-title tight">销量占比设置</div>
           <div class="mode-toggle">
             <button class="mode-btn" :class="{ active: currentProfile.proportionMode === 'percentage' }" @click="currentProfile.proportionMode = 'percentage'">百分比</button>
             <button class="mode-btn" :class="{ active: currentProfile.proportionMode === 'relative' }" @click="currentProfile.proportionMode = 'relative'">相对销量</button>
           </div>
           <div class="proportion-list">
             <div v-for="dish in validDishes" :key="dish.id" class="proportion-row">
-              <span class="proportion-name">{{ dish.name || '(未命名)' }}</span>
+              <button class="proportion-name link" @click="fillDishForm(dishesMap.get(dish.id))">{{ dish.name || '(未命名)' }}</button>
               <input :value="currentProfile.dishProportions[dish.id]" type="number" min="0" class="input input-proportion" @input="updateProportion(dish.id, $event.target.value)">
               <span class="proportion-unit">{{ currentProfile.proportionMode === 'percentage' ? '%' : '份' }}</span>
             </div>
             <div v-for="combo in validCombos" v-show="currentProfile.includeCombosInOverall" :key="combo.id" class="proportion-row">
-              <span class="proportion-name">{{ combo.name || '(未命名)' }} <span class="combo-tag">套餐</span></span>
+              <button class="proportion-name link" @click="fillComboForm(combosMap.get(combo.id))">{{ combo.name || '(未命名)' }} <span class="combo-tag">套餐</span></button>
               <input :value="currentProfile.comboProportions[combo.id]" type="number" min="0" class="input input-proportion" @input="updateComboProportion(combo.id, $event.target.value)">
               <span class="proportion-unit">{{ currentProfile.proportionMode === 'percentage' ? '%' : '份' }}</span>
             </div>
           </div>
           <div v-if="currentProfile.proportionMode === 'percentage'" class="proportion-summary">
-            当前占比合计：{{ fmtPercent(overallResult.items.reduce((sum, item) => sum + Number(item.proportion || 0), 0) / 100) }}
-            <button v-if="Math.abs(overallResult.items.reduce((sum, item) => sum + Number(item.proportion || 0), 0) - 100) > 0.01" class="btn btn-sm btn-link" @click="normalizePercentages">一键归一</button>
+            当前占比合计：{{ fmtPercent(proportionSum / 100) }}
+            <button v-if="Math.abs(proportionSum - 100) > 0.01" class="btn btn-sm btn-link" @click="normalizePercentages">一键归一</button>
           </div>
           <div class="include-combos-row">
             <label class="checkbox-label">
@@ -596,8 +684,9 @@ watch(
           </div>
         </div>
 
+        <!-- 各单品贡献 -->
         <div class="result-card">
-          <div class="section-title">各单品贡献</div>
+          <div class="section-title tight">各单品贡献</div>
           <table class="data-table">
             <thead>
               <tr>
@@ -610,14 +699,17 @@ watch(
             </thead>
             <tbody>
               <tr v-for="item in overallResult.items" :key="item.id">
-                <td>{{ item.name || '(未命名)' }}</td>
+                <td>
+                  <button v-if="item.type === 'dish'" class="table-name link" @click="fillDishForm(dishesMap.get(item.id))">{{ item.name || '(未命名)' }}</button>
+                  <button v-else class="table-name link" @click="fillComboForm(combosMap.get(item.id))">{{ item.name || '(未命名)' }}</button>
+                </td>
                 <td><span class="type-tag" :class="item.type">{{ item.type === 'dish' ? '单品' : '套餐' }}</span></td>
                 <td>{{ fmtPercent(item.grossMarginRate) }}</td>
                 <td>{{ fmtPercent(item.salesProportion) }}</td>
                 <td>{{ fmtPercent(item.weightedContribution) }}</td>
               </tr>
               <tr v-if="!overallResult.items.length">
-                <td colspan="5" class="empty-cell">暂无数据，请添加单品并设置销量占比</td>
+                <td colspan="5" class="empty-cell">暂无数据，请先在左侧录入单品并加入菜单</td>
               </tr>
             </tbody>
           </table>
@@ -630,12 +722,6 @@ watch(
 </template>
 
 <style scoped>
-.tool-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
 .tool-header {
   margin-bottom: 24px;
 }
@@ -653,10 +739,12 @@ watch(
   margin: 0;
 }
 
+/* 左右布局 4:5 */
 .tool-layout {
   display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 24px;
+  grid-template-columns: 4fr 5fr;
+  gap: 20px;
+  align-items: start;
 }
 
 @media (max-width: 900px) {
@@ -682,72 +770,47 @@ watch(
   border-bottom: 1px solid var(--border);
 }
 
-.section-title:first-child {
+.section-title:first-child,
+.section-title.tight {
   margin-top: 0;
 }
 
+.section-title.tight {
+  margin-bottom: 10px;
+}
+
+/* 方案管理 */
 .profile-bar {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
 .profile-select {
   flex: 1;
-  min-width: 120px;
+  min-width: 110px;
 }
 
 .action-bar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
-.dish-list,
-.combo-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dish-card,
-.combo-card {
+/* 表单卡片 */
+.form-card {
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px;
   background: var(--bg-secondary);
-}
-
-.card-header {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.dish-name-input,
-.combo-name-input {
-  flex: 1;
-  font-weight: 600;
-}
-
-.form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
 }
 
 .form-row-2col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.form-row-3col {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .form-col {
@@ -777,42 +840,19 @@ watch(
   border-color: var(--accent);
 }
 
-.readonly-value {
-  padding: 8px 10px;
-  background: var(--bg-tertiary);
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  min-height: 35px;
-  display: flex;
-  align-items: center;
-}
-
-.ingredients-section,
-.combo-items-section {
-  margin-top: 12px;
-  padding-top: 12px;
+.form-ingredients {
   border-top: 1px dashed var(--border);
+  padding-top: 10px;
+  margin-bottom: 10px;
 }
 
-.ingredients-header,
-.combo-items-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
+.form-subheader {
+  font-size: 12px;
   color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
-.cost-total {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.ingredient-row,
-.combo-item-row {
+.ingredient-row {
   display: flex;
   gap: 8px;
   margin-bottom: 8px;
@@ -820,13 +860,19 @@ watch(
 }
 
 .ingredient-row .input:first-child,
-.combo-item-row .select {
+.ingredient-row .select {
   flex: 1;
 }
 
 .ingredient-row .input:nth-child(2),
-.combo-item-row .input-quantity {
-  width: 80px;
+.ingredient-row .input-quantity {
+  width: 76px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .btn-danger {
@@ -845,8 +891,9 @@ watch(
 }
 
 .btn-icon {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -855,7 +902,7 @@ watch(
   background: var(--bg-tertiary);
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .btn-icon:hover {
@@ -863,40 +910,97 @@ watch(
   color: #ef4444;
 }
 
-.add-dish-btn,
-.add-combo-btn {
-  width: 100%;
-  margin-top: 12px;
-}
-
 .empty-tip {
-  padding: 16px;
+  padding: 14px;
   text-align: center;
   color: var(--text-muted);
   font-size: 13px;
   background: var(--bg-secondary);
   border-radius: 8px;
-  margin-bottom: 8px;
 }
 
-.combo-discount {
-  font-size: 12px;
-  color: var(--text-secondary);
+/* 菜单概览 */
+.overview-group {
   margin-bottom: 10px;
 }
 
+.overview-group:last-child {
+  margin-bottom: 0;
+}
+
+.overview-group-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.overview-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.overview-row:hover {
+  background: var(--bg-secondary);
+}
+
+.overview-name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-name:hover {
+  text-decoration: underline;
+}
+
+.overview-stat {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.overview-stat.strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  min-width: 88px;
+  text-align: right;
+}
+
+.overview-stat.strong.warn {
+  color: #ef4444;
+}
+
+/* 整体结果卡片 */
 .result-card {
   background: var(--bg-secondary);
   border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.result-card:last-of-type {
+  margin-bottom: 0;
 }
 
 .result-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .result-card-header h3 {
@@ -911,23 +1015,23 @@ watch(
 }
 
 .result-big-number {
-  font-size: 36px;
+  font-size: 34px;
   font-weight: 700;
   color: var(--accent);
   text-align: center;
-  margin: 16px 0;
+  margin: 12px 0;
 }
 
 .result-sub-numbers {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sub-number {
   display: flex;
   justify-content: space-between;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -945,15 +1049,16 @@ watch(
   color: var(--text-primary);
 }
 
+/* 销量占比 */
 .mode-toggle {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .mode-btn {
   flex: 1;
-  padding: 8px;
+  padding: 7px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg-primary);
@@ -971,8 +1076,8 @@ watch(
 .proportion-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
 }
 
 .proportion-row {
@@ -983,26 +1088,47 @@ watch(
 
 .proportion-name {
   flex: 1;
+  min-width: 0;
   font-size: 13px;
   color: var(--text-primary);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proportion-name.link,
+.table-name.link {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 500;
+}
+
+.proportion-name.link:hover,
+.table-name.link:hover {
+  text-decoration: underline;
 }
 
 .proportion-name .combo-tag {
   font-size: 11px;
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 10%, transparent);
-  padding: 2px 4px;
+  padding: 1px 5px;
   border-radius: 4px;
   margin-left: 4px;
 }
 
 .input-proportion {
-  width: 80px;
+  width: 76px;
   text-align: right;
 }
 
 .proportion-unit {
-  width: 20px;
+  width: 18px;
   font-size: 13px;
   color: var(--text-secondary);
 }
@@ -1013,12 +1139,11 @@ watch(
   align-items: center;
   font-size: 13px;
   color: var(--text-secondary);
-  margin-top: 8px;
 }
 
 .include-combos-row {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px dashed var(--border);
 }
 
@@ -1031,6 +1156,7 @@ watch(
   cursor: pointer;
 }
 
+/* 贡献表 */
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -1039,7 +1165,7 @@ watch(
 
 .data-table th,
 .data-table td {
-  padding: 8px;
+  padding: 7px 6px;
   text-align: left;
   border-bottom: 1px solid var(--border);
 }
@@ -1047,6 +1173,11 @@ watch(
 .data-table th {
   color: var(--text-secondary);
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.data-table td:not(:first-child) {
+  white-space: nowrap;
 }
 
 .type-tag {
@@ -1055,6 +1186,7 @@ watch(
   border-radius: 4px;
   background: var(--bg-tertiary);
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .type-tag.dish {
@@ -1070,11 +1202,11 @@ watch(
 .empty-cell {
   text-align: center;
   color: var(--text-muted);
-  padding: 16px;
+  padding: 14px;
 }
 
 .btn-block {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 </style>

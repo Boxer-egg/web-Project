@@ -65,6 +65,26 @@ const emptyDishForm = () => ({
 })
 const dishForm = ref(emptyDishForm())
 
+/** 单品录入实时预估：按已填原材料逐项求和成本，与售价对比算出毛利/毛利率 */
+const dishPreview = computed(() => {
+  const filled = dishForm.value.ingredients.filter(
+    (ing) => (ing.name && ing.name.trim()) || Number(ing.cost) > 0
+  )
+  const cost = filled.reduce((sum, ing) => sum + (Number(ing.cost) || 0), 0)
+  const price = Math.max(0, Number(dishForm.value.price) || 0)
+  const grossProfit = price > 0 ? price - cost : null
+  const rate = price > 0 ? (price - cost) / price : null
+  return { count: filled.length, cost, price, grossProfit, rate }
+})
+
+/** 实时预估是否达到可展示状态：至少填了一条原材料或售价 */
+const dishPreviewVisible = computed(() => dishPreview.value.count > 0 || dishPreview.value.price > 0)
+
+/** 实时毛利率文案：售价未填显示 — */
+const dishPreviewRateText = computed(() =>
+  dishPreview.value.rate == null ? '—' : fmtPercent(dishPreview.value.rate)
+)
+
 function isDishFormDirty() {
   const f = dishForm.value
   return Boolean(
@@ -565,6 +585,18 @@ watch(
           <div class="form-actions">
             <button class="btn btn-primary" @click="addDishToMenu">{{ dishForm.id ? '更新菜单' : '加入菜单' }}</button>
             <button v-if="isDishFormDirty()" class="btn btn-secondary btn-sm" @click="resetDishForm">重置</button>
+            <div class="dish-live-preview" :class="{ 'has-data': dishPreviewVisible }">
+              <span v-if="!dishPreviewVisible" class="dlp-placeholder">填写原材料后实时预估毛利率</span>
+              <template v-else>
+                <span class="dlp-item">食材 <b>{{ dishPreview.count }}</b> 项</span>
+                <span class="dlp-item">成本 <b>¥{{ fmtMoney(dishPreview.cost) }}</b></span>
+                <span class="dlp-item">售价 <b>¥{{ fmtMoney(dishPreview.price) }}</b></span>
+                <span class="dlp-item">毛利 <b :class="dishPreview.grossProfit != null && dishPreview.grossProfit < 0 ? 'negative' : ''">{{ dishPreview.grossProfit == null ? '—' : '¥' + fmtMoney(dishPreview.grossProfit) }}</b></span>
+                <span class="dlp-rate" :class="{ negative: dishPreview.rate != null && dishPreview.rate < 0 }">
+                  毛利率 {{ dishPreviewRateText }}
+                </span>
+              </template>
+            </div>
           </div>
         </div>
 
@@ -873,6 +905,51 @@ watch(
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.dish-live-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-left: auto;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dish-live-preview.has-data {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-primary));
+  color: var(--text-secondary);
+}
+
+.dlp-placeholder {
+  font-size: 12px;
+}
+
+.dlp-item {
+  white-space: nowrap;
+}
+
+.dlp-item b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.dlp-rate {
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.dlp-rate.negative,
+.dlp-item b.negative {
+  color: var(--error);
 }
 
 .btn-danger {
@@ -937,7 +1014,7 @@ watch(
 .overview-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 7px 8px;
   border-radius: 6px;
   font-size: 13px;
@@ -967,7 +1044,11 @@ watch(
   text-decoration: underline;
 }
 
+/* 售价/成本/毛利率 三列统一宽度并右对齐，保证跨行数字对齐 */
 .overview-stat {
+  flex-shrink: 0;
+  width: 96px;
+  text-align: right;
   color: var(--text-secondary);
   white-space: nowrap;
 }
@@ -975,8 +1056,7 @@ watch(
 .overview-stat.strong {
   color: var(--text-primary);
   font-weight: 600;
-  min-width: 88px;
-  text-align: right;
+  width: 104px;
 }
 
 .overview-stat.strong.warn {

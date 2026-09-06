@@ -56,6 +56,9 @@ const calculatedCombos = computed(() => combos.value.map((c) => calculateCombo(c
 const validCombos = computed(() => calculatedCombos.value.filter((c) => c.valid))
 const overallResult = computed(() => calculateOverall(currentProfile.value, dishesMap.value, combosMap.value))
 
+/** 销量占比模式（旧数据可能缺该字段，默认百分比） */
+const proportionMode = computed(() => currentProfile.value.proportionMode || 'percentage')
+
 /** ========== 单品录入框（单条录入） ========== */
 const emptyDishForm = () => ({
   id: null,
@@ -349,7 +352,7 @@ function removeFormComboItem(index) {
 /** ========== 销量占比 ========== */
 function updateProportion(itemId, value) {
   const num = Math.max(0, Number(value) || 0)
-  if (currentProfile.value.proportionMode === 'percentage') {
+  if (proportionMode.value === 'percentage') {
     currentProfile.value.dishProportions = { ...currentProfile.value.dishProportions, [itemId]: Math.min(100, num) }
   } else {
     currentProfile.value.dishProportions = { ...currentProfile.value.dishProportions, [itemId]: num }
@@ -357,7 +360,7 @@ function updateProportion(itemId, value) {
 }
 function updateComboProportion(comboId, value) {
   const num = Math.max(0, Number(value) || 0)
-  if (currentProfile.value.proportionMode === 'percentage') {
+  if (proportionMode.value === 'percentage') {
     currentProfile.value.comboProportions = { ...currentProfile.value.comboProportions, [comboId]: Math.min(100, num) }
   } else {
     currentProfile.value.comboProportions = { ...currentProfile.value.comboProportions, [comboId]: num }
@@ -399,11 +402,27 @@ function fmtPercent(value) {
 function exportExcel() {
   const wb = XLSX.utils.book_new()
 
+  const PERCENT_FMT = '0.00%'
+
+  /** 给工作表指定列（数据行）设置百分比数字格式 */
+  function applyPercentFormat(ws, colIndexes, startRow = 1) {
+    const range = XLSX.utils.decode_range(ws['!ref'])
+    for (let r = startRow; r <= range.e.r; r++) {
+      colIndexes.forEach((c) => {
+        const addr = XLSX.utils.encode_cell({ r, c })
+        const cell = ws[addr]
+        if (cell && typeof cell.v === 'number') cell.z = PERCENT_FMT
+      })
+    }
+  }
+
   const dishRows = [['单品名称', '售价', '成本', '毛利', '毛利率']]
   calculatedDishes.value.forEach((d) => {
     dishRows.push([d.name || '(未命名)', d.price, d.cost, d.grossProfit, d.price > 0 ? d.grossProfit / d.price : 0])
   })
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dishRows), '单品毛利率')
+  const dishWs = XLSX.utils.aoa_to_sheet(dishRows)
+  applyPercentFormat(dishWs, [4])
+  XLSX.utils.book_append_sheet(wb, dishWs, '单品毛利率')
 
   const comboRows = [['套餐名称', '包含单品', '套餐售价', '单品原价合计', '折扣率', '成本', '毛利', '毛利率']]
   calculatedCombos.value.forEach((c) => {
@@ -418,20 +437,23 @@ function exportExcel() {
       c.price > 0 ? c.grossProfit / c.price : 0
     ])
   })
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(comboRows), '套餐毛利率')
+  const comboWs = XLSX.utils.aoa_to_sheet(comboRows)
+  applyPercentFormat(comboWs, [4, 7])
+  XLSX.utils.book_append_sheet(wb, comboWs, '套餐毛利率')
 
   const summaryRows = [
     ['整体菜单毛利率', overallResult.value.overallGrossMarginRate],
-    ['菜单总销售额', overallResult.value.totalSales],
-    ['菜单总成本', overallResult.value.totalCost],
-    ['菜单总毛利', overallResult.value.totalGrossProfit],
     [],
     ['名称', '类型', '销售额占比', '加权贡献']
   ]
   overallResult.value.items.forEach((item) => {
     summaryRows.push([item.name || '(未命名)', item.type === 'dish' ? '单品' : '套餐', item.salesProportion, item.weightedContribution])
   })
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), '整体菜单汇总')
+  const summaryWs = XLSX.utils.aoa_to_sheet(summaryRows)
+  // B1（整体毛利率）+ 占比/贡献两列
+  applyPercentFormat(summaryWs, [1], 0)
+  applyPercentFormat(summaryWs, [2, 3], 3)
+  XLSX.utils.book_append_sheet(wb, summaryWs, '整体菜单汇总')
 
   XLSX.writeFile(wb, `${currentProfile.value.name || '菜单毛利率'}_${new Date().toISOString().slice(0, 10)}.xlsx`)
   toast.success('Excel 导出成功')
@@ -452,10 +474,7 @@ function downloadImage() {
     ['方案名称', currentProfile.value.name],
     ['单品数量', `${dishes.value.length} 个`],
     ['套餐数量', `${combos.value.length} 个`],
-    ['整体菜单毛利率', fmtPercent(overallResult.value.overallGrossMarginRate)],
-    ['菜单总销售额', `${fmtMoney(overallResult.value.totalSales)} 元`],
-    ['菜单总成本', `${fmtMoney(overallResult.value.totalCost)} 元`],
-    ['菜单总毛利', `${fmtMoney(overallResult.value.totalGrossProfit)} 元`]
+    ['整体菜单毛利率', overallResult.value.overallGrossMarginRate == null ? '—' : fmtPercent(overallResult.value.overallGrossMarginRate)]
   ]
 
   const contentHeight = headerHeight + rows.length * lineHeight + 80
@@ -508,6 +527,10 @@ function downloadImage() {
 
 function fillToRestaurantProfit() {
   const gm = overallResult.value.overallGrossMarginRate
+  if (gm == null) {
+    toast.warn('请先录入销量占比，再回填到餐饮盈利计算器')
+    return
+  }
   localStorage.setItem('rpf-gross-margin', String(gm))
   router.push('/tools/restaurant-profit')
   toast.success(`已将整体毛利率 ${fmtPercent(gm)} 回填到餐饮盈利计算器`)
@@ -680,20 +703,11 @@ watch(
               <button class="btn btn-sm" @click="downloadImage">保存图片</button>
             </div>
           </div>
-          <div class="result-big-number">{{ fmtPercent(overallResult.overallGrossMarginRate) }}</div>
-          <div class="result-sub-numbers">
-            <div class="sub-number">
-              <span class="sub-label">菜单总销售额</span>
-              <span class="sub-value">{{ fmtMoney(overallResult.totalSales) }} 元</span>
-            </div>
-            <div class="sub-number">
-              <span class="sub-label">菜单总成本</span>
-              <span class="sub-value">{{ fmtMoney(overallResult.totalCost) }} 元</span>
-            </div>
-            <div class="sub-number">
-              <span class="sub-label">菜单总毛利</span>
-              <span class="sub-value">{{ fmtMoney(overallResult.totalGrossProfit) }} 元</span>
-            </div>
+          <div class="result-big-number" :class="{ 'is-empty': overallResult.overallGrossMarginRate == null }">
+            {{ overallResult.overallGrossMarginRate == null ? '—' : fmtPercent(overallResult.overallGrossMarginRate) }}
+          </div>
+          <div v-if="overallResult.overallGrossMarginRate == null" class="result-empty-hint">
+            请先在下方「销量占比设置」录入各单品销量占比
           </div>
         </div>
 
@@ -701,22 +715,22 @@ watch(
         <div class="result-card">
           <div class="section-title tight">销量占比设置</div>
           <div class="mode-toggle">
-            <button class="mode-btn" :class="{ active: currentProfile.proportionMode === 'percentage' }" @click="currentProfile.proportionMode = 'percentage'">百分比</button>
-            <button class="mode-btn" :class="{ active: currentProfile.proportionMode === 'relative' }" @click="currentProfile.proportionMode = 'relative'">相对销量</button>
+            <button class="mode-btn" :class="{ active: proportionMode === 'percentage' }" @click="currentProfile.proportionMode = 'percentage'">百分比</button>
+            <button class="mode-btn" :class="{ active: proportionMode === 'relative' }" @click="currentProfile.proportionMode = 'relative'">相对销量</button>
           </div>
           <div class="proportion-list">
             <div v-for="dish in validDishes" :key="dish.id" class="proportion-row">
               <button class="proportion-name link" @click="fillDishForm(dishesMap.get(dish.id))">{{ dish.name || '(未命名)' }}</button>
               <input :value="currentProfile.dishProportions[dish.id]" type="number" min="0" class="input input-proportion" @input="updateProportion(dish.id, $event.target.value)">
-              <span class="proportion-unit">{{ currentProfile.proportionMode === 'percentage' ? '%' : '份' }}</span>
+              <span class="proportion-unit">{{ proportionMode === 'percentage' ? '%' : '份' }}</span>
             </div>
             <div v-for="combo in validCombos" v-show="currentProfile.includeCombosInOverall" :key="combo.id" class="proportion-row">
               <button class="proportion-name link" @click="fillComboForm(combosMap.get(combo.id))">{{ combo.name || '(未命名)' }} <span class="combo-tag">套餐</span></button>
               <input :value="currentProfile.comboProportions[combo.id]" type="number" min="0" class="input input-proportion" @input="updateComboProportion(combo.id, $event.target.value)">
-              <span class="proportion-unit">{{ currentProfile.proportionMode === 'percentage' ? '%' : '份' }}</span>
+              <span class="proportion-unit">{{ proportionMode === 'percentage' ? '%' : '份' }}</span>
             </div>
           </div>
-          <div v-if="currentProfile.proportionMode === 'percentage'" class="proportion-summary">
+          <div v-if="proportionMode === 'percentage'" class="proportion-summary">
             当前占比合计：{{ fmtPercent(proportionSum / 100) }}
             <button v-if="Math.abs(proportionSum - 100) > 0.01" class="btn btn-sm btn-link" @click="normalizePercentages">一键归一</button>
           </div>
@@ -759,7 +773,7 @@ watch(
           </table>
         </div>
 
-        <button class="btn btn-primary btn-block" @click="fillToRestaurantProfit">将整体毛利率回填到餐饮盈利计算器</button>
+        <button class="btn btn-primary btn-block" :disabled="overallResult.overallGrossMarginRate == null" @click="fillToRestaurantProfit">将整体毛利率回填到餐饮盈利计算器</button>
       </div>
     </div>
   </div>
@@ -1162,6 +1176,17 @@ watch(
   color: var(--accent);
   text-align: center;
   margin: 12px 0;
+}
+
+.result-big-number.is-empty {
+  color: var(--text-muted);
+}
+
+.result-empty-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
 }
 
 .result-sub-numbers {

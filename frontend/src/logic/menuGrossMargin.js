@@ -107,6 +107,7 @@ export function calculateCombo(combo, dishesMap) {
  * @param {Map<string, object>} combosMap
  */
 export function calculateOverall(profile, dishesMap, combosMap) {
+  const mode = profile.proportionMode || 'percentage'
   const dishCalculations = profile.dishes
     .map((dish) => calculateDish(dish))
     .filter((d) => d.valid)
@@ -122,7 +123,7 @@ export function calculateOverall(profile, dishesMap, combosMap) {
 
   if (allItems.length === 0) {
     return {
-      overallGrossMarginRate: 0,
+      overallGrossMarginRate: null,
       totalSales: 0,
       totalCost: 0,
       totalGrossProfit: 0,
@@ -134,10 +135,12 @@ export function calculateOverall(profile, dishesMap, combosMap) {
   let totalSales = 0
   let totalCost = 0
   let totalGrossProfit = 0
+  let hasWeight = false
 
-  if (profile.proportionMode === 'percentage') {
+  if (mode === 'percentage') {
     // Normalize proportions if sum > 0
     const proportionSum = allItems.reduce((sum, item) => sum + Number(item.proportion || 0), 0)
+    hasWeight = proportionSum > 0
     allItems.forEach((item) => {
       const normalizedProportion = proportionSum > 0 ? Number(item.proportion || 0) / proportionSum : 0
       const sales = item.price * normalizedProportion
@@ -158,6 +161,7 @@ export function calculateOverall(profile, dishesMap, combosMap) {
       rawSales: Math.max(0, Number(item.proportion || 0)) * item.price
     }))
     const rawSalesSum = rawSales.reduce((sum, { rawSales }) => sum + rawSales, 0)
+    hasWeight = rawSalesSum > 0
     rawSales.forEach(({ item, rawSales }) => {
       const proportion = rawSalesSum > 0 ? rawSales / rawSalesSum : 0
       const sales = item.price * proportion
@@ -176,7 +180,8 @@ export function calculateOverall(profile, dishesMap, combosMap) {
 
   return {
     // 整体毛利率 = Σ(单品毛利率 × 销售额占比)，即各项加权贡献之和
-    overallGrossMarginRate: weightedMargin,
+    // 未录入任何销量占比时为 null，界面显示「—」
+    overallGrossMarginRate: hasWeight ? weightedMargin : null,
     totalSales,
     totalCost,
     totalGrossProfit,

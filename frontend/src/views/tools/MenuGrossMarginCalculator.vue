@@ -88,6 +88,27 @@ const dishPreviewRateText = computed(() =>
   dishPreview.value.rate == null ? '—' : fmtPercent(dishPreview.value.rate)
 )
 
+/** 单品录入负数自动归零：售价与原材料成本不允许为负 */
+watch(
+  () => [dishForm.value.price, ...dishForm.value.ingredients.map((ing) => ing.cost)],
+  () => {
+    let clamped = false
+    const priceNum = Number(dishForm.value.price)
+    if (!Number.isNaN(priceNum) && priceNum < 0) {
+      dishForm.value.price = 0
+      clamped = true
+    }
+    dishForm.value.ingredients.forEach((ing) => {
+      const num = Number(ing.cost)
+      if (!Number.isNaN(num) && num < 0) {
+        ing.cost = 0
+        clamped = true
+      }
+    })
+    if (clamped) toast.info('输入不能为负数，已自动调整为 0')
+  }
+)
+
 function isDishFormDirty() {
   const f = dishForm.value
   return Boolean(
@@ -153,6 +174,28 @@ const emptyComboForm = () => ({
 })
 const comboForm = ref(emptyComboForm())
 
+/** 套餐录入负数自动归零：售价不允许为负，份数最小为 1 */
+watch(
+  () => [comboForm.value.price, ...comboForm.value.items.map((it) => it.quantity)],
+  () => {
+    let clamped = false
+    const priceNum = Number(comboForm.value.price)
+    if (!Number.isNaN(priceNum) && priceNum < 0) {
+      comboForm.value.price = 0
+      clamped = true
+    }
+    comboForm.value.items.forEach((it) => {
+      const num = Number(it.quantity)
+      // 空串（用户清空准备重输）不处理，避免打断输入
+      if (it.quantity !== '' && !Number.isNaN(num) && num < 1) {
+        it.quantity = 1
+        clamped = true
+      }
+    })
+    if (clamped) toast.info('输入不能为负数，已自动调整')
+  }
+)
+
 function isComboFormDirty() {
   const f = comboForm.value
   return Boolean(
@@ -187,9 +230,14 @@ function addComboToMenu() {
     toast.warn('请填写套餐名称')
     return
   }
-  const items = f.items
-    .filter((it) => it.dishId && dishesMap.value.has(it.dishId))
-    .map((it) => ({ dishId: it.dishId, quantity: Math.max(1, Number(it.quantity) || 1) }))
+  // 合并相同单品：数量累加，避免重复行
+  const mergedMap = new Map()
+  f.items.forEach((it) => {
+    if (!it.dishId || !dishesMap.value.has(it.dishId)) return
+    const qty = Math.max(1, Number(it.quantity) || 1)
+    mergedMap.set(it.dishId, (mergedMap.get(it.dishId) || 0) + qty)
+  })
+  const items = [...mergedMap.entries()].map(([dishId, quantity]) => ({ dishId, quantity }))
   if (!items.length) {
     toast.warn('请至少选择一个有效单品')
     return
@@ -638,6 +686,7 @@ watch(
           </div>
           <div class="form-ingredients">
             <div class="form-subheader"><span>包含单品</span></div>
+            <div v-if="!dishes.length" class="combo-empty-hint">菜单中暂无单品，请先在上方「单品录入」添加单品后再组合套餐</div>
             <div v-for="(item, itemIndex) in comboForm.items" :key="itemIndex" class="ingredient-row">
               <select v-model="item.dishId" class="select">
                 <option v-for="d in dishes" :key="d.id" :value="d.id">{{ d.name || '(未命名)' }}</option>
@@ -677,7 +726,7 @@ watch(
                 <button class="overview-name combo" @click="fillComboForm(combosMap.get(c.id))">{{ c.name || '(未命名)' }}</button>
                 <span class="overview-stat">售价 {{ fmtMoney(c.price) }}</span>
                 <span class="overview-stat">成本 {{ fmtMoney(c.cost) }}</span>
-                <span class="overview-stat strong">毛利率 {{ c.price > 0 ? fmtPercent(c.grossMarginRate) : '—' }}</span>
+                <span class="overview-stat strong" :class="{ warn: c.grossMarginRate < 0.3 }">毛利率 {{ c.price > 0 ? fmtPercent(c.grossMarginRate) : '—' }}</span>
                 <button class="btn-icon" @click="removeComboById(c.id)">✕</button>
               </div>
               <div class="combo-detail">
@@ -1098,6 +1147,15 @@ watch(
 
 .combo-detail-empty {
   font-style: italic;
+}
+
+.combo-empty-hint {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 .overview-name {

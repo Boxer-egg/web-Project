@@ -124,17 +124,11 @@ export function calculateOverall(profile, dishesMap, combosMap) {
   if (allItems.length === 0) {
     return {
       overallGrossMarginRate: null,
-      totalSales: 0,
-      totalCost: 0,
-      totalGrossProfit: 0,
       items: []
     }
   }
 
   let weightedMargin = 0
-  let totalSales = 0
-  let totalCost = 0
-  let totalGrossProfit = 0
   let hasWeight = false
 
   if (mode === 'percentage') {
@@ -143,15 +137,8 @@ export function calculateOverall(profile, dishesMap, combosMap) {
     hasWeight = proportionSum > 0
     allItems.forEach((item) => {
       const normalizedProportion = proportionSum > 0 ? Number(item.proportion || 0) / proportionSum : 0
-      const sales = item.price * normalizedProportion
-      const cost = item.cost * normalizedProportion
-      const grossProfit = sales - cost
       weightedMargin += item.grossMarginRate * normalizedProportion
-      totalSales += sales
-      totalCost += cost
-      totalGrossProfit += grossProfit
       item.salesProportion = normalizedProportion
-      item.salesAmount = sales
       item.weightedContribution = item.grossMarginRate * normalizedProportion
     })
   } else {
@@ -164,15 +151,8 @@ export function calculateOverall(profile, dishesMap, combosMap) {
     hasWeight = rawSalesSum > 0
     rawSales.forEach(({ item, rawSales }) => {
       const proportion = rawSalesSum > 0 ? rawSales / rawSalesSum : 0
-      const sales = item.price * proportion
-      const cost = item.cost * proportion
-      const grossProfit = sales - cost
       weightedMargin += item.grossMarginRate * proportion
-      totalSales += sales
-      totalCost += cost
-      totalGrossProfit += grossProfit
       item.salesProportion = proportion
-      item.salesAmount = sales
       item.weightedContribution = item.grossMarginRate * proportion
       item.relativeSales = Number(item.proportion || 0)
     })
@@ -182,16 +162,8 @@ export function calculateOverall(profile, dishesMap, combosMap) {
     // 整体毛利率 = Σ(单品毛利率 × 销售额占比)，即各项加权贡献之和
     // 未录入任何销量占比时为 null，界面显示「—」
     overallGrossMarginRate: hasWeight ? weightedMargin : null,
-    totalSales,
-    totalCost,
-    totalGrossProfit,
     items: allItems
   }
-}
-
-/** 校验名称是否合法 */
-export function validateName(name) {
-  return String(name || '').trim().length > 0
 }
 
 /** 计算所有单品映射表 */

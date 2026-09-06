@@ -584,22 +584,6 @@ function fillToRestaurantProfit() {
   toast.success(`已将整体毛利率 ${fmtPercent(gm)} 回填到餐饮盈利计算器`)
 }
 
-/** 单品被删除后，清理套餐中引用的失效单品 */
-watch(
-  () => dishes.value.map((d) => d.id),
-  (newIds, oldIds) => {
-    if (!oldIds) return
-    const removed = oldIds.filter((id) => !newIds.includes(id))
-    if (!removed.length) return
-    const removedSet = new Set(removed)
-    combos.value = combos.value
-      .map((combo) => ({
-        ...combo,
-        items: combo.items.filter((item) => !removedSet.has(item.dishId))
-      }))
-      .filter((combo) => combo.items.length > 0)
-  }
-)
 </script>
 
 <template>
@@ -733,7 +717,7 @@ watch(
                 <span v-if="!c.items.length" class="combo-detail-empty">暂无有效单品，请重新编辑套餐</span>
                 <template v-for="(item, idx) in c.items" :key="item.dishId + '-' + idx">
                   <span class="combo-detail-chip">
-                    <span class="cd-dish">{{ item.dishName || '(已删除)' }}</span>
+                    <span class="cd-dish">{{ item.dishName }}</span>
                     <span class="cd-qty">×{{ item.quantity }}</span>
                     <span class="cd-price">¥{{ fmtMoney(item.dishPrice) }}/份</span>
                   </span>

@@ -649,12 +649,24 @@ watch(
           </div>
           <div v-if="combos.length" class="overview-group">
             <div class="overview-group-title">套餐（{{ combos.length }}）</div>
-            <div v-for="c in calculatedCombos" :key="c.id" class="overview-row">
-              <button class="overview-name combo" @click="fillComboForm(combosMap.get(c.id))">{{ c.name || '(未命名)' }}</button>
-              <span class="overview-stat">售价 {{ fmtMoney(c.price) }}</span>
-              <span class="overview-stat">成本 {{ fmtMoney(c.cost) }}</span>
-              <span class="overview-stat strong">毛利率 {{ c.price > 0 ? fmtPercent(c.grossMarginRate) : '—' }}</span>
-              <button class="btn-icon" @click="removeComboById(c.id)">✕</button>
+            <div v-for="c in calculatedCombos" :key="c.id" class="overview-item">
+              <div class="overview-row">
+                <button class="overview-name combo" @click="fillComboForm(combosMap.get(c.id))">{{ c.name || '(未命名)' }}</button>
+                <span class="overview-stat">售价 {{ fmtMoney(c.price) }}</span>
+                <span class="overview-stat">成本 {{ fmtMoney(c.cost) }}</span>
+                <span class="overview-stat strong">毛利率 {{ c.price > 0 ? fmtPercent(c.grossMarginRate) : '—' }}</span>
+                <button class="btn-icon" @click="removeComboById(c.id)">✕</button>
+              </div>
+              <div class="combo-detail">
+                <span v-if="!c.items.length" class="combo-detail-empty">暂无有效单品，请重新编辑套餐</span>
+                <template v-for="(item, idx) in c.items" :key="item.dishId + '-' + idx">
+                  <span class="combo-detail-chip">
+                    <span class="cd-dish">{{ item.dishName || '(已删除)' }}</span>
+                    <span class="cd-qty">×{{ item.quantity }}</span>
+                    <span class="cd-price">¥{{ fmtMoney(item.dishPrice) }}/份</span>
+                  </span>
+                </template>
+              </div>
             </div>
           </div>
         </div>
@@ -1020,8 +1032,58 @@ watch(
   font-size: 13px;
 }
 
+.overview-item {
+  border-radius: 6px;
+}
+
+.overview-item:hover {
+  background: var(--bg-secondary);
+}
+
+.overview-item:hover .overview-row {
+  background: transparent;
+}
+
 .overview-row:hover {
   background: var(--bg-secondary);
+}
+
+/* 套餐详情：名称下方的单品组成小字 */
+.combo-detail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 0 8px 7px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.combo-detail-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+  white-space: nowrap;
+}
+
+.cd-dish {
+  color: var(--text-secondary);
+}
+
+.cd-qty {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.cd-price {
+  color: var(--text-muted);
+}
+
+.combo-detail-empty {
+  font-style: italic;
 }
 
 .overview-name {

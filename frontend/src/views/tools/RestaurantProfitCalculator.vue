@@ -327,10 +327,37 @@ const detailFields = computed(() => ({
   },
   dailyBreakEvenOrders: {
     title: '保本日单数明细',
-    rows: [
-      ['日盈亏平衡营业额', fmtMoney(dailyBreakEvenRevenue.value), '元'],
-      ['÷ 平均客单价', fmtMoney(avgTicket.value), '元'],
-      ['保本日单数', fmtNumber(dailyBreakEvenOrders.value, 1), '单'],
+    groups: [
+      {
+        op: '+',
+        a: { label: '每月有效房租', value: fmtMoney(effectiveMonthlyRent.value), unit: '元' },
+        b: { label: '每月人工', value: fmtMoney(monthlyLabor.value), unit: '元' },
+        result: { label: '小计', value: fmtMoney(effectiveMonthlyRent.value + monthlyLabor.value), unit: '元' },
+      },
+      {
+        op: '+',
+        a: { label: '小计', value: fmtMoney(effectiveMonthlyRent.value + monthlyLabor.value), unit: '元' },
+        b: { label: '水/电/杂费', value: fmtMoney(monthlyUtilities.value), unit: '元' },
+        result: { label: '月固定成本', value: fmtMoney(monthlyFixedCost.value), unit: '元' },
+      },
+      {
+        op: '÷',
+        a: { label: '月固定成本', value: fmtMoney(monthlyFixedCost.value), unit: '元' },
+        b: { label: '30 天', value: '30', unit: '天' },
+        result: { label: '日固定成本', value: fmtMoney(dailyFixedCost.value), unit: '元' },
+      },
+      {
+        op: '÷',
+        a: { label: '日固定成本', value: fmtMoney(dailyFixedCost.value), unit: '元' },
+        b: { label: '毛利率', value: fmtPercent(grossMargin.value), unit: '' },
+        result: { label: '日盈亏平衡营业额', value: fmtMoney(dailyBreakEvenRevenue.value), unit: '元' },
+      },
+      {
+        op: '÷',
+        a: { label: '日盈亏平衡营业额', value: fmtMoney(dailyBreakEvenRevenue.value), unit: '元' },
+        b: { label: '平均客单价', value: fmtMoney(avgTicket.value), unit: '元' },
+        result: { label: '保本日单数', value: fmtNumber(dailyBreakEvenOrders.value, 1), unit: '单' },
+      },
     ],
   },
   turnoverRate: {
@@ -1897,7 +1924,17 @@ function downloadResultsAsImage() {
             <span v-if="missingRequiredFields.includes('targetDailyOrders')" class="field-warning">请填写目标日单数，否则目标月净利润为负</span>
           </div>
           <div class="form-col">
-            <label>目标月净利润（元）</label>
+            <label>目标日流水（元）</label>
+            <div class="computed-value">{{ fmtMoney(targetDailyRevenue) }}</div>
+          </div>
+        </div>
+        <div class="form-row form-row-2col">
+          <div class="form-col">
+            <label>月目标流水（元）</label>
+            <div class="computed-value">{{ fmtMoney(targetMonthlyRevenue) }}</div>
+          </div>
+          <div class="form-col">
+            <label>月净利润（元）</label>
             <div class="computed-value" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }">
               {{ fmtMoney(targetMonthlyNetProfit) }}
             </div>
@@ -1946,7 +1983,7 @@ function downloadResultsAsImage() {
               <div class="metric-value">{{ fmtMoney(monthlyBreakEvenRevenue) }}</div>
               <div class="metric-label">月平衡营业额（元）</div>
             </div>
-            <div class="metric highlight clickable" @click="showDetailPopup(detailFields.dailyBreakEvenOrders.title, detailFields.dailyBreakEvenOrders.rows)">
+            <div class="metric highlight clickable" @click="showDetailPopup(detailFields.dailyBreakEvenOrders.title, detailFields.dailyBreakEvenOrders.groups, 'steps')">
               <div class="metric-value">{{ fmtNumber(dailyBreakEvenOrders, 1) }}</div>
               <div class="metric-label">保本日单数（单）</div>
             </div>
@@ -1982,6 +2019,10 @@ function downloadResultsAsImage() {
             <div class="metric clickable" :class="{ 'text-success': targetMonthlyNetProfit > 0, 'text-error': targetMonthlyNetProfit < 0 }" @click="showDetailPopup(detailFields.targetMonthlyNetProfit.title, detailFields.targetMonthlyNetProfit.groups, 'steps')">
               <div class="metric-value">{{ fmtMoney(targetMonthlyNetProfit) }}</div>
               <div class="metric-label">目标月净利润（元）</div>
+            </div>
+            <div class="metric" :class="{ 'text-success': targetNetProfitMargin > 0, 'text-error': targetNetProfitMargin < 0 }">
+              <div class="metric-value">{{ fmtPercent(targetNetProfitMargin) }}</div>
+              <div class="metric-label">目标净利率</div>
             </div>
             <div class="metric clickable" @click="showDetailPopup(detailFields.paybackMonths.title, detailFields.paybackMonths.rows)">
               <div class="metric-value">{{ paybackMonths === Infinity ? '无法回本' : fmtNumber(paybackMonths, 1) }}</div>

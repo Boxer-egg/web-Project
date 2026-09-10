@@ -98,10 +98,10 @@ const stats = computed(() => {
 
 const currentQuestion = computed(() => sessionQuestions.value[currentIndex.value] || null)
 
-/** 当前题匹配到的口诀（仅答错时显示） */
+/** 当前题匹配到的口诀（仅答错且已公布答案时显示） */
 const currentMnemonics = computed(() => {
   const q = currentQuestion.value
-  if (!q || !showExplain.value) return []
+  if (!q || !isRevealed(q.id)) return []
   if (isCorrect(q.id)) return []
   return matchMnemonics(q).slice(0, 2)
 })
@@ -163,6 +163,7 @@ function startSession(selectedMode) {
   marked.value = []
   currentIndex.value = 0
   error.value = ''
+  revealed.value = {}
 
   let questions = []
   if (selectedMode === 'wrong') {
@@ -231,15 +232,13 @@ function selectOption(index) {
     } else {
       answers.value[qid] = [...current, index].sort((a, b) => a - b)
     }
-    showExplain.value = false
     return
   }
 
   // 单选/判断题
   answers.value[qid] = [index]
   if (mode.value === 'exam') return
-  // 练习模式：选择后立即显示对错并锁定
-  showExplain.value = true
+  // 练习模式：选择后立即公布答案并锁定
   handleAnswerResult(qid)
 }
 
@@ -251,12 +250,13 @@ function confirmMultiple() {
     return
   }
   error.value = ''
-  showExplain.value = true
   handleAnswerResult(currentQuestion.value.id)
 }
 
 /** 处理答题后的错题本逻辑 */
 function handleAnswerResult(qid) {
+  // 练习模式下答过的题永久公布答案，切回仍显示对错与口诀
+  if (mode.value !== 'exam') revealed.value[qid] = true
   const correct = isCorrect(qid)
   if (isWrongBookSession.value) {
     if (correct) {
@@ -277,7 +277,7 @@ function isLocked() {
   if (mode.value === 'exam') return false
   if (!currentQuestion.value) return false
   const type = currentQuestion.value.type
-  if (type === 'multiple') return showExplain.value
+  if (type === 'multiple') return isRevealed(currentQuestion.value.id)
   return isAnswered(currentQuestion.value.id)
 }
 
@@ -330,7 +330,6 @@ function manualRemoveCurrent() {
   if (currentIndex.value >= remaining.length) {
     currentIndex.value = remaining.length - 1
   }
-  showExplain.value = false
   error.value = ''
 }
 
@@ -355,20 +354,24 @@ function startWrongBook() {
   startSession('wrong')
 }
 
-/** 查看解析 */
-const showExplain = ref(false)
+/** 已公布答案的题目集合（练习模式答过即永久公布，考试模式为空） */
+const revealed = ref({})
+
+/** 某题答案是否已公布（决定是否显示对错颜色、✓/✗ 与口诀） */
+function isRevealed(qid) {
+  if (mode.value === 'exam' || qid == null) return false
+  return !!revealed.value[qid]
+}
 
 /** 导航 */
 function goTo(index) {
   currentIndex.value = index
-  showExplain.value = false
   error.value = ''
 }
 
 function nextQuestion() {
   if (currentIndex.value < sessionQuestions.value.length - 1) {
     currentIndex.value++
-    showExplain.value = false
     error.value = ''
   }
 }
@@ -376,7 +379,6 @@ function nextQuestion() {
 function prevQuestion() {
   if (currentIndex.value > 0) {
     currentIndex.value--
-    showExplain.value = false
     error.value = ''
   }
 }
@@ -450,6 +452,17 @@ function isCorrect(qid) {
 /** 选项标签 */
 function optionLabel(i) {
   return String.fromCharCode(65 + i)
+}
+
+/** 选项圆圈内容：公布答案后显示对/错图标，否则显示字母 */
+function optionMarker(i) {
+  const q = currentQuestion.value
+  if (!q) return optionLabel(i)
+  if (isRevealed(q.id)) {
+    if ((q.answer || []).includes(i)) return '✓'
+    if ((answers.value[q.id] || []).includes(i)) return '✗'
+  }
+  return optionLabel(i)
 }
 
 onMounted(() => {
@@ -620,20 +633,20 @@ onUnmounted(stopTimer)
             class="option-btn"
             :class="{
               selected: (answers[currentQuestion.id] || []).includes(i),
-              correct: showExplain && (currentQuestion.answer || []).includes(i),
-              wrong: showExplain && (answers[currentQuestion.id] || []).includes(i) && !(currentQuestion.answer || []).includes(i)
+              correct: isRevealed(currentQuestion.id) && (currentQuestion.answer || []).includes(i),
+              wrong: isRevealed(currentQuestion.id) && (answers[currentQuestion.id] || []).includes(i) && !(currentQuestion.answer || []).includes(i)
             }"
             :disabled="isLocked() && !(answers[currentQuestion.id] || []).includes(i) && !(currentQuestion.answer || []).includes(i)"
             @click="selectOption(i)"
           >
-            <span class="option-label">{{ optionLabel(i) }}</span>
+            <span class="option-label">{{ optionMarker(i) }}</span>
             <span class="option-text">{{ opt }}</span>
           </button>
         </div>
 
         <div class="question-actions">
           <button class="btn btn-secondary" @click="prevQuestion" :disabled="currentIndex === 0">上一题</button>
-          <button v-if="currentQuestion?.type === 'multiple' && !showExplain && mode !== 'exam'" class="btn" @click="confirmMultiple">确认答案</button>
+          <button v-if="currentQuestion?.type === 'multiple' && !isRevealed(currentQuestion.id) && mode !== 'exam'" class="btn" @click="confirmMultiple">确认答案</button>
           <button class="btn" :class="{ 'btn-secondary': marked.includes(currentIndex) }" @click="toggleMark">
             {{ marked.includes(currentIndex) ? '取消标记' : '标记本题' }}
           </button>
@@ -641,7 +654,7 @@ onUnmounted(stopTimer)
           <button class="btn" @click="nextQuestion" :disabled="currentIndex === sessionQuestions.length - 1">下一题</button>
         </div>
 
-        <div v-if="mode !== 'exam' && (showExplain || (currentQuestion?.type !== 'multiple' && isAnswered(currentQuestion?.id)))" class="explain-box">
+        <div v-if="isRevealed(currentQuestion?.id)" class="explain-box">
           <strong>正确答案：</strong>{{ currentQuestion.answer.map(i => optionLabel(i)).join('、') }}<br>
           <strong>解析：</strong>{{ currentQuestion.explain || '暂无解析' }}
         </div>
@@ -919,11 +932,17 @@ onUnmounted(stopTimer)
   font-size: 13px;
   font-weight: 600;
 }
-.option-btn.selected .option-label,
-.option-btn.correct .option-label,
+.option-btn.selected .option-label {
+  background: var(--accent);
+  color: #fff;
+}
+.option-btn.correct .option-label {
+  background: var(--success);
+  color: #fff;
+}
 .option-btn.wrong .option-label {
-  background: currentColor;
-  color: white;
+  background: var(--error);
+  color: #fff;
 }
 .option-text {
   font-size: 15px;

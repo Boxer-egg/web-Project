@@ -87,22 +87,47 @@ export const MNEMONICS = [
 ]
 
 /**
+ * 从口诀标题提取分值，如 "扣6分口诀" -> 6；非扣分类返回 null
+ */
+function scoreOfTitle(title) {
+  const m = title.match(/^扣(\d+)分/)
+  return m ? parseInt(m[1], 10) : null
+}
+
+/**
+ * 安全子串匹配：避免 "36分" 误命中 "6分"、"1分钟" 误命中 "1分"
+ */
+function safeIncludes(text, keyword) {
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const re = new RegExp(`(?:^|[^0-9])${escaped}(?!钟)`)
+  return re.test(text)
+}
+
+/**
  * Match mnemonics for a given question.
  * @param {{question:string, options:string[], chapter?:string, type:string}} question
  * @returns {{title:string, content:string, score:number}[]}
  */
 export function matchMnemonics(question) {
   if (!question) return []
-  const text = [
-    question.question,
-    question.chapter || '',
-    ...(question.options || []),
-  ].join(' ')
+  // 扣分类口诀仅以题干/章节中的明确分值（如"一次记6分"）匹配，
+  // 避免"信号灯""超速"等泛关键词把无关题错配到扣分口诀
+  const qText = [question.question, question.chapter || ''].join(' ')
+  const fullText = qText + ' ' + (question.options || []).join(' ')
 
   const scored = MNEMONICS.map(m => {
+    const scoreValue = scoreOfTitle(m.title)
+    if (scoreValue != null) {
+      const hit = new RegExp(`(记|扣)\\s*${scoreValue}\\s*分`).test(qText)
+      return { ...m, score: hit ? 10 : 0 }
+    }
     let score = 0
     for (const kw of m.keywords) {
-      if (text.includes(kw)) score += 1
+      if (kw.includes('分')) {
+        if (safeIncludes(fullText, kw)) score += 1
+      } else if (fullText.includes(kw)) {
+        score += 1
+      }
     }
     return { ...m, score }
   }).filter(m => m.score > 0)

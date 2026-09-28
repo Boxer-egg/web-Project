@@ -8,6 +8,8 @@ const HISTORY_LIMIT = 50
 const code = useStorage(CODE_STORAGE_KEY, '')
 const wrongIds = useStorage('driving-quiz-wrong-ids', [])
 const quizHistory = useStorage('driving-quiz-history', [])
+/** 顺序练习进度：{ [subjectKey]: 下一题索引 }，答到最后一题后存题目总数表示已完成 */
+const sequentialProgress = useStorage('driving-quiz-sequential-progress', {})
 const syncing = ref(false)
 const syncError = ref('')
 const lastSync = ref('')
@@ -31,6 +33,12 @@ function mergeDrivingData(remote) {
   ]
   mergedHistory.sort((a, b) => new Date(b.date) - new Date(a.date))
   quizHistory.value = mergedHistory.slice(0, HISTORY_LIMIT)
+  // 顺序练习进度按科目合并，取较大值（练得更远的设备为准）
+  const mergedProgress = { ...sequentialProgress.value }
+  for (const [key, idx] of Object.entries(remote.sequentialProgress || {})) {
+    if (Number(idx) > (mergedProgress[key] || 0)) mergedProgress[key] = Number(idx)
+  }
+  sequentialProgress.value = mergedProgress
 }
 
 export function useCloudSync() {
@@ -50,6 +58,7 @@ export function useCloudSync() {
             driving: {
               wrongIds: wrongIds.value,
               quizHistory: quizHistory.value,
+              sequentialProgress: sequentialProgress.value,
             },
             savedAt: new Date().toISOString(),
           },
@@ -118,6 +127,7 @@ export function useCloudSync() {
     code,
     wrongIds,
     quizHistory,
+    sequentialProgress,
     syncing,
     syncError,
     lastSync,

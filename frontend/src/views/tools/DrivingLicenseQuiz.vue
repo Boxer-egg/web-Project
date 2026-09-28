@@ -5,7 +5,6 @@ import { matchMnemonics } from '../../logic/drivingMnemonics'
 import { fetchWithTimeout } from '../../utils/fetchWithTimeout.js'
 import { getUrlParams } from '../../utils/urlParams'
 import { useCloudSync } from '../../composables/useCloudSync.js'
-import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 /** 科目配置 */
 const SUBJECTS = {
@@ -53,6 +52,7 @@ const {
   code: syncCode,
   wrongIds,
   quizHistory,
+  sequentialProgress,
   syncing,
   syncError,
   lastSync,
@@ -61,6 +61,9 @@ const {
   pull: syncDownload,
   resetCode: resetSyncCode,
 } = useCloudSync()
+
+/** 本次顺序练习恢复的进度（0 表示从头开始），用于显示提示条 */
+const resumedFrom = ref(0)
 
 /** 复制恢复码到剪贴板 */
 async function copySyncCode() {
@@ -161,7 +164,6 @@ function startSession(selectedMode) {
   mode.value = selectedMode
   answers.value = {}
   marked.value = []
-  currentIndex.value = 0
   error.value = ''
   revealed.value = {}
 
@@ -181,6 +183,23 @@ function startSession(selectedMode) {
   }
 
   sessionQuestions.value = questions
+
+  // 顺序练习：恢复上次进度；已完成一轮（进度 ≥ 题目总数）则清零从头开始
+  if (selectedMode === 'sequential') {
+    const saved = Number(sequentialProgress.value[subject.value]) || 0
+    if (saved >= questions.length) {
+      sequentialProgress.value = { ...sequentialProgress.value, [subject.value]: 0 }
+      currentIndex.value = 0
+      resumedFrom.value = 0
+    } else {
+      currentIndex.value = saved
+      resumedFrom.value = saved
+    }
+  } else {
+    currentIndex.value = 0
+    resumedFrom.value = 0
+  }
+
   view.value = selectedMode === 'exam' ? 'exam' : 'practice'
   startTime.value = Date.now()
 
@@ -369,10 +388,18 @@ function goTo(index) {
   error.value = ''
 }
 
+/** 顺序练习：把当前位置存为进度（浏览到最后一题则存题目总数，表示本轮已完成） */
+function saveSequentialProgress() {
+  const total = sessionQuestions.value.length
+  const idx = currentIndex.value >= total - 1 ? total : currentIndex.value
+  sequentialProgress.value = { ...sequentialProgress.value, [subject.value]: idx }
+}
+
 function nextQuestion() {
   if (currentIndex.value < sessionQuestions.value.length - 1) {
     currentIndex.value++
     error.value = ''
+    if (mode.value === 'sequential') saveSequentialProgress()
   }
 }
 
@@ -389,8 +416,12 @@ function goHome() {
   view.value = 'home'
 }
 
-/** 重新练习 */
+/** 重新练习（顺序练习清空进度，从头开始） */
 function restart() {
+  if (mode.value === 'sequential') {
+    sequentialProgress.value = { ...sequentialProgress.value, [subject.value]: 0 }
+    resumedFrom.value = 0
+  }
   startSession(mode.value)
 }
 
@@ -484,16 +515,6 @@ onUnmounted(stopTimer)
   <div class="tool-page driving-quiz">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
       <h1>🚗 {{ subjectName }}刷题</h1>
-      <AiHelpPanel
-        title="驾考刷题"
-        desc="科目一/科目四刷题：顺序练习、随机抽题、模拟考试、错题本，支持云同步与 URL 直达指定模式"
-        api-tool="driving_license_quiz"
-        :params="[
-          { name: 'subject', desc: '科目：km1 / km4', required: false, example: 'km1' },
-          { name: 'mode', desc: '模式：sequential / random / exam / wrong', required: false, example: 'exam' },
-          { name: 'auto', desc: '加载后自动开始（填 1）', required: false, example: '1' }
-        ]"
-      />
       <div class="subject-tabs">
         <button
           v-for="(s, key) in SUBJECTS"
@@ -617,6 +638,10 @@ onUnmounted(stopTimer)
         </div>
         <div class="progress-bar" style="margin-top:12px">
           <div class="progress-fill" :style="{ width: ((currentIndex + 1) / sessionQuestions.length * 100) + '%' }"></div>
+        </div>
+        <div v-if="mode === 'sequential' && resumedFrom > 0" class="resume-banner">
+          <span>▶ 已从上次第 {{ resumedFrom + 1 }} 题继续练习</span>
+          <button class="btn btn-sm btn-secondary" @click="restart">从头开始</button>
         </div>
       </div>
 
@@ -865,6 +890,21 @@ onUnmounted(stopTimer)
   height: 100%;
   background: var(--accent);
   transition: width 0.3s;
+}
+
+/* 顺序练习断点续练提示条 */
+.resume-banner {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  font-size: 13px;
+  color: var(--text-primary);
 }
 
 .question-card {

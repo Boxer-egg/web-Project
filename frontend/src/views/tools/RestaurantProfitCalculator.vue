@@ -531,6 +531,35 @@ const paybackMonths = computed(() => {
   return profit > 0 ? buildCost.value / profit : Infinity
 })
 
+/** 是否为季节性营业（实际营业月数 < 12） */
+const hasSeasonalOperation = computed(() => operatingMonths.value < 12)
+
+/** 全年营业口径：年净利润 = 月净利 × 12 */
+const annualNetProfitFull = computed(() => targetMonthlyNetProfit.value * 12)
+
+/** 实际营业口径：年净利润 = 月净利 × 营业月数 */
+const annualNetProfitActual = computed(() => targetMonthlyNetProfit.value * operatingMonths.value)
+
+/** 全年营业口径：回本周期（年） */
+const paybackYearsFull = computed(() =>
+  annualNetProfitFull.value > 0 ? buildCost.value / annualNetProfitFull.value : Infinity
+)
+
+/** 实际营业口径：回本周期（年） */
+const paybackYearsActual = computed(() =>
+  annualNetProfitActual.value > 0 ? buildCost.value / annualNetProfitActual.value : Infinity
+)
+
+/** 将年数格式化为「X 年 Y 个月」 */
+function formatYears(years) {
+  if (!Number.isFinite(years) || years <= 0) return '无法回本'
+  const fullYears = Math.floor(years)
+  const months = Math.round((years - fullYears) * 12)
+  if (months === 12) return `${fullYears + 1} 年`
+  if (months === 0) return `${fullYears} 年`
+  return `${fullYears} 年 ${months} 个月`
+}
+
 /** 目标净利润率 = 目标月净利润 / 目标月营收 */
 const targetNetProfitMargin = computed(() => {
   const revenue = targetMonthlyRevenue.value
@@ -2031,6 +2060,35 @@ function downloadResultsAsImage() {
           </div>
         </div>
 
+        <div v-if="hasSeasonalOperation" class="card result-card compare-card">
+          <div class="section-title">营业口径对比（实际营业 {{ operatingMonths }} 个月）</div>
+          <div class="compare-grid">
+            <div class="compare-col compare-full">
+              <div class="compare-col-title">全年营业（12 个月）</div>
+              <div class="compare-row">
+                <span class="compare-row-label">年净利润</span>
+                <span class="compare-row-value" :class="{ 'text-success': annualNetProfitFull > 0, 'text-error': annualNetProfitFull < 0 }">{{ fmtMoney(annualNetProfitFull) }} 元</span>
+              </div>
+              <div class="compare-row">
+                <span class="compare-row-label">回本周期</span>
+                <span class="compare-row-value">{{ formatYears(paybackYearsFull) }}</span>
+              </div>
+            </div>
+            <div class="compare-col compare-actual">
+              <div class="compare-col-title">实际营业（{{ operatingMonths }} 个月）</div>
+              <div class="compare-row">
+                <span class="compare-row-label">年净利润</span>
+                <span class="compare-row-value" :class="{ 'text-success': annualNetProfitActual > 0, 'text-error': annualNetProfitActual < 0 }">{{ fmtMoney(annualNetProfitActual) }} 元</span>
+              </div>
+              <div class="compare-row">
+                <span class="compare-row-label">回本周期</span>
+                <span class="compare-row-value">{{ formatYears(paybackYearsActual) }}</span>
+              </div>
+            </div>
+          </div>
+          <p class="compare-note">学校/景区等季节性商区全年只营业 {{ operatingMonths }} 个月，房租按 {{ operatingMonths }} 个月摊销，年化净利润与回本周期与全年营业存在差异。</p>
+        </div>
+
         <div class="download-bar">
           <button class="btn" @click="downloadResultsAsImage">保存图片</button>
         </div>
@@ -2474,6 +2532,61 @@ input[type="number"].with-spinners {
   margin-top: 20px;
   display: flex;
   justify-content: center;
+}
+
+/* 营业口径对比卡片 */
+.compare-card {
+  margin-top: 16px;
+}
+.compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.compare-col {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.compare-col.compare-actual {
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-secondary));
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+.compare-col-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.compare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+.compare-row-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.compare-row-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.compare-row-value.text-success {
+  color: var(--success);
+}
+.compare-row-value.text-error {
+  color: var(--error);
+}
+.compare-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 12px 0 0;
 }
 
 /* 必填项缺失提示 */
@@ -2934,6 +3047,9 @@ input[type="number"].with-spinners {
     padding: 16px;
   }
   .chart-top-row {
+    grid-template-columns: 1fr;
+  }
+  .compare-grid {
     grid-template-columns: 1fr;
   }
 }

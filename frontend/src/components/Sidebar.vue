@@ -43,20 +43,6 @@ const groups = [
     ]
   },
   {
-    title: '文本处理',
-    tools: [
-      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰', keywords: ['wenben', 'text', 'toolbox', 'daxiao', 'case', 'quchong', 'sort', 'fanzhuan', 'reverse'] },
-      { path: '/tools/word-counter', name: '字数统计', icon: '📝', keywords: ['zishu', 'word', 'count', 'tongji', 'character'] },
-      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️', keywords: ['jianfan', 'chinese', 'convert', 'simplified', 'traditional', 'fantizhongwen'] },
-      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝', keywords: ['jiawen', 'lorem', 'ipsum', 'dummy', 'placeholder', 'shengcheng'] },
-      { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', keywords: ['shuzi', 'number', 'chinese', 'daxie', 'jine', 'renminbi', 'convert'] },
-      { path: '/tools/pinyin', name: '文字转拼音', icon: '🔤', keywords: ['pinyin', 'wenzi', 'zhuanpin', 'fayin', 'yinjie'] },
-      { path: '/tools/hanzi-info', name: '汉字信息', icon: '📖', keywords: ['hanzi', 'bushou', 'pianpang', 'bihua', 'pinyin', 'fayin'] },
-      { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', keywords: ['huoxingwen', 'martian', 'fanzhuan', 'wenzi'] },
-      { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', keywords: ['wenben', 'text', 'yanyi', 'kaomoji', 'yincang', 'yinxie'] },
-    ]
-  },
-  {
     title: '商业测算',
     tools: [
       { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', keywords: ['canyin', 'restaurant', 'profit', 'yingli', 'jisuan', 'kaidian', 'kuiyin'] },
@@ -149,6 +135,20 @@ const groups = [
     tools: [
       { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', keywords: ['shuati', 'quiz', 'exam', 'jiaxiao', 'moni'] },
       { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', keywords: ['jiaotong', 'traffic', 'sign', 'biaozhi', 'tuku', 'tubiao'] },
+    ]
+  },
+  {
+    title: '文本处理',
+    tools: [
+      { path: '/tools/text-toolbox', name: '文本工具箱', icon: '🧰', keywords: ['wenben', 'text', 'toolbox', 'daxiao', 'case', 'quchong', 'sort', 'fanzhuan', 'reverse'] },
+      { path: '/tools/word-counter', name: '字数统计', icon: '📝', keywords: ['zishu', 'word', 'count', 'tongji', 'character'] },
+      { path: '/tools/chinese-converter', name: '简繁转换', icon: '🈷️', keywords: ['jianfan', 'chinese', 'convert', 'simplified', 'traditional', 'fantizhongwen'] },
+      { path: '/tools/lorem-ipsum', name: '假文生成', icon: '📝', keywords: ['jiawen', 'lorem', 'ipsum', 'dummy', 'placeholder', 'shengcheng'] },
+      { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', keywords: ['shuzi', 'number', 'chinese', 'daxie', 'jine', 'renminbi', 'convert'] },
+      { path: '/tools/pinyin', name: '文字转拼音', icon: '🔤', keywords: ['pinyin', 'wenzi', 'zhuanpin', 'fayin', 'yinjie'] },
+      { path: '/tools/hanzi-info', name: '汉字信息', icon: '📖', keywords: ['hanzi', 'bushou', 'pianpang', 'bihua', 'pinyin', 'fayin'] },
+      { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', keywords: ['huoxingwen', 'martian', 'fanzhuan', 'wenzi'] },
+      { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', keywords: ['wenben', 'text', 'yanyi', 'kaomoji', 'yincang', 'yinxie'] },
     ]
   }
 ]

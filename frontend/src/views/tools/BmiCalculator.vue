@@ -1,12 +1,31 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as bmiLogic from '../../logic/bmi'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
+
+const WEIGHT_MIN = 30
+const WEIGHT_MAX = 200
+const HEIGHT_MIN = 100
+const HEIGHT_MAX = 250
 
 const weight = ref(65)
 const height = ref(170)
 const result = ref(null)
 const error = ref('')
+
+/** 录入框与滑块共用同一值，输入超出范围时自动收敛到边界 */
+watch(weight, (v) => {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return
+  if (n < WEIGHT_MIN) weight.value = WEIGHT_MIN
+  else if (n > WEIGHT_MAX) weight.value = WEIGHT_MAX
+})
+watch(height, (v) => {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return
+  if (n < HEIGHT_MIN) height.value = HEIGHT_MIN
+  else if (n > HEIGHT_MAX) height.value = HEIGHT_MAX
+})
 
 const displayResult = computed(() => {
   if (!result.value) return null
@@ -51,11 +70,17 @@ function calculate() {
       <div class="tool-panel card">
         <div class="config-row">
           <label>体重: {{ weight }} kg</label>
-          <input v-model.number="weight" type="range" min="30" max="200" class="range-input">
+          <div class="input-row">
+            <input v-model.number="weight" type="range" :min="WEIGHT_MIN" :max="WEIGHT_MAX" class="range-input">
+            <input v-model.number="weight" type="number" :min="WEIGHT_MIN" :max="WEIGHT_MAX" class="input number-input" aria-label="体重（千克）">
+          </div>
         </div>
         <div class="config-row">
           <label>身高: {{ height }} cm</label>
-          <input v-model.number="height" type="range" min="100" max="250" class="range-input">
+          <div class="input-row">
+            <input v-model.number="height" type="range" :min="HEIGHT_MIN" :max="HEIGHT_MAX" class="range-input">
+            <input v-model.number="height" type="number" :min="HEIGHT_MIN" :max="HEIGHT_MAX" class="input number-input" aria-label="身高（厘米）">
+          </div>
         </div>
         <button class="btn" @click="calculate">计算</button>
       </div>
@@ -120,7 +145,20 @@ function calculate() {
 }
 .config-row { margin-bottom: 16px; }
 .config-row label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
-.range-input { width: 100%; }
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.range-input {
+  flex: 1;
+  min-width: 0;
+}
+.number-input {
+  width: 76px;
+  flex-shrink: 0;
+  text-align: right;
+}
 .result-card { background: var(--bg-secondary); padding: 20px; border-radius: var(--radius); text-align: center; }
 .bmi-value { font-size: 48px; font-weight: 700; color: var(--accent); }
 .bmi-category { font-size: 18px; color: var(--text-primary); margin-top: 4px; }

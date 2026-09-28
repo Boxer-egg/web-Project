@@ -62,8 +62,15 @@ const {
   resetCode: resetSyncCode,
 } = useCloudSync()
 
-/** 本次顺序练习恢复的进度（0 表示从头开始），用于显示提示条 */
-const resumedFrom = ref(0)
+/** 保存的顺序练习进度（当前科目的下一题索引；答完一轮后存题目总数表示已完成） */
+const savedProgress = computed(() => Number(sequentialProgress.value[subject.value]) || 0)
+
+/** 是否存在可恢复的进度（0 表示无进度，≥ 题目总数表示已完成一轮） */
+const hasResumableProgress = computed(() => {
+  if (mode.value !== 'sequential') return false
+  const total = sessionQuestions.value.length
+  return savedProgress.value > 0 && savedProgress.value < total
+})
 
 /** 复制恢复码到剪贴板 */
 async function copySyncCode() {
@@ -100,6 +107,34 @@ const stats = computed(() => {
 })
 
 const currentQuestion = computed(() => sessionQuestions.value[currentIndex.value] || null)
+
+/** 题号网格：每页显示的题数 */
+const GRID_PAGE_SIZE = 20
+/** 题号网格页脚的可选步长 */
+const GRID_JUMPS = [10, 20, 200]
+
+/** 当前题号窗口的起始索引（与页大小对齐，保证当前题落在窗口内） */
+const gridWindowStart = computed(() =>
+  Math.floor(currentIndex.value / GRID_PAGE_SIZE) * GRID_PAGE_SIZE
+)
+
+/** 当前窗口内显示的题号索引 */
+const gridWindowItems = computed(() => {
+  const total = sessionQuestions.value.length
+  const end = Math.min(gridWindowStart.value + GRID_PAGE_SIZE, total)
+  const items = []
+  for (let i = gridWindowStart.value; i < end; i++) items.push(i)
+  return items
+})
+
+/** 窗口范围文本，如「21-40 / 2006」 */
+const gridWindowText = computed(() => {
+  const total = sessionQuestions.value.length
+  if (!total) return ''
+  const start = gridWindowStart.value + 1
+  const end = Math.min(gridWindowStart.value + GRID_PAGE_SIZE, total)
+  return `${start}-${end} / ${total}`
+})
 
 /** 当前题匹配到的口诀（仅答错且已公布答案时显示） */
 const currentMnemonics = computed(() => {
@@ -155,8 +190,8 @@ function switchSubject(key) {
   loadBank()
 }
 
-/** 初始化会话 */
-function startSession(selectedMode) {
+/** 初始化会话；fromBeginning 仅对顺序练习生效：忽略保存的进度从第 1 题开始（不清除进度） */
+function startSession(selectedMode, { fromBeginning = false } = {}) {
   if (!bank.value.questions.length) {
     error.value = '题库尚未加载完成，请稍候'
     return
@@ -184,20 +219,17 @@ function startSession(selectedMode) {
 
   sessionQuestions.value = questions
 
-  // 顺序练习：恢复上次进度；已完成一轮（进度 ≥ 题目总数）则清零从头开始
+  // 顺序练习：默认恢复上次进度；已完成一轮（进度 ≥ 题目总数）则清零从头开始
   if (selectedMode === 'sequential') {
     const saved = Number(sequentialProgress.value[subject.value]) || 0
     if (saved >= questions.length) {
       sequentialProgress.value = { ...sequentialProgress.value, [subject.value]: 0 }
       currentIndex.value = 0
-      resumedFrom.value = 0
     } else {
-      currentIndex.value = saved
-      resumedFrom.value = saved
+      currentIndex.value = fromBeginning ? 0 : saved
     }
   } else {
     currentIndex.value = 0
-    resumedFrom.value = 0
   }
 
   view.value = selectedMode === 'exam' ? 'exam' : 'practice'
@@ -382,10 +414,17 @@ function isRevealed(qid) {
   return !!revealed.value[qid]
 }
 
-/** 导航 */
+/** 导航（自动截断到合法范围） */
 function goTo(index) {
-  currentIndex.value = index
+  const max = sessionQuestions.value.length - 1
+  if (max < 0) return
+  currentIndex.value = Math.max(0, Math.min(index, max))
   error.value = ''
+}
+
+/** 相对当前题跳转 N 题（供题号网格页脚的 10/20/200 一跳） */
+function jumpQuestions(delta) {
+  goTo(currentIndex.value + delta)
 }
 
 /** 顺序练习：把当前位置存为进度（浏览到最后一题则存题目总数，表示本轮已完成） */
@@ -416,13 +455,19 @@ function goHome() {
   view.value = 'home'
 }
 
-/** 重新练习（顺序练习清空进度，从头开始） */
+/** 顺序练习：本次会话从第 1 题开始（保留已保存的进度，可随时反悔恢复） */
+function startFromBeginning() {
+  goTo(0)
+}
+
+/** 顺序练习：跳回已保存的进度处继续 */
+function resumeFromSaved() {
+  if (hasResumableProgress.value) goTo(savedProgress.value)
+}
+
+/** 重新练习（顺序练习从第 1 题重开一轮，不清除已保存的进度） */
 function restart() {
-  if (mode.value === 'sequential') {
-    sequentialProgress.value = { ...sequentialProgress.value, [subject.value]: 0 }
-    resumedFrom.value = 0
-  }
-  startSession(mode.value)
+  startSession(mode.value, { fromBeginning: mode.value === 'sequential' })
 }
 
 /** 标记当前题 */
@@ -639,9 +684,20 @@ onUnmounted(stopTimer)
         <div class="progress-bar" style="margin-top:12px">
           <div class="progress-fill" :style="{ width: ((currentIndex + 1) / sessionQuestions.length * 100) + '%' }"></div>
         </div>
-        <div v-if="mode === 'sequential' && resumedFrom > 0" class="resume-banner">
-          <span>▶ 已从上次第 {{ resumedFrom + 1 }} 题继续练习</span>
-          <button class="btn btn-sm btn-secondary" @click="restart">从头开始</button>
+        <div v-if="hasResumableProgress" class="resume-banner">
+          <span>上次练到第 {{ savedProgress + 1 }} 题</span>
+          <div class="resume-actions">
+            <button
+              class="btn btn-sm"
+              :class="currentIndex === 0 ? 'btn-primary' : 'btn-secondary'"
+              @click="startFromBeginning"
+            >从头开始</button>
+            <button
+              class="btn btn-sm"
+              :class="currentIndex === savedProgress ? 'btn-primary' : 'btn-secondary'"
+              @click="resumeFromSaved"
+            >从第 {{ savedProgress + 1 }} 题继续</button>
+          </div>
         </div>
       </div>
 
@@ -695,19 +751,38 @@ onUnmounted(stopTimer)
 
       <div class="quiz-footer">
         <div class="question-grid card">
-          <button
-            v-for="(q, i) in sessionQuestions"
-            :key="q.id"
-            class="grid-btn"
-            :class="{
-              current: i === currentIndex,
-              answered: isAnswered(q.id),
-              marked: marked.includes(i)
-            }"
-            @click="goTo(i)"
-          >
-            {{ i + 1 }}
-          </button>
+          <div class="grid-window">
+            <button
+              v-for="i in gridWindowItems"
+              :key="i"
+              class="grid-btn"
+              :class="{
+                current: i === currentIndex,
+                answered: isAnswered(sessionQuestions[i].id),
+                marked: marked.includes(i)
+              }"
+              @click="goTo(i)"
+            >
+              {{ i + 1 }}
+            </button>
+          </div>
+          <div class="grid-nav">
+            <button
+              v-for="j in GRID_JUMPS"
+              :key="'prev-' + j"
+              class="grid-jump"
+              :disabled="currentIndex === 0"
+              @click="jumpQuestions(-j)"
+            >-{{ j }}</button>
+            <span class="grid-info">{{ gridWindowText }}</span>
+            <button
+              v-for="j in GRID_JUMPS"
+              :key="'next-' + j"
+              class="grid-jump"
+              :disabled="currentIndex >= sessionQuestions.length - 1"
+              @click="jumpQuestions(j)"
+            >+{{ j }}</button>
+          </div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:12px">
           <button class="btn btn-secondary" @click="goHome">返回首页</button>
@@ -898,13 +973,19 @@ onUnmounted(stopTimer)
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: var(--radius);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
   font-size: 13px;
   color: var(--text-primary);
+}
+.resume-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .question-card {
@@ -1032,6 +1113,12 @@ onUnmounted(stopTimer)
 .question-grid {
   padding: 12px;
 }
+.grid-window {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
 .grid-btn {
   width: 36px;
   height: 36px;
@@ -1040,6 +1127,40 @@ onUnmounted(stopTimer)
   background: var(--bg-secondary);
   cursor: pointer;
   font-size: 13px;
+}
+.grid-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.grid-jump {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.grid-jump:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.grid-jump:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.grid-info {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 0 6px;
+  white-space: nowrap;
 }
 .grid-btn.answered {
   border-color: var(--success);

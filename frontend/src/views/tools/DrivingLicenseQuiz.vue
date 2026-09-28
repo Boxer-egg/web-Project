@@ -680,8 +680,8 @@ onUnmounted(stopTimer)
         </div>
 
         <div v-if="isRevealed(currentQuestion?.id)" class="explain-box">
-          <strong>正确答案：</strong>{{ currentQuestion.answer.map(i => optionLabel(i)).join('、') }}<br>
-          <strong>解析：</strong>{{ currentQuestion.explain || '暂无解析' }}
+          <strong>正确答案：</strong>{{ currentQuestion.answer.map(i => optionLabel(i)).join('、') }}
+          <template v-if="currentQuestion.explain"><br><strong>解析：</strong>{{ currentQuestion.explain }}</template>
         </div>
 
         <div v-if="currentMnemonics.length" class="mnemonic-box">

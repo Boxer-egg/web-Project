@@ -54,8 +54,10 @@ async function waitForOutput(page, getter, { timeout = 10000, interval = 200 } =
  * Fields:
  *   name          - short identifier used for the screenshot filename
  *   path          - route + query string to open
- *   expected      - substring expected in the output
- *   getOutput     - Playwright locator expression that extracts the output text
+ *   expected      - substring expected in the output (or numeric string when assert is used)
+ *   getOutput     - Playwright locator expression that extracts the output text.
+ *                   Use .catch(() => '') for elements that appear asynchronously,
+ *                   so waitForOutput keeps polling instead of failing immediately.
  *   assert        - (output, expected) => boolean, optional custom assertion
  */
 const cases = [
@@ -107,6 +109,66 @@ const cases = [
     path: '/tools/svg-editor?svg=%3Csvg%20width%3D%22200%22%20height%3D%22200%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22blue%22%2F%3E%3C%2Fsvg%3E&auto=1',
     expected: '<svg',
     getOutput: (page) => page.locator('.code-area').inputValue()
+  },
+  // ===== 餐饮测算类 =====
+  {
+    // 正向计算器：学校商区（8 个月摊房租），月固定成本 21500，月净利 23500
+    name: 'restaurant-profit',
+    path: '/tools/restaurant-profit?district=school&rent=48000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100',
+    expected: '23,500',
+    getOutput: (page) => page.locator('.metric', { hasText: '目标月净利润' }).locator('.metric-value').textContent().catch(() => '')
+  },
+  {
+    // 营业口径对比卡片：学校商区年净利 = 月净利 × 8 = 188,000
+    name: 'restaurant-profit-compare',
+    path: '/tools/restaurant-profit?district=school&rent=48000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100',
+    expected: '188,000',
+    getOutput: (page) => page.locator('.compare-col.compare-actual').textContent().catch(() => '')
+  },
+  {
+    // 反向调研：日营业额 8000 / 客单价 25 = 日均 320 单
+    name: 'restaurant-profit-reverse',
+    path: '/tools/rpr?mode=dailyRevenue&v=8000&ticket=25&gm=0.6&mrent=15000&util=2000&labor=8000&seats=24&days=30',
+    expected: '320',
+    getOutput: (page) => page.locator('.metric-value').first().textContent().catch(() => '')
+  },
+  {
+    // 菜单毛利率：example=1 静默加载示例，整体毛利率 63.57%
+    name: 'menu-gross-margin',
+    path: '/tools/menu-gross-margin?example=1',
+    expected: '63.57%',
+    getOutput: (page) => page.locator('.result-big-number').textContent().catch(() => '')
+  },
+  {
+    // 简易毛利率：默认成本 12 / 售价 28 = 57.14%
+    name: 'gross-margin',
+    path: '/tools/gross-margin',
+    expected: '57.14%',
+    getOutput: (page) => page.locator('.gm-rate-value').textContent().catch(() => '')
+  },
+  {
+    // 门头编辑器：默认自动创建示例标题元素，画布渲染
+    name: 'storefront-sign',
+    path: '/tools/storefront-sign-editor',
+    expected: '0',
+    getOutput: async (page) => String(await page.locator('canvas').count()),
+    assert: (output) => Number(output) > 0
+  },
+  // ===== 驾考类 =====
+  {
+    // 科目一顺序练习自动开始，题库 2006 题
+    name: 'driving-quiz',
+    path: '/driving/quiz?subject=km1&mode=sequential&auto=1',
+    expected: '/ 2006',
+    getOutput: (page) => page.locator('.quiz-header').textContent().catch(() => '')
+  },
+  {
+    // 交通标志图库：异步加载后至少渲染一个标志卡片
+    name: 'traffic-signs',
+    path: '/driving/traffic-signs',
+    expected: '0',
+    getOutput: async (page) => String(await page.locator('.sign-card').count()),
+    assert: (output) => Number(output) > 0
   }
 ]
 

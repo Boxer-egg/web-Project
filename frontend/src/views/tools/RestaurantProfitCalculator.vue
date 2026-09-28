@@ -552,7 +552,8 @@ const paybackYearsActual = computed(() =>
 
 /** 将年数格式化为「X 年 Y 个月」 */
 function formatYears(years) {
-  if (!Number.isFinite(years) || years <= 0) return '无法回本'
+  if (!Number.isFinite(years) || years < 0) return '无法回本'
+  if (years === 0) return '无需回本'
   const fullYears = Math.floor(years)
   const months = Math.round((years - fullYears) * 12)
   if (months === 12) return `${fullYears + 1} 年`

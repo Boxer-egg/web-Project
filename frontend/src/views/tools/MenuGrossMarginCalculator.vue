@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
@@ -333,8 +333,8 @@ function deleteProfile(id) {
 }
 
 /** ========== 示例与清空 ========== */
-function loadExample() {
-  if (!window.confirm('加载示例会替换当前方案中的所有单品和套餐，是否继续？')) return
+function loadExample(silent = false) {
+  if (!silent && !window.confirm('加载示例会替换当前方案中的所有单品和套餐，是否继续？')) return
   const dish1 = createDish('牛肉饭', 28, [
     createIngredient('牛肉', 10),
     createIngredient('米饭', 1),
@@ -583,6 +583,12 @@ function fillToRestaurantProfit() {
   router.push('/tools/restaurant-profit')
   toast.success(`已将整体毛利率 ${fmtPercent(gm)} 回填到餐饮盈利计算器`)
 }
+
+/** URL 直达：?example=1 静默加载示例数据（供自动化测试与分享） */
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('example') === '1') loadExample(true)
+})
 
 </script>
 

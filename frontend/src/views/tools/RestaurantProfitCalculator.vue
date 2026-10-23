@@ -630,6 +630,13 @@ const rentAffordabilityText = computed(() => {
   return rentAffordability.value.affordable ? '可支付' : '不可支付'
 })
 
+/** 卡片副标题：与明细弹窗第二块（减房租后的结果）保持一致 */
+const rentAffordabilitySummary = computed(() => {
+  const { hasRent, affordable, remaining } = rentAffordability.value
+  if (!hasRent) return '未填写房租'
+  return `本周期${affordable ? '结余' : '缺口'} ${fmtMoney(Math.abs(remaining))} 元`
+})
+
 /** 将年数格式化为「X 年 Y 个月」 */
 function formatYears(years) {
   if (!Number.isFinite(years) || years < 0) return '无法回本'
@@ -2152,7 +2159,7 @@ function downloadResultsAsImage() {
               @click="showDetailPopup(detailFields.rentAffordability.title, detailFields.rentAffordability.groups, 'steps')"
             >
               <div class="metric-value">{{ rentAffordabilityText }}</div>
-              <div class="metric-label">下周期房租 {{ fmtMoney(rentPaymentAmount) }} 元（{{ rentPaymentModeLabel }}）</div>
+              <div class="metric-label">{{ rentAffordabilitySummary }}</div>
             </div>
           </div>
         </div>

@@ -130,7 +130,7 @@ const cases = [
     name: 'restaurant-rent-affordable',
     path: '/tools/restaurant-profit?district=school&rent=48000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
     expected: '可支付',
-    getOutput: (page) => page.locator('.metric', { hasText: '下周期房租' }).textContent().catch(() => ''),
+    getOutput: (page) => page.locator('.metric', { hasText: '本周期结余' }).textContent().catch(() => ''),
     assert: (output) => output.includes('可支付') && !output.includes('不可支付')
   },
   {
@@ -138,7 +138,7 @@ const cases = [
     name: 'restaurant-rent-shortfall',
     path: '/tools/restaurant-profit?district=school&rent=200000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
     expected: '不可支付',
-    getOutput: (page) => page.locator('.metric', { hasText: '下周期房租' }).textContent().catch(() => '')
+    getOutput: (page) => page.locator('.metric', { hasText: '本周期缺口' }).textContent().catch(() => '')
   },
   {
     // 反向调研：日营业额 8000 / 客单价 25 = 日均 320 单

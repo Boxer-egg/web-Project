@@ -41,6 +41,13 @@ watch(() => state.value.style, () => {
 })
 
 const currentStyle = computed(() => rankLogic.STYLE_PRESETS[state.value.style] || rankLogic.STYLE_PRESETS.default)
+const siteDomain = (() => {
+  try {
+    return window.location.hostname || 'vvzzv.com'
+  } catch {
+    return 'vvzzv.com'
+  }
+})()
 
 const rankedItems = computed(() => {
   const map = {}
@@ -421,7 +428,7 @@ onUnmounted(() => {
       </div>
 
       <div class="preview-footer" :style="{ color: currentStyle.text + '80' }">
-        vvzzv.com · 从夯到拉排行榜
+        {{ siteDomain }} · 从夯到拉排行榜
       </div>
     </div>
 

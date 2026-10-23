@@ -108,6 +108,15 @@ export function applyStylePreset(state, styleKey) {
   state.style = styleKey
 }
 
+function defaultFooterText() {
+  try {
+    const host = window.location.hostname
+    return host ? `${host} · 从夯到拉排行榜` : '从夯到拉排行榜'
+  } catch {
+    return '从夯到拉排行榜'
+  }
+}
+
 /** 把排行榜数据渲染到 canvas，返回 canvas 元素 */
 export async function renderRankCanvas(state, options = {}) {
   const {
@@ -116,6 +125,7 @@ export async function renderRankCanvas(state, options = {}) {
     width = 960,
     scale = 2,
     onProgress,
+    footer,
   } = options
 
   const style = STYLE_PRESETS[state.style] || STYLE_PRESETS.default
@@ -232,7 +242,7 @@ export async function renderRankCanvas(state, options = {}) {
   ctx.font = '12px sans-serif'
   ctx.textAlign = 'right'
   ctx.textBaseline = 'bottom'
-  ctx.fillText('vvzzv.com · 从夯到拉排行榜', width - padding, height - 12)
+  ctx.fillText(footer || defaultFooterText(), width - padding, height - 12)
 
   return canvas
 }

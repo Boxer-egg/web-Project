@@ -25,8 +25,12 @@ const franchiseFee = useStorage('rpf-franchise-fee', 0)
 const decorationAd = useStorage('rpf-decoration-ad', 0)
 const equipment = useStorage('rpf-equipment', 0)
 const firstBatchMaterial = useStorage('rpf-first-batch-material', 0)
-const laborAvgSalary = useStorage('rpf-labor-avg-salary', 0)
-const laborHeadcount = useStorage('rpf-labor-headcount', 1)
+const ownerSalary = useStorage('rpf-owner-salary', 0)
+const staffAvgSalary = useStorage('rpf-staff-avg-salary', 0)
+const staffCount = useStorage('rpf-staff-count', 0)
+const hourlyRate = useStorage('rpf-hourly-rate', 0)
+const hourlyCount = useStorage('rpf-hourly-count', 0)
+const hourlyHours = useStorage('rpf-hourly-hours', 0)
 const monthlyUtilities = useStorage('rpf-monthly-utilities', 0)
 const grossMargin = useStorage('rpf-gross-margin', 0)
 const avgTicket = useStorage('rpf-avg-ticket', 0)
@@ -53,8 +57,12 @@ const shareMapping = {
   decor: { ref: decorationAd, default: 0 },
   equip: { ref: equipment, default: 0 },
   material: { ref: firstBatchMaterial, default: 0 },
-  salary: { ref: laborAvgSalary, default: 0 },
-  staff: { ref: laborHeadcount, default: 1 },
+  owner: { ref: ownerSalary, default: 0 },
+  staffsalary: { ref: staffAvgSalary, default: 0 },
+  staffcount: { ref: staffCount, default: 0 },
+  hrate: { ref: hourlyRate, default: 0 },
+  hcount: { ref: hourlyCount, default: 0 },
+  hhours: { ref: hourlyHours, default: 0 },
   util: { ref: monthlyUtilities, default: 0 },
   gm: { ref: grossMargin, default: 0 },
   ticket: { ref: avgTicket, default: 0 },
@@ -80,8 +88,12 @@ applyParams(getUrlParams(), {
   decor: { ref: decorationAd, transform: toNumber },
   equip: { ref: equipment, transform: toNumber },
   material: { ref: firstBatchMaterial, transform: toNumber },
-  salary: { ref: laborAvgSalary, transform: toNumber },
-  staff: { ref: laborHeadcount, transform: toNumber },
+  owner: { ref: ownerSalary, transform: toNumber },
+  staffsalary: { ref: staffAvgSalary, transform: toNumber },
+  staffcount: { ref: staffCount, transform: toNumber },
+  hrate: { ref: hourlyRate, transform: toNumber },
+  hcount: { ref: hourlyCount, transform: toNumber },
+  hhours: { ref: hourlyHours, transform: toNumber },
   util: { ref: monthlyUtilities, transform: toNumber },
   gm: { ref: grossMargin, transform: toNumber },
   ticket: { ref: avgTicket, transform: toNumber },
@@ -93,13 +105,35 @@ applyParams(getUrlParams(), {
   paymode: { ref: rentPaymentMode, allowed: ['year', 'half', 'quarter', 'twoMonth', 'month'] },
 })
 
-/** 每月人工 = 平均工资 × 人数 */
-const monthlyLabor = computed(() => Number(laborAvgSalary.value || 0) * Number(laborHeadcount.value || 0))
+/** 同事工资合计 = 同事平均工资 × 同事人数（人数按整数计） */
+const staffWageTotal = computed(() =>
+  (Number(staffAvgSalary.value) || 0) * Math.max(0, Math.round(Number(staffCount.value) || 0))
+)
+
+/** 小时工工资合计 = 时薪 × 人数 × 每人每月工时 */
+const hourlyWageTotal = computed(() =>
+  (Number(hourlyRate.value) || 0) *
+  Math.max(0, Math.round(Number(hourlyCount.value) || 0)) *
+  (Number(hourlyHours.value) || 0)
+)
+
+/** 每月人工 = 自己工资 + 同事工资 + 小时工工资 */
+const monthlyLabor = computed(() =>
+  (Number(ownerSalary.value) || 0) + staffWageTotal.value + hourlyWageTotal.value
+)
+
+/** 总人数 = 自己（默认计入）+ 同事人数 + 小时工人数 */
+const totalStaff = computed(() =>
+  1 +
+  Math.max(0, Math.round(Number(staffCount.value) || 0)) +
+  Math.max(0, Math.round(Number(hourlyCount.value) || 0))
+)
 
 /** 不允许为负数的录入字段（金额、数量类） */
 const nonNegativeRefs = [
   area, annualRent, deposit, transferFee, franchiseFee, decorationAd,
-  equipment, firstBatchMaterial, laborAvgSalary, laborHeadcount,
+  equipment, firstBatchMaterial, ownerSalary, staffAvgSalary, staffCount,
+  hourlyRate, hourlyCount, hourlyHours,
   monthlyUtilities, grossMargin, avgTicket, seats, tables, targetDailyOrders,
 ]
 
@@ -151,8 +185,12 @@ const snapshotableRefs = {
   decorationAd,
   equipment,
   firstBatchMaterial,
-  laborAvgSalary,
-  laborHeadcount,
+  ownerSalary,
+  staffAvgSalary,
+  staffCount,
+  hourlyRate,
+  hourlyCount,
+  hourlyHours,
   monthlyUtilities,
   grossMargin,
   avgTicket,
@@ -523,7 +561,7 @@ const REQUIRED_FIELDS = [
   { key: 'avgTicket', label: '平均客单价' },
   { key: 'targetDailyOrders', label: '目标日单数' },
   { key: 'annualRent', label: '年房租' },
-  { key: 'laborAvgSalary', label: '平均工资' },
+  { key: 'monthlyLabor', label: '人工成本', get: () => monthlyLabor.value },
   { key: 'monthlyUtilities', label: '水/电/杂费' },
 ]
 
@@ -531,7 +569,7 @@ const REQUIRED_FIELDS = [
 const missingRequiredFields = computed(() => {
   const missing = []
   for (const field of REQUIRED_FIELDS) {
-    const value = snapshotableRefs[field.key]?.value
+    const value = field.get ? field.get() : snapshotableRefs[field.key]?.value
     if (!Number(value)) missing.push(field.key)
   }
   return missing
@@ -733,8 +771,12 @@ function loadExample() {
   decorationAd.value = 15000
   equipment.value = 3000
   firstBatchMaterial.value = 5000
-  laborAvgSalary.value = 2700
-  laborHeadcount.value = 2
+  ownerSalary.value = 0
+  staffAvgSalary.value = 2700
+  staffCount.value = 2
+  hourlyRate.value = 0
+  hourlyCount.value = 0
+  hourlyHours.value = 0
   monthlyUtilities.value = 1500
   grossMargin.value = 0.5
   avgTicket.value = 17
@@ -755,8 +797,12 @@ function clearAll() {
   decorationAd.value = 0
   equipment.value = 0
   firstBatchMaterial.value = 0
-  laborAvgSalary.value = 0
-  laborHeadcount.value = 1
+  ownerSalary.value = 0
+  staffAvgSalary.value = 0
+  staffCount.value = 0
+  hourlyRate.value = 0
+  hourlyCount.value = 0
+  hourlyHours.value = 0
   monthlyUtilities.value = 0
   grossMargin.value = 0
   avgTicket.value = 0
@@ -766,6 +812,65 @@ function clearAll() {
   targetDailyOrders.value = 0
   businessName.value = ''
   rentPaymentMode.value = 'year'
+}
+
+/** 工资明细弹窗 */
+const laborModalVisible = ref(false)
+const laborDraft = ref({
+  owner: 0,
+  staffAvg: 0,
+  staffCount: 0,
+  hourlyRate: 0,
+  hourlyCount: 0,
+  hourlyHours: 0,
+})
+
+const draftStaffCount = computed(() => Math.max(0, Math.round(Number(laborDraft.value.staffCount) || 0)))
+const draftHourlyCount = computed(() => Math.max(0, Math.round(Number(laborDraft.value.hourlyCount) || 0)))
+const draftStaffWage = computed(() => (Number(laborDraft.value.staffAvg) || 0) * draftStaffCount.value)
+const draftHourlyWage = computed(() =>
+  (Number(laborDraft.value.hourlyRate) || 0) * draftHourlyCount.value * (Number(laborDraft.value.hourlyHours) || 0)
+)
+const draftMonthlyLabor = computed(() =>
+  (Number(laborDraft.value.owner) || 0) + draftStaffWage.value + draftHourlyWage.value
+)
+const draftTotalStaff = computed(() => 1 + draftStaffCount.value + draftHourlyCount.value)
+
+/** 弹窗内数字不允许为负 */
+watch(laborDraft, (draft) => {
+  for (const key of ['owner', 'staffAvg', 'staffCount', 'hourlyRate', 'hourlyCount', 'hourlyHours']) {
+    const n = Number(draft[key])
+    if (Number.isFinite(n) && n < 0) draft[key] = 0
+  }
+}, { deep: true })
+
+/** 打开工资明细弹窗，把当前值复制到草稿 */
+function openLaborModal() {
+  laborDraft.value = {
+    owner: Number(ownerSalary.value) || 0,
+    staffAvg: Number(staffAvgSalary.value) || 0,
+    staffCount: Number(staffCount.value) || 0,
+    hourlyRate: Number(hourlyRate.value) || 0,
+    hourlyCount: Number(hourlyCount.value) || 0,
+    hourlyHours: Number(hourlyHours.value) || 0,
+  }
+  laborModalVisible.value = true
+}
+
+function cancelLaborModal() {
+  laborModalVisible.value = false
+}
+
+/** 确定后才写回主界面，取消不保存 */
+function confirmLaborModal() {
+  ownerSalary.value = Math.max(0, Number(laborDraft.value.owner) || 0)
+  staffAvgSalary.value = Math.max(0, Number(laborDraft.value.staffAvg) || 0)
+  staffCount.value = Math.max(0, Math.round(Number(laborDraft.value.staffCount) || 0))
+  hourlyRate.value = Math.max(0, Number(laborDraft.value.hourlyRate) || 0)
+  hourlyCount.value = Math.max(0, Math.round(Number(laborDraft.value.hourlyCount) || 0))
+  hourlyHours.value = Math.max(0, Number(laborDraft.value.hourlyHours) || 0)
+  laborModalVisible.value = false
+  toast.success(`工资明细已更新：${totalStaff.value} 人 · ${fmtMoney(monthlyLabor.value)} 元/月`)
 }
 
 /** 输入变化时把当前参数同步到地址栏，保证复制链接永远是最新的 */
@@ -1640,7 +1745,11 @@ function onChartSelectedOrdersInput(val) {
 
 /** 监听关键输入变化，弹窗打开时重绘 */
 watch(
-  [grossMargin, avgTicket, targetDailyOrders, annualRent, laborAvgSalary, monthlyUtilities, laborHeadcount, districtType, customMonths],
+  [
+    grossMargin, avgTicket, targetDailyOrders, annualRent, monthlyUtilities,
+    ownerSalary, staffAvgSalary, staffCount, hourlyRate, hourlyCount, hourlyHours,
+    districtType, customMonths,
+  ],
   () => {
     if (chartPopupVisible.value) {
       const maxX = lineXMax.value
@@ -1697,6 +1806,7 @@ function downloadResultsAsImage() {
     ['平均客单价', `${avgTicket.value || 0} 元`],
     ['毛利率', `${((grossMargin.value || 0) * 100).toFixed(0)}%`],
     ['年房租', `${fmtMoney(annualRent.value)} 元`],
+    ['人工成本', `${totalStaff.value} 人 / ${fmtMoney(monthlyLabor.value)} 元`],
     ['建店成本', `${fmtMoney(buildCost.value)} 元`],
     ['每月有效房租', `${fmtMoney(effectiveMonthlyRent.value)} 元（实际 ${fmtMoney(actualMonthlyRent.value)}）`],
     ['月固定成本', `${fmtMoney(monthlyFixedCost.value)} 元`],
@@ -1776,22 +1886,22 @@ function downloadResultsAsImage() {
 
   y += sectionGap
   drawSectionTitle('成本与盈亏')
-  for (let i = 6; i < 15; i++) {
-    drawRow(rows[i][0], rows[i][1], { accent: i === 12, bold: i === 12 })
+  for (let i = 6; i < 16; i++) {
+    drawRow(rows[i][0], rows[i][1], { accent: i === 13, bold: i === 13 })
   }
 
   y += sectionGap
   drawSectionTitle('目标经营')
-  for (let i = 15; i < rows.length; i++) {
+  for (let i = 16; i < rows.length; i++) {
     ctx.fillStyle = '#6b7280'
     ctx.fillText(rows[i][0], padding, y)
-    const color = i === 16
+    const color = i === 17
       ? (targetMonthlyNetProfit.value >= 0 ? '#16a34a' : '#dc2626')
-      : i === 18 && rentAffordability.value.hasRent
+      : i === 19 && rentAffordability.value.hasRent
         ? (rentAffordability.value.affordable ? '#16a34a' : '#dc2626')
         : '#111827'
     ctx.fillStyle = color
-    ctx.font = (i === 16 || i === 18) ? 'bold 14px sans-serif' : '14px sans-serif'
+    ctx.font = (i === 17 || i === 19) ? 'bold 14px sans-serif' : '14px sans-serif'
     ctx.fillText(rows[i][1], valueX, y)
     ctx.font = '14px sans-serif'
     y += lineHeight
@@ -1990,17 +2100,19 @@ function downloadResultsAsImage() {
         </div>
 
         <div class="section-title">经营成本</div>
-        <div class="form-row form-row-2col">
-          <div class="form-col">
-            <label>平均工资（元）</label>
-            <input v-model.number="laborAvgSalary" type="number" class="input">
-            <span v-if="missingRequiredFields.includes('laborAvgSalary')" class="field-warning">请填写平均工资，用于计算每月人工成本</span>
+        <div class="form-row">
+          <label>人工成本</label>
+          <div class="labor-summary" @click="openLaborModal">
+            <div class="labor-summary-main">
+              <span class="labor-staff">{{ totalStaff }} 人</span>
+              <span class="labor-total">月工资合计 {{ fmtMoney(monthlyLabor) }} 元</span>
+              <button type="button" class="btn btn-sm labor-edit-btn" @click.stop="openLaborModal">编辑明细</button>
+            </div>
+            <div class="labor-summary-breakdown">
+              自己 {{ fmtMoney(ownerSalary) }} + 同事 {{ fmtMoney(staffWageTotal) }} + 小时工 {{ fmtMoney(hourlyWageTotal) }}
+            </div>
           </div>
-          <div class="form-col">
-            <label>人数</label>
-            <input v-model.number="laborHeadcount" type="number" min="0" class="input with-spinners">
-            <span v-if="laborHeadcount > 0 && laborAvgSalary > 0" class="labor-inline-hint">总工资 {{ fmtMoney(monthlyLabor) }} 元</span>
-          </div>
+          <span v-if="missingRequiredFields.includes('monthlyLabor')" class="field-warning">请填写工资明细，用于计算每月人工成本</span>
         </div>
         <div class="form-row form-row-2col">
           <div class="form-col">
@@ -2241,6 +2353,69 @@ function downloadResultsAsImage() {
                 <span class="detail-value">{{ row[1] }} <span class="detail-unit">{{ row[2] }}</span></span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div v-if="laborModalVisible" class="detail-popup-overlay" @click.self="cancelLaborModal">
+        <div class="labor-modal" role="dialog" aria-modal="true" aria-label="工资明细">
+          <div class="detail-popup-header">
+            <h3>工资明细</h3>
+            <button class="detail-popup-close" @click="cancelLaborModal">×</button>
+          </div>
+          <div class="labor-modal-body">
+            <div class="labor-section">
+              <div class="labor-section-title">自己（默认计入总人数）</div>
+              <div class="labor-field">
+                <label>工资（元/月）</label>
+                <input v-model.number="laborDraft.owner" type="number" min="0" step="0.01" class="input" aria-label="自己的月工资">
+              </div>
+            </div>
+
+            <div class="labor-section">
+              <div class="labor-section-title">同事</div>
+              <div class="labor-grid">
+                <div class="labor-field">
+                  <label>平均工资（元/月）</label>
+                  <input v-model.number="laborDraft.staffAvg" type="number" min="0" step="0.01" class="input" aria-label="同事平均月工资">
+                </div>
+                <div class="labor-field">
+                  <label>人数（人）</label>
+                  <input v-model.number="laborDraft.staffCount" type="number" min="0" step="1" class="input" aria-label="同事人数">
+                </div>
+              </div>
+              <div class="labor-subtotal">小计 {{ fmtMoney(draftStaffWage) }} 元</div>
+            </div>
+
+            <div class="labor-section">
+              <div class="labor-section-title">小时工</div>
+              <div class="labor-grid labor-grid-3">
+                <div class="labor-field">
+                  <label>时薪（元/小时）</label>
+                  <input v-model.number="laborDraft.hourlyRate" type="number" min="0" step="0.01" class="input" aria-label="小时工时薪">
+                </div>
+                <div class="labor-field">
+                  <label>人数（人）</label>
+                  <input v-model.number="laborDraft.hourlyCount" type="number" min="0" step="1" class="input" aria-label="小时工人数">
+                </div>
+                <div class="labor-field">
+                  <label>每人每月工时（小时）</label>
+                  <input v-model.number="laborDraft.hourlyHours" type="number" min="0" step="0.1" class="input" aria-label="小时工每人每月工时">
+                </div>
+              </div>
+              <div class="labor-subtotal">小计 {{ fmtMoney(draftHourlyWage) }} 元（时薪 × 人数 × 工时）</div>
+            </div>
+
+            <div class="labor-modal-total">
+              <span>合计 {{ draftTotalStaff }} 人</span>
+              <strong>月工资 {{ fmtMoney(draftMonthlyLabor) }} 元</strong>
+            </div>
+          </div>
+          <div class="labor-modal-footer">
+            <button class="btn" @click="cancelLaborModal">取消</button>
+            <button class="btn btn-primary" @click="confirmLaborModal">确定</button>
           </div>
         </div>
       </div>
@@ -2554,11 +2729,114 @@ input[type="number"].with-spinners {
   font-size: 13px;
   color: var(--text-secondary);
 }
-.labor-inline-hint {
+.labor-summary {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.labor-summary:hover {
+  border-color: var(--accent);
+}
+.labor-summary-main {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.labor-staff {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.labor-total {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.labor-edit-btn {
+  margin-left: auto;
+}
+.labor-summary-breakdown {
+  margin-top: 4px;
   font-size: 12px;
-  color: var(--accent);
+  color: var(--text-muted);
+}
+
+/* 工资明细弹窗 */
+.labor-modal {
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.labor-modal-body {
+  padding: 14px 16px;
+  overflow-y: auto;
+}
+.labor-section {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed var(--border);
+}
+.labor-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.labor-section-title {
+  font-size: 13px;
   font-weight: 600;
-  margin-top: 2px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.labor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+.labor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.labor-field label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.labor-subtotal {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+.labor-modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-secondary));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.labor-modal-total strong {
+  font-size: 16px;
+  color: var(--accent);
+}
+.labor-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
 }
 
 .result-panel {

@@ -114,21 +114,29 @@ const cases = [
   {
     // 正向计算器：学校商区（8 个月摊房租），月固定成本 21500，月净利 23500
     name: 'restaurant-profit',
-    path: '/tools/restaurant-profit?district=school&rent=48000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100',
+    path: '/tools/restaurant-profit?district=school&rent=48000&staffsalary=4500&staffcount=3&util=2000&gm=0.6&ticket=25&target=100',
     expected: '23,500',
     getOutput: (page) => page.locator('.metric', { hasText: '目标月净利润' }).locator('.metric-value').textContent().catch(() => '')
   },
   {
     // 营业口径对比卡片：学校商区年净利 = 月净利 × 8 = 188,000
     name: 'restaurant-profit-compare',
-    path: '/tools/restaurant-profit?district=school&rent=48000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100',
+    path: '/tools/restaurant-profit?district=school&rent=48000&staffsalary=4500&staffcount=3&util=2000&gm=0.6&ticket=25&target=100',
     expected: '188,000',
     getOutput: (page) => page.locator('.compare-col.compare-actual').textContent().catch(() => '')
   },
   {
+    // 工资明细：自己 8,000 + 同事 4,500×3 + 小时工 25×2×80 = 25,500，总人数 6
+    name: 'restaurant-labor-breakdown',
+    path: '/tools/restaurant-profit?district=school&rent=48000&staffsalary=4500&staffcount=3&owner=8000&hrate=25&hcount=2&hhours=80&util=2000&gm=0.6&ticket=25&target=100',
+    expected: '25,500',
+    getOutput: (page) => page.locator('.labor-summary-main').textContent().catch(() => ''),
+    assert: (output) => output.includes('6 人') && output.includes('25,500')
+  },
+  {
     // 下周期房租支付能力：年付 4.8 万，8 个月累计净利 18.8 万 → 可支付
     name: 'restaurant-rent-affordable',
-    path: '/tools/restaurant-profit?district=school&rent=48000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
+    path: '/tools/restaurant-profit?district=school&rent=48000&staffsalary=4500&staffcount=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
     expected: '可支付',
     getOutput: (page) => page.locator('.metric', { hasText: '本周期结余' }).textContent().catch(() => ''),
     assert: (output) => output.includes('可支付') && !output.includes('不可支付')
@@ -136,7 +144,7 @@ const cases = [
   {
     // 下周期房租支付能力：年付 20 万，8 个月累计净利 3.6 万 → 缺口 16.4 万
     name: 'restaurant-rent-shortfall',
-    path: '/tools/restaurant-profit?district=school&rent=200000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
+    path: '/tools/restaurant-profit?district=school&rent=200000&staffsalary=4500&staffcount=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
     expected: '不可支付',
     getOutput: (page) => page.locator('.metric', { hasText: '本周期缺口' }).textContent().catch(() => '')
   },

@@ -19,15 +19,24 @@ const SITE = 'https://vvzzv.com'
 
 const source = readFileSync(ROUTER_FILE, 'utf-8')
 
-const ROUTE_RE =
-  /path:\s*'([^']+)'[\s\S]*?meta:\s*\{\s*title:\s*'((?:[^'\\]|\\.)*)',\s*description:\s*'((?:[^'\\]|\\.)*)'/g
-
+// Each top-level route starts with four spaces of indentation. Parse route
+// objects individually so redirect-only routes cannot inherit the metadata of
+// the next route.
+const routeChunks = source.split(/\n    \{/).slice(1)
 const routes = {}
-let match
-while ((match = ROUTE_RE.exec(source)) !== null) {
-  const [, path, title, description] = match
-  if (path.includes(':')) continue
-  routes[path] = { title, description }
+
+for (const chunk of routeChunks) {
+  const path = (chunk.match(/^\s*path:\s*'([^']+)'/) || [])[1]
+  if (!path || path.includes(':')) continue
+  // Redirect routes have no component and must not appear in the sitemap.
+  if (!/component:\s*\(\)\s*=>\s*import\(/.test(chunk)) continue
+
+  const meta = chunk.match(
+    /meta:\s*\{\s*title:\s*'((?:[^'\\]|\\.)*)',\s*description:\s*'((?:[^'\\]|\\.)*)'/
+  )
+  if (!meta) continue
+
+  routes[path] = { title: meta[1], description: meta[2] }
 }
 
 const paths = Object.keys(routes)

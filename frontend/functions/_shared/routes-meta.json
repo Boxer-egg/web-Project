@@ -1,8 +1,4 @@
 {
-  "/": {
-    "title": "在线工具箱 - 20+ 款纯前端实用工具",
-    "description": "提供开发、文本、转换、效率、健康、驾考等 20+ 款纯前端实用工具。无需后端，数据仅在浏览器本地处理。"
-  },
   "/tools/json-formatter": {
     "title": "JSON 格式化 - 在线压缩、转义、美化工具",
     "description": "在线 JSON 格式化工具，支持格式化、压缩、转义和去转义。粘贴 JSON 即可自动美化，支持 AI 自动化调用。"
@@ -155,7 +151,7 @@
     "title": "餐饮反向调研",
     "description": "餐饮店竞品反向调研工具，通过日营业额、月净利润或日均客户数反推日均单数、营业额、净利润与翻台率。"
   },
-  "/tools/restaurant-profit-reverse": {
+  "/tools/random-generator": {
     "title": "随机生成器 - 随机数/字符串/UUID/颜色生成工具",
     "description": "在线随机生成器，支持生成随机整数、小数、字符串、UUID 和颜色，使用加密安全随机数。"
   },

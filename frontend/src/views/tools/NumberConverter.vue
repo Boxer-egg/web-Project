@@ -2,6 +2,7 @@
 import { ref, watch, onMounted, nextTick } from 'vue'
 import { getUrlParams } from '../../utils/urlParams'
 import { useStorage } from '@vueuse/core'
+import { parseToNumber, formatNumber } from '../../logic/numberBase.js'
 import AiHelpPanel from '../../components/AiHelpPanel.vue'
 
 const input = useStorage('num-input', '')
@@ -27,86 +28,6 @@ const baseOptions = [
   { value: 36, label: '三十六进制 (36)' },
   { value: 62, label: '六十二进制 (62)' },
 ]
-
-const BASE_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-
-// Convert a string in `fromBase` to decimal Number (supports negative & float)
-function parseToNumber(numStr, base) {
-  let s = numStr.trim()
-  const neg = s.startsWith('-')
-  if (neg || s.startsWith('+')) s = s.slice(1)
-
-  if (base !== 10 && s.includes('.')) {
-    throw new Error('非十进制不支持小数')
-  }
-
-  let intPart = s
-  let fracPart = null
-  if (s.includes('.')) {
-    const parts = s.split('.')
-    intPart = parts[0]
-    fracPart = parts[1]
-  }
-
-  let value = 0
-  for (const ch of intPart.toUpperCase()) {
-    const d = BASE_CHARS.indexOf(ch)
-    if (d < 0 || d >= base) throw new Error(`字符 "${ch}" 不是有效的 ${base} 进制数字`)
-    value = value * base + d
-  }
-
-  if (fracPart !== null) {
-    let f = 0
-    let factor = 1 / base
-    for (const ch of fracPart.toUpperCase()) {
-      const d = BASE_CHARS.indexOf(ch)
-      if (d < 0 || d >= base) throw new Error(`字符 "${ch}" 不是有效的 ${base} 进制数字`)
-      f += d * factor
-      factor /= base
-    }
-    value += f
-  }
-
-  return neg ? -value : value
-}
-
-// Convert decimal Number to a string in `targetBase`
-function formatNumber(value, base) {
-  if (!Number.isInteger(value)) {
-    const intPart = Math.trunc(value)
-    const frac = value - intPart
-    let fracStr = ''
-    if (base === 10) {
-      fracStr = value.toString().includes('.') ? '.' + value.toString().split('.')[1] : ''
-    } else {
-      let f = Math.abs(frac)
-      let out = ''
-      let guard = 0
-      while (f > 1e-10 && guard < 16) {
-        f *= base
-        const digit = Math.floor(f)
-        out += BASE_CHARS[digit]
-        f -= digit
-        guard++
-      }
-      if (out) fracStr = '.' + out
-    }
-    return intToStr(intPart, base) + fracStr
-  }
-  return intToStr(value, base)
-}
-
-function intToStr(value, base) {
-  if (value === 0) return '0'
-  const neg = value < 0
-  let v = Math.abs(value)
-  let out = ''
-  while (v > 0) {
-    out = BASE_CHARS[v % base] + out
-    v = Math.floor(v / base)
-  }
-  return (neg ? '-' : '') + out
-}
 
 // For negative integers, show two's complement in binary
 function twosComplement(binaryStr) {

@@ -189,24 +189,6 @@ function relativeTime(d) {
   return diff > 0 ? `${days} 天后` : `${days} 天前`
 }
 
-// ─── Number Converter ──────────────────────────────────
-export function convertNumber(numStr, fromBase, toBases) {
-  let n = numStr.trim()
-  // Auto-detect prefix
-  if (n.startsWith('0x') || n.startsWith('0X')) { fromBase = 16; n = n.slice(2) }
-  else if (n.startsWith('0b') || n.startsWith('0B')) { fromBase = 2; n = n.slice(2) }
-  else if (n.startsWith('0o') || n.startsWith('0O')) { fromBase = 8; n = n.slice(2) }
-
-  const decimal = parseInt(n, fromBase)
-  if (isNaN(decimal)) return { error: `输入 "${numStr}" 不是有效的 ${fromBase} 进制数字` }
-
-  const results = {}
-  for (const base of toBases) {
-    results[`base${base}`] = decimal.toString(base).toUpperCase()
-  }
-  return { decimal, fromBase, results }
-}
-
 // ─── Code Formatter ────────────────────────────────────
 export async function formatCode(code, lang, indentSize = 2) {
   const beautify = await import('js-beautify')

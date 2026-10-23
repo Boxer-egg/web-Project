@@ -126,6 +126,21 @@ const cases = [
     getOutput: (page) => page.locator('.compare-col.compare-actual').textContent().catch(() => '')
   },
   {
+    // 下周期房租支付能力：年付 4.8 万，8 个月累计净利 18.8 万 → 可支付
+    name: 'restaurant-rent-affordable',
+    path: '/tools/restaurant-profit?district=school&rent=48000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
+    expected: '可支付',
+    getOutput: (page) => page.locator('.metric', { hasText: '下周期房租' }).textContent().catch(() => ''),
+    assert: (output) => output.includes('可支付') && !output.includes('不可支付')
+  },
+  {
+    // 下周期房租支付能力：年付 20 万，8 个月累计净利 3.6 万 → 缺口 16.4 万
+    name: 'restaurant-rent-shortfall',
+    path: '/tools/restaurant-profit?district=school&rent=200000&salary=4500&staff=3&util=2000&gm=0.6&ticket=25&target=100&paymode=year',
+    expected: '不可支付',
+    getOutput: (page) => page.locator('.metric', { hasText: '下周期房租' }).textContent().catch(() => '')
+  },
+  {
     // 反向调研：日营业额 8000 / 客单价 25 = 日均 320 单
     name: 'restaurant-profit-reverse',
     path: '/tools/rpr?mode=dailyRevenue&v=8000&ticket=25&gm=0.6&mrent=15000&util=2000&labor=8000&seats=24&days=30',

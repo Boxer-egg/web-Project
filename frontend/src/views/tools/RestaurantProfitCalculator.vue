@@ -405,6 +405,27 @@ const detailFields = computed(() => ({
       ['回本周期', paybackMonths.value === Infinity ? '无法回本' : fmtNumber(paybackMonths.value, 1), '个月'],
     ],
   },
+  rentAffordability: {
+    title: '下周期房租支付能力明细',
+    groups: [
+      {
+        op: '×',
+        a: { label: '目标月净利润', value: fmtMoney(targetMonthlyNetProfit.value), unit: '元' },
+        b: { label: `可积累月数（${rentPaymentModeLabel.value}）`, value: fmtNumber(rentAccumulationMonths.value, 0), unit: '个月' },
+        result: { label: '本周期累计净利润', value: fmtMoney(cycleAccumulatedNetProfit.value), unit: '元' },
+      },
+      {
+        op: '−',
+        a: { label: '本周期累计净利润', value: fmtMoney(cycleAccumulatedNetProfit.value), unit: '元' },
+        b: { label: `下周期房租（${rentPaymentModeLabel.value}）`, value: fmtMoney(rentPaymentAmount.value), unit: '元' },
+        result: {
+          label: rentAffordability.value.affordable ? '结余' : '缺口',
+          value: fmtMoney(Math.abs(rentAffordability.value.remaining)),
+          unit: '元',
+        },
+      },
+    ],
+  },
 }))
 
 const selectedDistrict = computed(() =>
@@ -549,6 +570,65 @@ const paybackYearsFull = computed(() =>
 const paybackYearsActual = computed(() =>
   annualNetProfitActual.value > 0 ? buildCost.value / annualNetProfitActual.value : Infinity
 )
+
+/** 房租支付周期（月） */
+const rentPaymentCycleMonths = computed(() => {
+  switch (rentPaymentMode.value) {
+    case 'half': return 6
+    case 'quarter': return 3
+    case 'twoMonth': return 2
+    case 'month': return 1
+    case 'year':
+    default: return 12
+  }
+})
+
+/** 房租支付方式文案 */
+const rentPaymentModeLabel = computed(() => ({
+  year: '年付',
+  half: '半年付',
+  quarter: '3 个月',
+  twoMonth: '2 个月',
+  month: '1 个月',
+}[rentPaymentMode.value] || '年付'))
+
+/**
+ * 本周期能积累净利润的月数：
+ * 正常商区等于支付周期；季节性商区按实际营业月数封顶（歇业月没有利润）。
+ */
+const rentAccumulationMonths = computed(() =>
+  Math.min(rentPaymentCycleMonths.value, Math.max(1, operatingMonths.value || 12))
+)
+
+/** 本周期累计净利润（即用户所说的「净利润的整体剩余」） */
+const cycleAccumulatedNetProfit = computed(() =>
+  targetMonthlyNetProfit.value * rentAccumulationMonths.value
+)
+
+/**
+ * 下周期房租支付能力：
+ * 只比较「本周期累计净利润」与「下周期房租」，不把建店成本/押金计入。
+ * 建店成本视为已投入的沉没成本；押金通常可退，但不用于支付房租。
+ */
+const rentAffordability = computed(() => {
+  const rent = rentPaymentAmount.value
+  const accumulated = cycleAccumulatedNetProfit.value
+  const remaining = accumulated - rent
+  return {
+    hasRent: rent > 0,
+    affordable: rent <= 0 || remaining >= 0,
+    accumulated,
+    rent,
+    remaining,
+    coverage: rent > 0 ? accumulated / rent : Infinity,
+  }
+})
+
+/** 支付能力结论文案 */
+const rentAffordabilityText = computed(() => {
+  if (!rentAffordability.value.hasRent) return '无需支付'
+  return rentAffordability.value.affordable ? '可支付' : '不可支付'
+})
 
 /** 将年数格式化为「X 年 Y 个月」 */
 function formatYears(years) {
@@ -1621,6 +1701,9 @@ function downloadResultsAsImage() {
     ['目标日单数', `${targetDailyOrders.value || 0} 单`],
     ['目标月净利润', `${fmtMoney(targetMonthlyNetProfit.value)} 元`],
     ['回本周期', paybackMonths.value === Infinity ? '无法回本' : `${fmtNumber(paybackMonths.value, 1)} 个月`],
+    ['下周期房租支付能力', rentAffordability.value.hasRent
+      ? `${rentAffordabilityText.value}（${rentAffordability.value.affordable ? '结余' : '缺口'} ${fmtMoney(Math.abs(rentAffordability.value.remaining))} 元）`
+      : '无需支付'],
   ]
   const contentHeight = rows.length * lineHeight + sectionGap * 4 + headerHeight
   const textHeight = contentHeight + padding * 2
@@ -1697,9 +1780,11 @@ function downloadResultsAsImage() {
     ctx.fillText(rows[i][0], padding, y)
     const color = i === 16
       ? (targetMonthlyNetProfit.value >= 0 ? '#16a34a' : '#dc2626')
-      : '#111827'
+      : i === 18 && rentAffordability.value.hasRent
+        ? (rentAffordability.value.affordable ? '#16a34a' : '#dc2626')
+        : '#111827'
     ctx.fillStyle = color
-    ctx.font = i === 16 ? 'bold 14px sans-serif' : '14px sans-serif'
+    ctx.font = (i === 16 || i === 18) ? 'bold 14px sans-serif' : '14px sans-serif'
     ctx.fillText(rows[i][1], valueX, y)
     ctx.font = '14px sans-serif'
     y += lineHeight
@@ -2057,6 +2142,17 @@ function downloadResultsAsImage() {
             <div class="metric clickable" @click="showDetailPopup(detailFields.paybackMonths.title, detailFields.paybackMonths.rows)">
               <div class="metric-value">{{ paybackMonths === Infinity ? '无法回本' : fmtNumber(paybackMonths, 1) }}</div>
               <div class="metric-label">回本周期（月）</div>
+            </div>
+            <div
+              class="metric clickable"
+              :class="{
+                'text-success': rentAffordability.hasRent && rentAffordability.affordable,
+                'text-error': rentAffordability.hasRent && !rentAffordability.affordable
+              }"
+              @click="showDetailPopup(detailFields.rentAffordability.title, detailFields.rentAffordability.groups, 'steps')"
+            >
+              <div class="metric-value">{{ rentAffordabilityText }}</div>
+              <div class="metric-label">下周期房租 {{ fmtMoney(rentPaymentAmount) }} 元（{{ rentPaymentModeLabel }}）</div>
             </div>
           </div>
         </div>

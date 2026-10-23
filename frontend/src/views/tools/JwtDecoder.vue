@@ -119,7 +119,7 @@ const fullResult = computed(() => {
         title="JWT 解码器"
         desc="解析 JWT Token 的 Header、Payload 和 Signature，自动检测过期时间"
         :params="[
-          { name: 'token', desc: 'JWT Token 字符串', required: true, example: 'eyJhbGciOiJIUzI1NiIs...' },
+          { name: 'token', desc: 'JWT Token 字符串', required: true, example: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' },
           { name: 'auto', desc: '是否自动执行（填 1）', required: false, example: '1' }
         ]"
       />

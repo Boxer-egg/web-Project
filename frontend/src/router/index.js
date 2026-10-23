@@ -162,7 +162,8 @@ const router = createRouter({
       component: () => import('../views/tools/TextToolbox.vue'),
       meta: {
         title: '文本处理工具箱 - 大小写/去重/排序/翻转等 16+ 功能',
-        description: '在线文本处理工具箱，提供大小写转换、去除重复行、排序、翻转、统计等 16+ 种文本处理功能。'
+        description: '在线文本处理工具箱，提供大小写转换、去除重复行、排序、翻转、统计等 16+ 种文本处理功能。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -307,8 +308,7 @@ const router = createRouter({
       component: () => import('../views/tools/LedMarquee.vue'),
       meta: {
         title: '手持 LED 弹幕 - 全屏滚动文字灯牌',
-        description: '手持 LED 弹幕工具，模拟手机灯牌效果，支持自定义文字、颜色、速度、方向和字体大小，可全屏展示。',
-        apiPath: '/api/tool'
+        description: '手持 LED 弹幕工具，模拟手机灯牌效果，支持自定义文字、颜色、速度、方向和字体大小，可全屏展示。'
       }
     },
     {
@@ -363,7 +363,8 @@ const router = createRouter({
       component: () => import('../views/tools/GrossMarginCalculator.vue'),
       meta: {
         title: '毛利率计算 - 输入成本与售价自动算毛利',
-        description: '在线毛利率计算器，输入食材成本与售价，自动给出逐步计算过程并显示毛利率，支持负毛利提示。'
+        description: '在线毛利率计算器，输入食材成本与售价，自动给出逐步计算过程并显示毛利率，支持负毛利提示。',
+        apiPath: '/api/tool'
       }
     },
     {
@@ -554,8 +555,7 @@ const router = createRouter({
       component: () => import('../views/tools/TierRank.vue'),
       meta: {
         title: '从夯到拉排行榜 - 拖拽图片文字生成夯拉梗图',
-        description: '从夯到拉排行榜生成器，拖拽图片或文字卡片到不同档位，自定义档位和风格，一键导出高清 PNG 分享。',
-        apiPath: '/api/tool'
+        description: '从夯到拉排行榜生成器，拖拽图片或文字卡片到不同档位，自定义档位和风格，一键导出高清 PNG 分享。'
       }
     },
     {
@@ -564,8 +564,7 @@ const router = createRouter({
       component: () => import('../views/tools/BallxPit.vue'),
       meta: {
         title: 'BALL x PIT 合成表 - 弹珠进化路线查询工具',
-        description: 'BALL x PIT 弹珠合成表，列出基础弹珠到高级进化的所有合成路线，点击展开下一级，支持中英文名称搜索。',
-        apiPath: '/api/tool'
+        description: 'BALL x PIT 弹珠合成表，列出基础弹珠到高级进化的所有合成路线，点击展开下一级，支持中英文名称搜索。'
       }
     },
     {
@@ -574,8 +573,7 @@ const router = createRouter({
       component: () => import('../views/tools/BallxPitPassives.vue'),
       meta: {
         title: 'BALL x PIT 道具合成表 - 被动道具配方查询工具',
-        description: 'BALL x PIT 被动道具合成表，列出基础道具与高级道具的合成配方，支持中英文名称与效果搜索。',
-        apiPath: '/api/tool'
+        description: 'BALL x PIT 被动道具合成表，列出基础道具与高级道具的合成配方，支持中英文名称与效果搜索。'
       }
     },
     {
@@ -611,7 +609,7 @@ router.afterEach((to) => {
     canonical.setAttribute('rel', 'canonical')
     document.head.appendChild(canonical)
   }
-  canonical.setAttribute('href', `https://vvzzv.com${to.path === '/' ? '' : to.path}`)
+  canonical.setAttribute('href', `${window.location.origin}${to.path === '/' ? '' : to.path}`)
 })
 
 export default router

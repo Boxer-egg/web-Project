@@ -41,6 +41,7 @@ const rateHint = computed(() => {
       <AiHelpPanel
         title="毛利率计算"
         desc="输入食材成本与售价，自动给出计算过程并显示毛利率。"
+        api-tool="gross_margin"
         :params="[
           { name: 'cost', desc: '食材成本（元）', required: true, example: '12' },
           { name: 'price', desc: '售价（元）', required: true, example: '28' }

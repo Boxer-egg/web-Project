@@ -388,21 +388,6 @@ onUnmounted(() => {
   <div class="tool-page">
     <div class="tool-header">
       <h1>🖼️ 图片 Canvas 工具箱</h1>
-      <AiHelpPanel
-        title="图片 Canvas 工具箱"
-        desc="上传图片并进行像素化、灰度/黑白、文字水印、压缩/缩放、九宫格切割、格式转换等操作。支持拖拽上传和粘贴图片。"
-        :params="[
-          { name: 'pixelate', desc: '像素化块大小', required: false, example: '8' },
-          { name: 'grayscale', desc: '是否启用灰度', required: false, example: '1' },
-          { name: 'blackwhite', desc: '是否启用黑白', required: false, example: '0' },
-          { name: 'watermark', desc: '水印文字', required: false, example: 'Sample' },
-          { name: 'position', desc: '水印位置', required: false, example: 'bottom-right' },
-          { name: 'maxWidth', desc: '最大宽度', required: false, example: '800' },
-          { name: 'maxHeight', desc: '最大高度', required: false, example: '800' },
-          { name: 'quality', desc: '输出质量 0-1', required: false, example: '0.8' },
-          { name: 'format', desc: '输出格式 png/jpeg/webp', required: false, example: 'jpeg' },
-        ]"
-      />
     </div>
 
     <!-- Upload area -->

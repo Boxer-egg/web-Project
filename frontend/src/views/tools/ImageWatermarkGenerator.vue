@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, watch, nextTick, shallowRef } from 'vue'
 import { useStorage, useDebounceFn } from '@vueuse/core'
-import AiHelpPanel from '../../components/AiHelpPanel.vue'
 import {
   buildWatermarkText,
   densityToGrid,
@@ -425,16 +424,6 @@ function getExtensionFromMime(mime) {
   <div class="tool-page" @paste="onPaste">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px">
       <h1>🖼️ 图片水印生成器</h1>
-      <AiHelpPanel
-        title="图片水印生成器"
-        desc="为图片添加仅供指定用途使用的文字水印，支持密度、位置、字体、字号、透明度等调节。"
-        :params="[
-          { name: 'image', desc: 'Base64 或 URL 图片（暂未支持，仅手动上传）', required: false, example: '' },
-          { name: 'middle', desc: '水印中间内容', required: false, example: '华为云资料审核' },
-          { name: 'suffix', desc: '水印后缀', required: false, example: '供审核使用' },
-          { name: 'density', desc: '水印密度 0-1', required: false, example: '0.5' },
-        ]"
-      />
     </div>
 
     <div class="watermark-layout">

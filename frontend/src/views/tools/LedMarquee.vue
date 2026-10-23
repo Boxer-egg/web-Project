@@ -100,7 +100,6 @@ onUnmounted(() => {
       <AiHelpPanel
         title="手持 LED 弹幕"
         desc="全屏滚动文字，模拟手机 LED 灯牌效果。支持自定义文字、颜色、速度、方向和字体大小。"
-        api-tool="led_marquee"
         :params="[
           { name: 'text', desc: '滚动文字内容', required: false, example: '加油' },
           { name: 'speed', desc: '滚动速度 1-10', required: false, example: '5' },

@@ -12,6 +12,7 @@ import * as loremLogic from '../../src/logic/lorem.js'
 import * as dateLogic from '../../src/logic/date.js'
 import * as passwordLogic from '../../src/logic/password.js'
 import * as bmiLogic from '../../src/logic/bmi.js'
+import { calcGrossMargin } from '../../src/logic/grossMargin.js'
 import { marked } from 'marked'
 import yaml from 'js-yaml'
 import QRCode from 'qrcode'
@@ -289,6 +290,7 @@ const handlers = {
 
   text_toolbox: (p) => {
     const text = p.text || ''
+    if (!text) throw new Error('缺少 text 参数')
     const action = (p.action || 'upper').toLowerCase()
     const map = {
       upper: textToolboxLogic.toUpper,
@@ -324,9 +326,20 @@ const handlers = {
   },
 
   lorem: (p) => {
-    const paragraphs = intParam(p.paragraphs, 3, 1, 100)
-    const sentences = intParam(p.sentences, 5, 1, 50)
-    return { paragraphs, sentences, output: loremLogic.generate(paragraphs, sentences) }
+    const paragraphs = intParam(p.paragraphs, 3, 1, 50)
+    const sentences = intParam(p.sentences, 5, 1, 20)
+    const lang = (p.lang || 'latin').toLowerCase()
+    const format = (p.format || 'text').toLowerCase()
+    if (!['latin', 'chinese'].includes(lang)) throw new Error('lang 必须是 latin 或 chinese')
+    if (!['text', 'html', 'single'].includes(format)) throw new Error('format 必须是 text/html/single')
+    const standardStart = boolParam(p.standardStart, false)
+    return {
+      paragraphs,
+      sentences,
+      lang,
+      format,
+      output: loremLogic.generate(paragraphs, sentences, { lang, format, standardStart })
+    }
   },
 
   color: (p) => {
@@ -404,6 +417,15 @@ const handlers = {
     return bmiLogic.calculate(weight, height)
   },
 
+  gross_margin: (p) => {
+    const cost = parseFloat(p.cost)
+    const price = parseFloat(p.price)
+    if (!Number.isFinite(cost) || !Number.isFinite(price)) {
+      throw new Error('缺少有效 cost 和 price 参数')
+    }
+    return calcGrossMargin(cost, price)
+  },
+
   calculator: (p) => {
     const expr = p.expr || ''
     if (!expr) throw new Error('缺少 expr 参数')
@@ -442,17 +464,6 @@ const handlers = {
     const mode = (p.mode || 'upper').toLowerCase()
     if (!number) throw new Error('缺少 number 参数')
     return { number, mode, output: numberToChinese(number, mode) }
-  },
-
-  led_marquee: (p) => {
-    return {
-      text: p.text || '加油',
-      speed: intParam(p.speed, 5, 1, 10),
-      color: p.color || '#ff0000',
-      bg: p.bg || '#000000',
-      size: intParam(p.size, 120, 12, 800),
-      direction: (p.direction || 'left').toLowerCase()
-    }
   },
 
   zip_plate_area: (p) => {
@@ -538,7 +549,8 @@ const handlers = {
     const text = p.text || ''
     if (!text) throw new Error('缺少 text 参数')
     const tone = (p.tone || 'tone').toLowerCase()
-    const segment = boolParam(p.split, false)
+    if (!['tone', 'none', 'first'].includes(tone)) throw new Error('tone 必须是 tone/none/first')
+    const segment = boolParam(p.segment, boolParam(p.split, false))
     const preserve = boolParam(p.preserve, true)
     return convertToPinyin(text, { tone, segment, preserveNonChinese: preserve })
   },

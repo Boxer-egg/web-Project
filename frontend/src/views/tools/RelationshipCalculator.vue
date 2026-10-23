@@ -171,8 +171,8 @@ watch([sex, region, reverse], () => {
         :params="[
           { name: 'chain', desc: '关系链（query 模式），如 爸爸,妈妈,哥哥', required: false, example: '爸爸,妈妈,哥哥' },
           { name: 'title', desc: '称谓（reverse 模式），如 舅公', required: false, example: '舅公' },
-          { name: 'a / text', desc: '我的关系链（pair 模式）', required: false, example: '姥姥' },
-          { name: 'b / target', desc: '对方关系链（pair 模式）', required: false, example: '表哥' },
+          { name: 'a', desc: '我的关系链（pair 模式，也可用 text）', required: false, example: '姥姥' },
+          { name: 'b', desc: '对方关系链（pair 模式，也可用 target）', required: false, example: '表哥' },
           { name: 'mode', desc: 'query / reverse / pair，默认 query', required: false, example: 'query' },
           { name: 'sex', desc: '性别：0 女 / 1 男，默认 1', required: false, example: '1' },
           { name: 'region', desc: '地区：default / northern / cantonese', required: false, example: 'default' },

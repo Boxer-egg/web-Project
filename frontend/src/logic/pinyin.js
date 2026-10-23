@@ -2,7 +2,7 @@
  * Pinyin conversion utilities using pinyin-pro.
  */
 
-import { pinyin } from 'pinyin-pro'
+import { pinyin, segment as pinyinSegment, OutputFormat } from 'pinyin-pro'
 
 export const TONE_MODES = [
   { value: 'tone', label: '带声调' },
@@ -25,11 +25,6 @@ export function convertToPinyin(
 ) {
   const input = String(text || '')
 
-  let mode = 'normal'
-  if (tone === 'none') mode = 'normal'
-  else if (tone === 'tone') mode = 'tone'
-  else if (tone === 'first') mode = 'first'
-
   let chineseCount = 0
   let nonChineseCount = 0
   for (const ch of input) {
@@ -37,13 +32,45 @@ export function convertToPinyin(
     else nonChineseCount++
   }
 
-  const result = pinyin(input, {
-    mode,
-    toneType: tone === 'tone' ? 'symbol' : 'none',
-    type: 'string',
-    segment,
-    nonZh: preserveNonChinese ? 'consecutive' : 'removed'
-  })
+  const pattern = tone === 'first' ? 'first' : 'pinyin'
+  const toneType = tone === 'tone' ? 'symbol' : 'none'
+  const nonZh = preserveNonChinese ? 'consecutive' : 'removed'
+
+  let result
+  if (segment) {
+    // pinyin-pro's `segment()` groups characters into words. Re-run each
+    // Chinese segment through `pinyin()` so tone/pattern options still apply.
+    const segments = pinyinSegment(input, {
+      format: OutputFormat.AllSegment,
+      toneType,
+      nonZh
+    })
+    result = ''
+    let previousWasChinese = false
+    for (const item of segments) {
+      if (/[\u4e00-\u9fa5]/.test(item.origin)) {
+        const part = pinyin(item.origin, {
+          pattern,
+          toneType,
+          type: 'string',
+          nonZh
+        }).replace(/\s+/g, '')
+        if (result && previousWasChinese) result += ' '
+        result += part
+        previousWasChinese = true
+      } else {
+        result += item.origin
+        previousWasChinese = false
+      }
+    }
+  } else {
+    result = pinyin(input, {
+      pattern,
+      toneType,
+      type: 'string',
+      nonZh
+    })
+  }
 
   return {
     pinyin: result,

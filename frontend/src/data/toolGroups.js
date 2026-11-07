@@ -46,6 +46,7 @@ export const toolGroups = [
       { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗', desc: 'URL 编码解码，自动解析参数', keywords: ['url', 'bianjiema', 'encode', 'decode', 'percent', 'escape'] },
       { path: '/tools/regex', name: '正则测试', icon: '🔍', desc: '实时匹配、替换、分组提取', keywords: ['zhengze', 'regular', 'regex', 'regexp', 'test', 'pipei'] },
       { path: '/tools/code-formatter', name: '代码格式化', icon: '💻', desc: 'JS / CSS / HTML / JSON 美化压缩', keywords: ['code', 'daima', 'format', 'beautify', 'javascript', 'css', 'html'] },
+      { path: '/tools/css-minifier', name: 'CSS 压缩', icon: '🗜️', desc: '删除注释空白、简化颜色值、简化零值单位等多种优化', keywords: ['css', 'yasuo', 'minify', 'compress', 'youhua'] },
       { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜', desc: '解析 JWT Token 的 Header 和 Payload', keywords: ['jwt', 'jiema', 'decode', 'token', 'verify'] },
       { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔', desc: '批量生成 UUID v4，多种格式', keywords: ['uuid', 'shengcheng', 'guid', 'generate', 'unique'] },
       { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣', desc: 'MD5 / SHA1 / SHA256 / SHA512 计算', keywords: ['hash', 'md5', 'sha', 'jisuan', 'digest'] },
@@ -54,8 +55,10 @@ export const toolGroups = [
       { path: '/tools/json-csv', name: 'JSON↔CSV', icon: '📑', desc: 'JSON 数组与 CSV 格式互相转换', keywords: ['json', 'csv', 'convert', 'zhuanhuan', 'excel'] },
       { path: '/tools/css-unit', name: 'CSS单位', icon: '📐', desc: 'PX/REM/EM/VH/VW/百分比互转', keywords: ['css', 'danwei', 'unit', 'px', 'rem', 'em', 'vh', 'vw'] },
       { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝', desc: '实时渲染 Markdown，导出 HTML', keywords: ['markdown', 'yulan', 'preview', 'md'] },
+      { path: '/tools/svg-editor', name: 'SVG 编辑器', icon: '🎨', desc: 'SVG 代码编辑与实时预览，支持格式化压缩', keywords: ['svg', 'bianji', 'editor', 'yulan', 'tuxing', 'vector'] },
       { path: '/tools/text-diff', name: '文本差异对比', icon: '📊', desc: '行级/字符级差异高亮对比', keywords: ['wenben', 'text', 'chayi', 'diff', 'compare', 'duibi'] },
       { path: '/tools/yaml-json', name: 'YAML ↔ JSON', icon: '🔄', desc: 'YAML 与 JSON 双向转换，支持紧凑输出', keywords: ['yaml', 'json', 'zhuanhuan', 'convert', 'jiaoHU'] },
+      { path: '/tools/cron', name: 'Cron 表达式', icon: '⏰', desc: '解析、生成和验证 Cron 表达式，支持 UNIX / Quartz / Spring 方言', keywords: ['cron', 'biaodashi', 'expression', 'dingshi', 'schedule', 'crontab'] },
     ]
   },
   {

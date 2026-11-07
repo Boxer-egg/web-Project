@@ -29,7 +29,9 @@ for (const chunk of routeChunks) {
   const path = (chunk.match(/^\s*path:\s*'([^']+)'/) || [])[1]
   if (!path || path.includes(':')) continue
   // Redirect routes have no component and must not appear in the sitemap.
-  if (!/component:\s*\(\)\s*=>\s*import\(/.test(chunk)) continue
+  // The home route uses a statically imported component (`component: Home`),
+  // so accept any component reference here.
+  if (!/component\s*:/.test(chunk)) continue
 
   const meta = chunk.match(
     /meta:\s*\{\s*title:\s*'((?:[^'\\]|\\.)*)',\s*description:\s*'((?:[^'\\]|\\.)*)'/

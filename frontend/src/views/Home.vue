@@ -1,194 +1,23 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { toolGroups } from '../data/toolGroups'
 
 const router = useRouter()
 
-const tools = [
-  { path: '/tools/json-formatter', name: 'JSON 格式化', icon: '📋', desc: '格式化、压缩、转义 JSON 数据', category: '开发' },
-  { path: '/tools/base64', name: 'Base64 编解码', icon: '🔐', desc: '文本与 Base64 相互转换，支持文件', category: '编码' },
-  { path: '/tools/url-encoder', name: 'URL 编解码', icon: '🔗', desc: 'URL 编码解码，自动解析参数', category: '编码' },
-  { path: '/tools/regex', name: '正则表达式测试', icon: '🔍', desc: '实时匹配、替换、分组提取', category: '开发' },
-  { path: '/tools/timestamp', name: '时间戳转换', icon: '⏰', desc: '时间戳与日期互转，多种格式', category: '转换' },
-  { path: '/tools/color', name: '颜色转换器', icon: '🎨', desc: 'HEX / RGB / HSL 互转，实时预览', category: '转换' },
-  { path: '/tools/markdown', name: 'Markdown 预览', icon: '📝', desc: '实时渲染 Markdown，导出 HTML', category: '文档' },
-  { path: '/tools/text-diff', name: '文本差异对比', icon: '📊', desc: '行级/字符级差异高亮对比', category: '开发' },
-  { path: '/tools/code-formatter', name: '代码格式化', icon: '💻', desc: 'JS / CSS / HTML / JSON 美化压缩', category: '开发' },
-  { path: '/tools/password', name: '密码生成器', icon: '🔑', desc: '随机密码生成，自定义规则', category: '安全' },
-  { path: '/tools/jwt-decoder', name: 'JWT 解码器', icon: '📜', desc: '解析 JWT Token 的 Header 和 Payload', category: '安全' },
-  { path: '/tools/uuid-generator', name: 'UUID 生成器', icon: '🆔', desc: '批量生成 UUID v4，多种格式', category: '安全' },
-  { path: '/tools/hash-calculator', name: 'Hash 计算器', icon: '#️⃣', desc: 'MD5 / SHA1 / SHA256 / SHA512 计算', category: '安全' },
-  { path: '/tools/html-entity', name: 'HTML 实体编解码', icon: '🔤', desc: 'HTML 特殊字符编码/解码转换', category: '编码' },
-  { path: '/tools/text-toolbox', name: '文本处理工具箱', icon: '🧰', desc: '大小写/去重/排序/翻转等 16+ 功能', category: '文本' },
-  { path: '/tools/number-converter', name: '进制转换器', icon: '🔢', desc: '二/八/十/十六进制互转，支持浮点', category: '转换' },
-  { path: '/tools/json-csv', name: 'JSON ↔ CSV 转换', icon: '📑', desc: 'JSON 数组与 CSV 格式互相转换', category: '转换' },
-  { path: '/tools/qrcode', name: '二维码生成器', icon: '▣', desc: '文本/URL 转可扫描的二维码图片', category: '图像' },
-  { path: '/tools/image-canvas', name: '图片 Canvas 工具箱', icon: '🖌️', desc: '像素化、水印、九宫格切割、格式转换', category: '图像' },
-  { path: '/tools/image-watermark', name: '图片水印生成器', icon: '💧', desc: '添加仅供指定用途使用的文字水印', category: '图像' },
-  { path: '/tools/css-unit', name: 'CSS 单位转换', icon: '📐', desc: 'PX/REM/EM/VH/VW/百分比互转', category: '转换' },
-  { path: '/tools/lorem-ipsum', name: 'Lorem Ipsum', icon: '📝', desc: '假文生成，拉丁语/中文占位文本', category: '文本' },
-  { path: '/tools/word-counter', name: '字数统计', icon: '📝', desc: '实时统计中文字数、单词数、阅读时间', category: '文本' },
-  { path: '/tools/unit-converter', name: '单位换算', icon: '📐', desc: '长度、重量、温度、面积、体积互转', category: '转换' },
-  { path: '/tools/bmi', name: 'BMI 计算器', icon: '⚖️', desc: '身体质量指数计算与健康分类', category: '健康' },
-  { path: '/tools/chinese-converter', name: '简繁体转换', icon: '🈷️', desc: '简体中文与繁体中文互相转换', category: '文本' },
-  { path: '/tools/date-calculator', name: '日期计算器', icon: '📅', desc: '日期间隔计算与日期加减', category: '转换' },
-  { path: '/tools/pomodoro', name: '番茄钟', icon: '🍅', desc: '专注计时器，自定义专注与休息时长', category: '效率' },
-  { path: '/tools/timer', name: '专业计时器', icon: '⏱️', desc: '倒计时/正计时/时钟，节目单串联，舞台全屏', category: '效率' },
-  { path: '/tools/led-marquee', name: '手持 LED 弹幕', icon: '📱', desc: '全屏滚动文字灯牌，自定义颜色速度方向', category: '效率' },
-  { path: '/tools/relationship', name: '亲戚关系', icon: '👨‍👩‍👧‍👦', desc: '关系链查称谓、称谓反查关系链', category: '效率' },
-  { path: '/tools/hello-world', name: 'Hello World', icon: '👋', desc: '各编程语言 Hello World 代码片段', category: '效率' },
-  { path: '/tools/calculator', name: '计算器', icon: '🧮', desc: '安全表达式计算，支持键盘与历史记录', category: '转换' },
-  { path: '/tools/random-generator', name: '随机生成器', icon: '🎲', desc: '随机整数、小数、字符串、UUID、颜色', category: '安全' },
-  { path: '/tools/yaml-json', name: 'YAML ↔ JSON', icon: '🔄', desc: 'YAML 与 JSON 双向转换，支持紧凑输出', category: '开发' },
-  { path: '/tools/number-chinese', name: '数字转中文', icon: '🔢', desc: '中文大写金额、小写读法、人民币格式', category: '文本' },
-  { path: '/tools/pinyin', name: '文字转拼音', icon: '🔤', desc: '中文转拼音，支持声调/首字母/分词', category: '文本' },
-  { path: '/tools/hanzi-info', name: '汉字信息', icon: '📖', desc: '查询汉字的拼音、笔画、部首和释义', category: '文本' },
-  { path: '/tools/martian-text', name: '火星文翻译', icon: '👽', desc: '中文与火星文互相转换', category: '文本' },
-  { path: '/tools/text-art', name: '文本颜艺', icon: '🎭', desc: '颜文字装饰与零宽字符文字隐写', category: '文本' },
-  { path: '/tools/zip-plate-area', name: '邮编/车牌/区号', icon: '📮', desc: '离线查询邮编、车牌归属地、电话区号', category: '转换' },
-  { path: '/tools/restaurant-profit', name: '餐饮盈利计算器', icon: '🍜', desc: '开店成本、盈亏平衡、回本周期测算', category: '商业' },
-  { path: '/tools/menu-gross-margin', name: '菜单毛利率计算器', icon: '📋', desc: '单品原材料成本、套餐组合与整体菜单毛利率', category: '商业' },
-  { path: '/tools/gross-margin', name: '毛利率计算', icon: '💰', desc: '输入成本与售价，自动算毛利率', category: '商业' },
-  { path: '/tools/rpr', name: '餐饮反向调研', icon: '🕵️‍♂️', desc: '通过单一数据反推竞品营收与翻台率', category: '商业' },
-  { path: '/tools/storefront-sign-editor', name: '门头编辑器', icon: '🏪', desc: '餐饮店铺招牌排版、对齐、间距与导出', category: '商业' },
-  { path: '/tools/garbage-classification', name: '垃圾分类', icon: '♻️', desc: '常见生活垃圾所属分类与投放提示', category: '健康' },
-  { path: '/tools/blood-type', name: '血型遗传', icon: '🩸', desc: '根据父母血型推算子女可能血型及概率', category: '健康' },
-  { path: '/tools/shelf-life', name: '保质期计算', icon: '🥫', desc: '根据生产日期和保质期计算过期日期', category: '转换' },
-  { path: '/driving/quiz', name: '驾考刷题', icon: '🚗', desc: '科目一/科目四 顺序/随机/模拟考试/错题本', category: '驾考' },
-  { path: '/driving/traffic-signs', name: '交通标志图库', icon: '🚦', desc: '分类浏览交通标志与说明', category: '驾考' },
-  { path: '/tools/ball-x-pit', name: 'BALL x PIT 合成表', icon: '🎱', desc: '弹珠合成路线，点击展开下一级进化', category: '游戏' },
-  { path: '/tools/ball-x-pit-passives', name: 'BALL x PIT 道具合成', icon: '🧪', desc: '被动道具合成配方，查询合成与参与合成', category: '游戏' },
-]
-
-const categories = [
-  {
-    key: 'text',
-    name: '文本处理',
-    icon: '📝',
-    desc: '文本清洗、统计、简繁转换、假文生成、拼音、火星文',
-    paths: [
-      '/tools/text-toolbox',
-      '/tools/word-counter',
-      '/tools/chinese-converter',
-      '/tools/lorem-ipsum',
-      '/tools/number-chinese',
-      '/tools/pinyin',
-      '/tools/hanzi-info',
-      '/tools/martian-text',
-      '/tools/text-art',
-    ]
-  },
-  {
-    key: 'business',
-    name: '商业测算',
-    icon: '📊',
-    desc: '餐饮盈利测算、竞品反向调研与门头招牌设计工具',
-    paths: [
-      '/tools/restaurant-profit',
-      '/tools/menu-gross-margin',
-      '/tools/gross-margin',
-      '/tools/rpr',
-      '/tools/storefront-sign-editor',
-    ]
-  },
-  {
-    key: 'convert',
-    name: '转换计算',
-    icon: '🔢',
-    desc: '时间戳、颜色、单位、进制、日期换算',
-    paths: [
-      '/tools/timestamp',
-      '/tools/color',
-      '/tools/unit-converter',
-      '/tools/date-calculator',
-      '/tools/calculator',
-      '/tools/zip-plate-area',
-      '/tools/shelf-life',
-    ]
-  },
-  {
-    key: 'dev',
-    name: '开发工具',
-    icon: '💻',
-    desc: 'JSON、编码、正则、Hash、JWT 等常用开发辅助',
-    paths: [
-      '/tools/json-formatter',
-      '/tools/base64',
-      '/tools/url-encoder',
-      '/tools/regex',
-      '/tools/code-formatter',
-      '/tools/jwt-decoder',
-      '/tools/uuid-generator',
-      '/tools/hash-calculator',
-      '/tools/html-entity',
-      '/tools/number-converter',
-      '/tools/json-csv',
-      '/tools/yaml-json',
-      '/tools/css-unit',
-      '/tools/markdown',
-      '/tools/text-diff',
-    ]
-  },
-  {
-    key: 'image',
-    name: '图像分享',
-    icon: '🖼️',
-    desc: '二维码生成与图像相关工具',
-    paths: ['/tools/qrcode', '/tools/image-canvas', '/tools/image-watermark']
-  },
-  {
-    key: 'security',
-    name: '安全工具',
-    icon: '🔐',
-    desc: '密码生成等安全相关工具',
-    paths: ['/tools/password', '/tools/random-generator']
-  },
-  {
-    key: 'productivity',
-    name: '效率生活',
-    icon: '⏱️',
-    desc: '番茄钟、计时器、亲戚关系、Hello World',
-    paths: ['/tools/pomodoro', '/tools/timer', '/tools/led-marquee', '/tools/relationship', '/tools/hello-world']
-  },
-  {
-    key: 'health',
-    name: '健康生活',
-    icon: '⚖️',
-    desc: 'BMI 计算与健康相关工具',
-    paths: ['/tools/bmi', '/tools/garbage-classification', '/tools/blood-type']
-  },
-  {
-    key: 'driving',
-    name: '驾考学习',
-    icon: '🚗',
-    desc: '科目一/科目四刷题、模拟考试、错题本、交通标志图库',
-    paths: [
-      '/driving/quiz',
-      '/driving/traffic-signs',
-    ]
-  },
-  {
-    key: 'game',
-    name: '游戏辅助',
-    icon: '🎮',
-    desc: 'BALL x PIT 等游戏数据查询与合成工具',
-    paths: [
-      '/tools/ball-x-pit',
-      '/tools/ball-x-pit-passives',
-    ]
-  },
-]
-
-function toolsFor(paths) {
-  return tools.filter(t => paths.includes(t.path))
-}
+const categories = toolGroups.map(group => ({
+  key: group.key,
+  name: group.title,
+  icon: group.homeIcon,
+  desc: group.homeDesc,
+  tools: group.tools
+}))
 
 function goToTool(path) {
   router.push(path)
 }
 
-function goToCategory(path) {
-  const firstTool = toolsFor(categories.find(c => c.key === path)?.paths || [])[0]
-  if (firstTool) router.push(firstTool.path)
+function goToCategory(category) {
+  if (category.tools[0]) router.push(category.tools[0].path)
 }
 </script>
 
@@ -209,18 +38,18 @@ function goToCategory(path) {
         :key="category.key"
         class="category-section"
       >
-        <div class="category-card" @click="goToCategory(category.key)">
+        <div class="category-card" @click="goToCategory(category)">
           <span class="category-icon" aria-hidden="true">{{ category.icon }}</span>
           <div class="category-info">
             <h2 class="category-name">{{ category.name }}</h2>
             <p class="category-desc">{{ category.desc }}</p>
           </div>
-          <span class="category-count">{{ toolsFor(category.paths).length }} 个工具</span>
+          <span class="category-count">{{ category.tools.length }} 个工具</span>
         </div>
 
         <div class="tool-grid">
           <article
-            v-for="tool in toolsFor(category.paths)"
+            v-for="tool in category.tools"
             :key="tool.path"
             class="tool-card"
             @click="goToTool(tool.path)"
